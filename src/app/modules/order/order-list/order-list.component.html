@@ -1,0 +1,330 @@
+<!-- Header with title and actions -->
+<p-toast></p-toast>
+<p-toolbar styleClass="mb-4 gap-2">
+    <ng-template pTemplate="left">
+        <div class="my-2">
+            <p-button severity="success" label="New Order" icon="pi pi-plus" class="mr-2" (click)="openNew()"
+                [style]="{'margin-right': '.5em'}">
+            </p-button>
+        </div>
+    </ng-template>
+</p-toolbar>
+
+<!-- Order Table -->
+<p-table #dt [value]="orders()" [loading]="loading()"
+    [globalFilterFields]="['orderNumber', 'customer.name', 'status', 'paymentStatus']"
+    [tableStyle]="{'min-width': '75rem'}" [selection]="selectedOrders" [(selection)]="selectedOrders" dataKey="_id">
+    <ng-template pTemplate="caption">
+        <div class="flex flex-column md:flex-row md:justify-between md:align-items-center">
+            <h5 class="m-0">Manage Orders</h5>
+            <p-iconField iconPosition="left" class="ml-auto">
+                <p-inputIcon>
+                    <i class="pi pi-search"></i>
+                </p-inputIcon>
+                <input pInputText type="text" (input)="onGlobalFilter(dt, $event)" placeholder="Search..."
+                    class="w-full sm:w-auto" />
+            </p-iconField>
+        </div>
+    </ng-template>
+    <ng-template pTemplate="header">
+        <tr>
+            <!-- <th style="width: 4rem">
+                <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
+            </th> -->
+            <th pSortableColumn="orderNumber">Order # <p-sortIcon field="orderNumber"></p-sortIcon></th>
+            <th pSortableColumn="user.name">User <p-sortIcon field="user.name"></p-sortIcon></th>
+            <th pSortableColumn="total">Total <p-sortIcon field="total"></p-sortIcon></th>
+            <th pSortableColumn="status">Status <p-sortIcon field="status"></p-sortIcon></th>
+            <th pSortableColumn="paymentStatus">Payment <p-sortIcon field="paymentStatus"></p-sortIcon></th>
+            <th pSortableColumn="createdAt">Date <p-sortIcon field="createdAt"></p-sortIcon></th>
+            <th pSortableColumn="createdAt">Time <p-sortIcon field="createdAt"></p-sortIcon></th>
+
+            <th style="width: 12rem"></th>
+        </tr>
+        <!-- <tr>
+            <th></th>
+            <th>
+                <p-columnFilter type="text" field="orderNumber"></p-columnFilter>
+                <input pInputText type="text" (input)="filterOrders($event, 'orderNumber')" class="w-full">
+            </th>
+            <th>
+                <p-columnFilter type="text" field="customer.name"></p-columnFilter>
+                <input pInputText type="text" (input)="filterOrders($event, 'customer.name')" class="w-full">
+            </th>
+            <th colspan="4"></th>
+            <th>
+                <button pButton pRipple type="button" icon="pi pi-filter-slash" class="p-button-outlined"
+                    (click)="dt.clear()"></button>
+            </th>
+        </tr> -->
+    </ng-template>
+
+    <ng-template pTemplate="body" let-order>
+        <tr>
+            <!-- <td>
+                <p-tableCheckbox [value]="order"></p-tableCheckbox>
+            </td> -->
+            <td>{{ order.orderNumber }}</td>
+            <td>{{ order.user?.name }}</td>
+            <td>{{ order.total | currency:'USD':'symbol':'1.2-2' }}</td>
+            <td>
+                <p-tag [value]="order.orderStatus | titlecase" [severity]="getSeverity(order.orderStatus)"></p-tag>
+            </td>
+            <td>
+                <p-tag [value]="order.paymentStatus | titlecase"
+                    [severity]="getPaymentSeverity(order.paymentStatus)"></p-tag>
+            </td>
+            <td>{{ order.createdAt | date:'shortDate' }}</td>
+            <td>{{ order.createdAt | date:'shortTime' }}</td>
+            <td>
+                <div class="flex">
+                    <p-button icon="pi pi-pencil" class="mr-2" [rounded]="true" [outlined]="true" severity="success"
+                        (click)="editOrder(order)"></p-button>
+                    <p-button icon="pi pi-trash" severity="warn" [rounded]="true" [outlined]="true"
+                        (click)="deleteOrder(order)"></p-button>
+                </div>
+            </td>
+        </tr>
+    </ng-template>
+
+    <ng-template pTemplate="emptymessage">
+        <tr>
+            <td colspan="9" class="text-center py-6">
+                <div class="flex flex-column gap-2 items-center justify-center">
+                    <i class="pi pi-inbox text-5xl text-400"></i>
+                    <span class="text-xl text-600">No orders found.</span>
+                </div>
+            </td>
+        </tr>
+    </ng-template>
+    <!-- pagination -->
+    <ng-template pTemplate="footer">
+        <tr>
+            <td colspan="9" class="text-center py-6">
+                <p-paginator [rows]="pagination().limit" [totalRecords]="pagination().total"
+                    [rowsPerPageOptions]="[5, 10, 25, 50]" (onPageChange)="onPageChange($event)"></p-paginator>
+            </td>
+        </tr>
+    </ng-template>
+</p-table>
+
+<!-- Order Dialog -->
+<p-dialog [(visible)]="orderDialog" [style]="{width: '80vw'}"
+    header="{{orderForm.get('_id')?.value ? 'Edit Order' : 'New Order'}}" [modal]="true" [closable]="false"
+    [resizable]="true" [draggable]="true" [dismissableMask]="true" [contentStyle]="{'max-height': '90vh'}"
+    [styleClass]="'order-dialog'">
+
+    <form [formGroup]="orderForm">
+        <h4 class="mb-4">Order Information</h4>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <!-- <div class="field">
+                <label for="orderNumber">Order #</label>
+                <input id="orderNumber" pInputText formControlName="orderNumber"
+                    [class.p-invalid]="submitted && orderForm.get('orderNumber')?.invalid">
+                <small class="p-error" *ngIf="submitted && orderForm.get('orderNumber')?.invalid">Order number is
+                    required</small>
+            </div> -->
+
+            <div class="field">
+                <label for="orderStatus">Order Status</label>
+                <p-dropdown id="orderStatus" [options]="statusOptions" formControlName="orderStatus" optionLabel="label"
+                    optionValue="value" [style]="{'width':'100%'}">
+                </p-dropdown>
+            </div>
+
+            <div class="field">
+                <label for="paymentStatus">Payment Status</label>
+                <p-dropdown id="paymentStatus" [options]="paymentStatusOptions" formControlName="paymentStatus"
+                    optionLabel="label" optionValue="value" [style]="{'width':'100%'}">
+                </p-dropdown>
+            </div>
+
+            <div class="field">
+                <label for="paymentMethod">Payment Method</label>
+                <p-dropdown id="paymentMethod" [options]="paymentMethodOptions" formControlName="paymentMethod"
+                    optionLabel="label" optionValue="value" [style]="{'width':'100%'}">
+                </p-dropdown>
+            </div>
+        </div>
+
+        <div class="w-full">
+            <h4 class="mb-4">Shipping Address</h4>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" formGroupName="shippingAddress">
+                <div class="field">
+                    <label for="fullName">Full Name</label>
+                    <input id="fullName" pInputText formControlName="fullName"
+                        [class.p-invalid]="submitted && orderForm.get('shippingAddress.fullName')?.invalid">
+                    <small class="p-error" *ngIf="submitted && orderForm.get('shippingAddress.fullName')?.invalid">Full
+                        name is
+                        required</small>
+                </div>
+                <div class="field">
+                    <label for="phone">Phone</label>
+                    <input id="phone" pInputText formControlName="phone"
+                        [class.p-invalid]="submitted && orderForm.get('shippingAddress.phone')?.invalid">
+                    <small class="p-error" *ngIf="submitted && orderForm.get('shippingAddress.phone')?.invalid">Phone is
+                        required</small>
+                </div>
+                <div class="field">
+                    <label for="street">Street</label>
+                    <input id="street" pInputText formControlName="street"
+                        [class.p-invalid]="submitted && orderForm.get('shippingAddress.street')?.invalid">
+                    <small class="p-error" *ngIf="submitted && orderForm.get('shippingAddress.street')?.invalid">Street
+                        is
+                        required</small>
+                </div>
+                <div class="field">
+                    <label for="city">City</label>
+                    <input id="city" pInputText formControlName="city"
+                        [class.p-invalid]="submitted && orderForm.get('shippingAddress.city')?.invalid">
+                    <small class="p-error" *ngIf="submitted && orderForm.get('shippingAddress.city')?.invalid">City
+                        is required</small>
+                </div>
+                <div class="field">
+                    <label for="state">State/Province</label>
+                    <input id="state" pInputText formControlName="state"
+                        [class.p-invalid]="submitted && orderForm.get('shippingAddress.state')?.invalid">
+                    <small class="p-error" *ngIf="submitted && orderForm.get('shippingAddress.state')?.invalid">State is
+                        required</small>
+                </div>
+                <div class="field">
+                    <label for="zipCode">ZIP/Postal Code</label>
+                    <input id="zipCode" pInputText formControlName="zipCode"
+                        [class.p-invalid]="submitted && orderForm.get('shippingAddress.zipCode')?.invalid">
+                    <small class="p-error" *ngIf="submitted && orderForm.get('shippingAddress.zipCode')?.invalid">ZIP
+                        code is
+                        required</small>
+                </div>
+                <div class="field col-12">
+                    <label for="country">Country</label>
+                    <p-dropdown id="country" [options]="countryOptions" formControlName="country" optionLabel="label"
+                        optionValue="value" [style]="{'width':'100%'}">
+                    </p-dropdown>
+                    <small class="p-error"
+                        *ngIf="submitted && orderForm.get('shippingAddress.country')?.invalid">Country is
+                        required</small>
+                </div>
+
+            </div>
+        </div>
+
+        <h4 class="mb-4">Order Items</h4>
+        <div class="flex justify-content-between align-items-center mb-3">
+            <button type="button" pButton pRipple icon="pi pi-plus" label="Add Item" class="p-button-sm"
+                (click)="addItem()"></button>
+        </div>
+
+        <p-table [value]="items.controls" [scrollable]="true" scrollHeight="300px">
+            <ng-template pTemplate="header">
+                <tr>
+                    <th style="width: 40%">Product</th>
+                    <th style="width: 15%">Price</th>
+                    <th style="width: 15%">Quantity</th>
+                    <th style="width: 20%">Total</th>
+                    <th style="width: 10%">Discount</th>
+                    <th style="width: 5%"></th>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-item let-rowIndex="rowIndex">
+                <tr [formGroup]="item">
+                    <td class="w-full">
+                        <p-dropdown formControlName="productId" 
+                            [options]="products()" 
+                            appendTo="body"
+                            optionLabel="name" 
+                            optionValue="id"
+                            placeholder="Select Product" 
+                            styleClass="w-full"
+                            filter="true"
+                            filterBy="name"
+                            [class.p-invalid]="submitted && item.get('productId')?.invalid"
+                            (onChange)="onProductChange($event,rowIndex)">
+                        </p-dropdown>
+                    </td>
+                    <td>
+                        <p-inputNumber mode="currency" 
+                            currency="USD" 
+                            locale="en-US" 
+                            formControlName="price"
+                            (onInput)="calculateTotal()" 
+                            class="w-full">
+                        </p-inputNumber>
+                    </td>
+                    <td>
+                        <p-inputNumber formControlName="quantity" 
+                            [min]="1" 
+                            (onInput)="calculateTotal()" 
+                            class="w-full">
+                        </p-inputNumber>
+                    </td>
+                    <td>
+                        <p-inputNumber mode="currency" 
+                            currency="USD" 
+                            locale="en-US" 
+                            formControlName="totalPrice"
+                            [readonly]="true" 
+                            class="w-full">
+                        </p-inputNumber>
+                    </td>
+                    <td>
+                        <p-inputNumber mode="currency" 
+                            currency="USD" 
+                            locale="en-US" 
+                            formControlName="discountPrice"
+                            (onInput)="calculateTotal()"
+                            class="w-full">
+                        </p-inputNumber>
+                    </td>
+                    <td class="text-center">
+                        <button type="button" pButton pRipple icon="pi pi-trash"
+                            class="p-button-rounded p-button-text p-button-danger p-button-sm" (click)="removeItem(rowIndex)">
+                        </button>
+                    </td>
+                </tr>
+            </ng-template>
+            <ng-template pTemplate="footer">
+                <tr>
+                    <td colspan="3" class="text-right font-bold">Subtotal:</td>
+                    <td colspan="2">{{ orderForm.get('subtotal')?.value | currency:'USD':'symbol':'1.2-2' }}
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="3" class="text-right font-bold">Tax:</td>
+                    <td colspan="2">{{ orderForm.get('tax')?.value | currency:'USD':'symbol':'1.2-2' }}</td>
+                </tr>
+                <tr>
+                    <td colspan="3" class="text-right font-bold">Shipping:</td>
+                    <td colspan="2">{{ orderForm.get('shippingCost')?.value | currency:'USD':'symbol':'1.2-2' }}
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="3" class="text-right font-bold text-xl">Total:</td>
+                    <td colspan="2" class="text-xl">{{ orderForm.get('total')?.value |
+                        currency:'USD':'symbol':'1.2-2' }}</td>
+                </tr>
+            </ng-template>
+        </p-table>
+
+        <div class="w-full">
+            <div class="field">
+                <label for="notes">Notes</label>
+                <textarea id="notes" pTextarea formControlName="notes" rows="3" class="w-full"></textarea>
+            </div>
+        </div>
+
+    </form>
+    <ng-template pTemplate="footer">
+        <div class="flex justify-end gap-2">
+            <p-button label="Cancel" severity="danger" icon="pi pi-times" (click)="hideDialog()">
+            </p-button>
+            <p-button label="Save" severity="success" icon="pi pi-check" (click)="saveOrder()">
+            </p-button>
+        </div>
+    </ng-template>
+</p-dialog>
+
+<!-- Toast for messages -->
+<p-toast></p-toast>
+
+<!-- Confirmation dialog for delete -->
+<p-confirmDialog [style]="{width: '450px'}"></p-confirmDialog>

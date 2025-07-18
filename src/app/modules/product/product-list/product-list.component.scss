@@ -1,0 +1,112 @@
+.product-image {
+    width: 64px;
+    height: 64px;
+    object-fit: cover;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  .product-dialog {
+    .p-dialog-content {
+      padding: 0 !important;
+    }
+    
+    .p-accordion {
+      .p-accordion-header {
+        .p-accordion-header-link {
+          padding: 1rem 1.25rem;
+          font-weight: 600;
+          
+          &:focus {
+            box-shadow: 0 0 0 0.2rem rgba(var(--primary-color-rgb), 0.2);
+          }
+        }
+      }
+      
+      .p-accordion-content {
+        padding: 1.25rem;
+      }
+    }
+  }
+  
+  .field {
+    margin-bottom: 1rem;
+    
+    label {
+      display: block;
+      margin-bottom: 0.5rem;
+      color: var(--text-color);
+    }
+    
+    small.text-red-500 {
+      display: block;
+      margin-top: 0.25rem;
+      font-size: 0.875rem;
+    }
+  }
+  
+  .variant-card, .detail-item {
+    border: 1px solid var(--surface-border);
+    border-radius: 6px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    background: var(--surface-ground);
+  }
+  
+  .empty-state {
+    text-align: center;
+    padding: 2rem;
+    color: var(--text-color-secondary);
+    
+    i {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+      opacity: 0.5;
+    }
+  }
+  
+  // Responsive adjustments
+  @media (max-width: 768px) {
+    .product-dialog {
+      .p-dialog {
+        width: 95vw !important;
+        margin: 1rem;
+      }
+    }
+    
+    .p-toolbar {
+      flex-direction: column;
+      gap: 1rem;
+      
+      .p-toolbar-group-left,
+      .p-toolbar-group-right {
+        width: 100%;
+        justify-content: center;
+      }
+    }
+  }
+  
+  // Custom accordion styling
+  :host ::ng-deep {
+    .p-accordion .p-accordion-tab .p-accordion-header .p-accordion-header-link {
+      border: 1px solid var(--surface-border);
+      color: var(--text-color);
+      background: var(--surface-section);
+      
+      &:not(.p-disabled):hover {
+        background: var(--surface-hover);
+      }
+    }
+    
+    .p-accordion .p-accordion-tab .p-accordion-content {
+      border: 1px solid var(--surface-border);
+      border-top: 0;
+      background: var(--surface-overlay);
+    }
+    
+    .p-card {
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      border: 1px solid var(--surface-border);
+    }
+  }
+  

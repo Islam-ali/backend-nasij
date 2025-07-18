@@ -1,0 +1,161 @@
+<div class="card">
+    <p-toast></p-toast>
+    <p-confirmDialog></p-confirmDialog>
+
+    <p-toolbar styleClass="mb-4 gap-2">
+        <div class="p-toolbar-group-start">
+            <button pButton pRipple type="button" icon="pi pi-plus" class="p-button-success mr-2" (click)="openNew()"
+                label="New Brand"></button>
+            <button pButton pRipple type="button" icon="pi pi-trash" class="p-button-danger"
+                [disabled]="!selectedBrands.length" (click)="deleteSelected()" label="Delete"></button>
+        </div>
+    </p-toolbar>
+
+    <p-table #dt [value]="brands()" [(selection)]="selectedBrands" [loading]="loading()" [rowHover]="true" dataKey="_id"
+        [lazy]="true" [globalFilterFields]="['name', 'slug', 'description']" styleClass="p-datatable-gridlines"
+        [tableStyle]="{ 'min-width': '50rem' }">
+        <ng-template pTemplate="caption">
+            <div class="flex flex-column md:flex-row md:justify-between md:align-items-center">
+                <h5 class="m-0">Manage Brands</h5>
+                <p-iconField iconPosition="left" class="ml-auto">
+                    <p-inputIcon>
+                        <i class="pi pi-search"></i>
+                    </p-inputIcon>
+                    <input pInputText type="text" (input)="onGlobalFilter($event)" placeholder="Search..."
+                        class="w-full sm:w-auto" />
+                </p-iconField>
+            </div>
+        </ng-template>
+        <ng-template pTemplate="header">
+            <tr>
+                <th style="width: 3rem">
+                    <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
+                </th>
+                <th pSortableColumn="name">
+                    Name <p-sortIcon field="name"></p-sortIcon>
+                </th>
+                <th pSortableColumn="slug">
+                    Slug <p-sortIcon field="slug"></p-sortIcon>
+                </th>
+                <th>Logo</th>
+                <th pSortableColumn="isActive">
+                    Status <p-sortIcon field="isActive"></p-sortIcon>
+                </th>
+                <th pSortableColumn="productCount">
+                    Products <p-sortIcon field="productCount"></p-sortIcon>
+                </th>
+                <th style="width: 10rem">Actions</th>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-brand>
+            <tr>
+                <td>
+                    <p-tableCheckbox [value]="brand"></p-tableCheckbox>
+                </td>
+                <td>{{ brand.name }}</td>
+                <td>{{ brand.slug }}</td>
+                <td>
+                    <img [src]="'http://localhost:3000/'+brand.logo.filePath" [fallback]="'/images/picture.png'" [alt]="brand.name"
+                        class="shadow-2 w-10 h-10 object-cover" />
+                </td>
+                <td>
+                    <p-tag [severity]="brand.isActive ? 'success' : 'danger'"
+                        [value]="brand.isActive ? 'Active' : 'Inactive'"></p-tag>
+                </td>
+                <td>{{ brand.productCount || 0 }}</td>
+                <td>
+                    <div class="flex">
+                        <p-button icon="pi pi-pencil" class="mr-2" [rounded]="true" [outlined]="true" severity="success"
+                            (click)="editBrand(brand)"></p-button>
+                        <p-button icon="pi pi-trash" severity="warn" [rounded]="true" [outlined]="true"
+                            (click)="deleteBrand(brand)"></p-button>
+                    </div>
+                </td>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="emptymessage">
+            <tr>
+                <td colspan="6" class="text-center py-6">
+                    <div class="flex flex-column gap-2 items-center justify-center">
+                        <i class="pi pi-inbox text-5xl text-400"></i>
+                        <span class="text-xl text-600">No brands found.</span>
+                    </div>
+                </td>
+            </tr>
+        </ng-template>
+        <!-- footer -->
+        <ng-template pTemplate="footer">
+            <tr>
+                <td colspan="6" class="text-center py-6">
+                    <p-paginator appendTo="body" [dropdownAppendTo]="'body'" [rows]="pagination().limit"
+                        [totalRecords]="pagination().total" (onPageChange)="loadBrands($event.page, $event.rows)"
+                        [rowsPerPageOptions]="[5,10,20,30]" [pageLinkSize]="5" [showPageLinks]="true"
+                        [showCurrentPageReport]="true"
+                        currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries">
+                    </p-paginator>
+                </td>
+            </tr>
+        </ng-template>
+    </p-table>
+</div>
+
+<p-dialog [(visible)]="brandDialog" [style]="{ width: '70vw' }"
+    header="{{ brandForm.get('_id')?.value ? 'Edit Brand' : 'New Brand' }}" [modal]="true" [draggable]="false"
+    [resizable]="false" (onHide)="hideDialog()">
+    <form [formGroup]="brandForm" (ngSubmit)="saveBrand()">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+            <div class="field-checkbox w-full flex items-center col-span-2">
+                <label class="block text-sm font-medium text-gray-700 me-4" for="isActive">Active</label>
+                <p-toggleswitch id="isActive" formControlName="isActive" />
+            </div>
+
+            <div class="w-full">
+                <label for="name" class="block text-sm font-medium text-gray-700 mb-2">Name *</label>
+                <input id="name" class="w-full" type="text" pInputText formControlName="name"
+                    [ngClass]="{ 'p-invalid': submitted && brandForm.get('name')?.invalid }" />
+                <small class="p-error" *ngIf="submitted && brandForm.get('name')?.invalid">Name is required.</small>
+            </div>
+
+            <div class="w-full">
+                <label for="slug" class="block text-sm font-medium text-gray-700 mb-2">Slug *</label>
+                <input id="slug" class="w-full" type="text" pInputText formControlName="slug"
+                    [ngClass]="{ 'p-invalid': submitted && brandForm.get('slug')?.invalid }" />
+                <small class="p-error" *ngIf="submitted && brandForm.get('slug')?.invalid">Slug is required.</small>
+            </div>
+
+            <div class="w-full">
+                <label for="description" class="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                <textarea id="description" class="w-full" pInputTextarea formControlName="description"
+                    rows="3"></textarea>
+            </div>
+
+            <div class="w-full">
+                <label for="website" class="block text-sm font-medium text-gray-700 mb-2">Website</label>
+                <input id="website" class="w-full" type="url" pInputText formControlName="website" />
+            </div>
+
+            <div class="w-full col-span-2">
+                <label for="logo" class="block text-sm font-medium text-gray-700 mb-2">Logo</label>
+                <app-upload-files id="logo" [control]="formControlLogo" [multiple]="false" [accept]="'image/*'"
+                    [filesServer]="brandForm.get('logo')?.value"></app-upload-files>
+            </div>
+
+            <div class="field-checkbox w-full flex items-center col-span-2">
+                <label class="block text-sm font-medium text-gray-700 me-4" for="isActive">Active</label>
+                <p-toggleswitch id="isActive" formControlName="isActive" />
+            </div>
+        </div>
+    </form>
+
+    <!-- footer -->
+    <ng-template pTemplate="footer">
+        <div class="flex justify-end gap-2">
+            <p-button label="Cancel" severity="danger" icon="pi pi-times" (click)="hideDialog()">
+            </p-button>
+            <p-button label="Save" type="submit" severity="success" icon="pi pi-check" [disabled]="brandForm.invalid"
+                (click)="saveBrand()">
+            </p-button>
+        </div>
+    </ng-template>
+</p-dialog>

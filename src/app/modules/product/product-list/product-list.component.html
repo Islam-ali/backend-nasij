@@ -1,0 +1,524 @@
+<p-toast></p-toast>
+<p-toolbar styleClass="mb-4 gap-2">
+    <ng-template pTemplate="left">
+        <div class="my-2">
+            <p-button severity="success" label="New Product" icon="pi pi-plus" class="mr-2" (click)="openNew()"
+                [style]="{'margin-right': '.5em'}">
+            </p-button>
+        </div>
+    </ng-template>
+</p-toolbar>
+
+<p-table #dt [value]="products()" [columns]="cols" responsiveLayout="scroll" [lazy]="true"
+    [loading]="loading()" [globalFilterFields]="['name','category.name','status']"
+    [showCurrentPageReport]="true" [(selection)]="selectedProducts" selectionMode="multiple"
+    [rowHover]="true" dataKey="_id">
+    <ng-template pTemplate="caption">
+        <div class="flex flex-column md:flex-row md:justify-between md:align-items-center">
+            <h5 class="m-0">Manage Products</h5>
+            <p-iconField iconPosition="left" class="ml-auto">
+                <p-inputIcon>
+                    <i class="pi pi-search"></i>
+                </p-inputIcon>
+                <input pInputText type="text" (input)="onGlobalFilter(dt, $event)" placeholder="Search..."
+                    class="w-full sm:w-auto" />
+            </p-iconField>
+        </div>
+    </ng-template>
+
+    <ng-template pTemplate="header">
+        <tr>
+            <th pSortableColumn="name">Name <p-sortIcon field="name"></p-sortIcon></th>
+            <th>Image</th>
+            <th pSortableColumn="price">Price <p-sortIcon field="price"></p-sortIcon></th>
+            <th pSortableColumn="category">Category <p-sortIcon field="category"></p-sortIcon></th>
+            <th>Reviews</th>
+            <th pSortableColumn="status">Status <p-sortIcon field="status"></p-sortIcon></th>
+            <th></th>
+        </tr>
+    </ng-template>
+
+    <ng-template pTemplate="body" let-product>
+        <tr>
+            <td style="width:14%; min-width:10rem;">
+                <span class="font-medium">{{ product.name }}</span>
+            </td>
+            <td style="width:14%; min-width: 10rem;">
+                <img [src]="'http://localhost:3000/'+product.images?.[0].filePath" [alt]="product.name" width="64"
+                    height="64" class="shadow-4 border-round" [fallback]="'/images/picture.png'" />
+            </td>
+            <td style="width:14%; min-width:8rem;">
+                <span class="font-semibold">${{ product.price }}</span>
+            </td>
+            <td style="width:14%; min-width:10rem;">
+                {{ product.category.name }}
+            </td>
+            <td style="width:14%; min-width: 10rem;">
+                <p-rating [ngModel]="product.rating" [readonly]="true"></p-rating>
+            </td>
+            <td style="width:14%; min-width: 10rem;">
+                <p-tag [value]="product.status" [severity]="getSeverity(product.status)"></p-tag>
+            </td>
+            <td>
+                <div class="flex">
+                    <p-button icon="pi pi-pencil" class="mr-2" [rounded]="true" [outlined]="true" severity="success"
+                        (click)="editProduct(product)"></p-button>
+                    <p-button icon="pi pi-trash" severity="warn" [rounded]="true" [outlined]="true"
+                        (click)="deleteProduct(product)"></p-button>
+                </div>
+            </td>
+        </tr>
+    </ng-template>
+
+    <ng-template pTemplate="emptymessage">
+        <tr>
+            <td colspan="7" class="text-center py-6">
+                <div class="flex flex-column gap-2 items-center justify-center">
+                    <i class="pi pi-inbox text-5xl text-400"></i>
+                    <span class="text-xl text-600">No products found.</span>
+                </div>
+            </td>
+        </tr>
+    </ng-template>
+
+    <!-- <ng-template pTemplate="loadingbody">
+        <tr *ngFor="let x of [1,2,3,4,5]">
+            <td *ngFor="let col of cols">
+                <p-skeleton width="100%" height="30px" />
+            </td>
+        </tr>
+    </ng-template> -->
+
+    <ng-template pTemplate="footer">
+        <tr>
+            <td colspan="7" class="text-center py-6">
+                <p-paginator appendTo="body" [dropdownAppendTo]="'body'" [rows]="pagination().limit" [totalRecords]="pagination().total"
+                    (onPageChange)="loadProducts($event.page, $event.rows)" [rowsPerPageOptions]="[5,10,20,30]"
+                    [pageLinkSize]="5" [showPageLinks]="true" [showCurrentPageReport]="true"
+                    currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries">
+                </p-paginator>
+            </td>
+        </tr>
+    </ng-template>
+</p-table>
+
+<!-- Enhanced Product Dialog with Accordion -->
+<p-dialog [(visible)]="productDialog" [style]="{width: '70vw'}" header="Product Details" [modal]="true" class="p-fluid"
+    [maximizable]="true" [closable]="true">
+
+    <ng-template pTemplate="content">
+        <form [formGroup]="productForm" class="formgrid grid">
+
+            <p-accordion [multiple]="true" [activeIndex]="[0, 1]" class="w-full">
+
+                <!-- Basic Information Panel -->
+                <p-accordionTab header="Basic Information" [selected]="true">
+                    <ng-template pTemplate="content">
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <div class="field w-full md:col-6">
+                                <label for="name" class="font-semibold">Product Name *</label>
+                                <input pInputText id="name" class="w-full" formControlName="name"
+                                    placeholder="Enter product name"
+                                    [class.ng-invalid]="submitted && productForm.get('name')?.invalid" />
+                                <small class="ng-dirty ng-invalid text-red-500"
+                                    *ngIf="submitted && productForm.get('name')?.invalid">
+                                    Name is required
+                                </small>
+                            </div>
+
+                            <div class="field w-full md:col-6">
+                                <label for="sku" class="font-semibold">SKU *</label>
+                                <input pInputText id="sku" class="w-full" formControlName="sku" placeholder="Enter SKU"
+                                    [class.ng-invalid]="submitted && productForm.get('sku')?.invalid" />
+                                <small class="ng-dirty ng-invalid text-red-500"
+                                    *ngIf="submitted && productForm.get('sku')?.invalid">
+                                    SKU is required
+                                </small>
+                            </div>
+
+                            <div class="field w-full">
+                                <label for="description" class="font-semibold">Description *</label>
+                                <textarea pTextarea id="description" class="w-full" formControlName="description"
+                                    rows="4" placeholder="Enter product description"
+                                    [class.ng-invalid]="submitted && productForm.get('description')?.invalid">
+                        </textarea>
+                                <small class="ng-dirty ng-invalid text-red-500"
+                                    *ngIf="submitted && productForm.get('description')?.invalid">
+                                    Description is required
+                                </small>
+                            </div>
+                        </div>
+                    </ng-template>
+                </p-accordionTab>
+
+                <!-- Pricing & Inventory Panel -->
+                <p-accordionTab header="Pricing & Inventory" [selected]="true">
+                    <ng-template pTemplate="content">
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <div class="field w-full md:col-4">
+                                <label for="factoryPrice" class="font-semibold">Factory Price *</label>
+                                <p-inputNumber id="factoryPrice" class="w-full" formControlName="factoryPrice"
+                                    mode="currency" currency="USD" locale="en-US"
+                                    [class.ng-invalid]="submitted && productForm.get('factoryPrice')?.invalid">
+                                </p-inputNumber>
+                                <small class="ng-dirty ng-invalid text-red-500"
+                                    *ngIf="submitted && productForm.get('factoryPrice')?.invalid">
+                                    Factory Price is required
+                                </small>
+                            </div>
+                            
+                            <div class="field w-full md:col-4">
+                                <label for="price" class="font-semibold">Price *</label>
+                                <p-inputNumber id="price" class="w-full" formControlName="price" mode="currency"
+                                    currency="USD" locale="en-US"
+                                    [class.ng-invalid]="submitted && productForm.get('price')?.invalid">
+                                </p-inputNumber>
+                                <small class="ng-dirty ng-invalid text-red-500"
+                                    *ngIf="submitted && productForm.get('price')?.invalid">
+                                    Price is required
+                                </small>
+                            </div>
+
+                            <div class="field w-full md:col-4">
+                                <label for="discountPrice" class="font-semibold">Discount Price</label>
+                                <p-inputNumber id="discountPrice" class="w-full" formControlName="discountPrice"
+                                    mode="currency" currency="USD" locale="en-US">
+                                </p-inputNumber>
+                            </div>
+
+                            <div class="field w-full md:col-4">
+                                <label for="stock" class="font-semibold">Stock *</label>
+                                <p-inputNumber id="stock" styleClass="w-full" formControlName="stock"
+                                    [class.ng-invalid]="submitted && productForm.get('stock')?.invalid">
+                                </p-inputNumber>
+                                <small class="ng-dirty ng-invalid text-red-500"
+                                    *ngIf="submitted && productForm.get('stock')?.invalid">
+                                    Stock is required
+                                </small>
+                            </div>
+
+                            <div class="field w-full md:col-6">
+                                <label for="status" class="font-semibold">Status</label>
+                                <p-dropdown appendTo="body" id="status" styleClass="w-full" formControlName="status"
+                                    [options]="statusOptions" placeholder="Select Status">
+                                </p-dropdown>
+                            </div>
+                        </div>
+                    </ng-template>
+                </p-accordionTab>
+
+                <!-- Category & Brand Panel -->
+                <p-accordionTab header="Category & Brand">
+                    <ng-template pTemplate="content">
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <div class="field w-full md:col-6">
+                                <label for="category" class="font-semibold">Category *</label>
+                                <p-dropdown appendTo="body" id="category" styleClass="w-full" formControlName="category"
+                                    [options]="categoryOptions" placeholder="Select Category"
+                                    [class.ng-invalid]="submitted && productForm.get('category')?.invalid">
+                                </p-dropdown>
+                                <small class="ng-dirty ng-invalid text-red-500"
+                                    *ngIf="submitted && productForm.get('category')?.invalid">
+                                    Category is required
+                                </small>
+                            </div>
+
+                            <div class="field w-full md:col-6">
+                                <label for="brand" class="font-semibold">Brand *</label>
+                                <p-dropdown appendTo="body" id="brand" styleClass="w-full" formControlName="brand"
+                                    [options]="brandOptions" placeholder="Select Brand"
+                                    [class.ng-invalid]="submitted && productForm.get('brand')?.invalid">
+                                </p-dropdown>
+                                <small class="ng-dirty ng-invalid text-red-500"
+                                    *ngIf="submitted && productForm.get('brand')?.invalid">
+                                    Brand is required
+                                </small>
+                            </div>
+                        </div>
+                    </ng-template>
+                </p-accordionTab>
+
+                <!-- Product Images Panel -->
+                <p-accordionTab header="Product Images">
+                    <ng-template pTemplate="content">
+                        <div class="field w-full">
+                            <label class="font-semibold">Product Images *</label>
+                            <app-upload-files [control]="formControlImage"
+                                [filesServer]="productForm.get('images')?.value" [multiple]="true" [accept]="'image/*'">
+                            </app-upload-files>
+                            <small class="ng-dirty ng-invalid text-red-500"
+                                *ngIf="submitted && productForm.get('images')?.invalid">
+                                At least one image is required
+                            </small>
+                        </div>
+                    </ng-template>
+                </p-accordionTab>
+
+                <!-- Product Attributes Panel -->
+                <p-accordionTab header="Product Attributes">
+                    <ng-template pTemplate="content">
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <div class="field w-full md:col-6">
+                                <label for="tags" class="font-semibold">Tags</label>
+                                <p-chips id="tags" styleClass="w-full" formControlName="tags" placeholder="Add tags">
+                                </p-chips>
+                            </div>
+
+                            <div class="field w-full md:col-6">
+                                <label for="colors" class="font-semibold">Colors</label>
+                                <p-chips id="colors" styleClass="w-full" formControlName="colors"
+                                    placeholder="Add colors">
+                                </p-chips>
+                            </div>
+
+                            <div class="field w-full md:col-4">
+                                <label for="size" class="font-semibold">Sizes</label>
+                                <p-chips id="size" styleClass="w-full" formControlName="size" placeholder="Add sizes">
+                                </p-chips>
+                            </div>
+
+                            <div class="field w-full md:col-4">
+                                <label for="gender" class="font-semibold">Gender</label>
+                                <p-dropdown appendTo="body" id="gender" styleClass="w-full" formControlName="gender"
+                                    [options]="genderOptions" placeholder="Select Gender">
+                                </p-dropdown>
+                            </div>
+
+                            <div class="field w-full md:col-4">
+                                <label for="season" class="font-semibold">Season</label>
+                                <p-dropdown appendTo="body" id="season" styleClass="w-full" formControlName="season"
+                                    [options]="seasonOptions" placeholder="Select Season">
+                                </p-dropdown>
+                            </div>
+
+                            <div class="field w-full">
+                                <label for="material" class="font-semibold">Material</label>
+                                <input pInputText id="material" class="w-full" formControlName="material"
+                                    placeholder="Enter material">
+                            </div>
+                        </div>
+                    </ng-template>
+                </p-accordionTab>
+
+                <!-- Product Variants Panel -->
+                <p-accordionTab header="Product Variants">
+                    <ng-template pTemplate="content">
+                        <div class="flex justify-between align-items-center mb-3">
+                            <h6 class="m-0">Variants</h6>
+                            <p-button label="Add Variant" icon="pi pi-plus" size="small" (click)="addVariant()">
+                            </p-button>
+                        </div>
+
+                        <div formArrayName="variants">
+                            <p-card *ngFor="let variant of variants.controls; let i = index" [formGroupName]="i"
+                                styleClass="mb-3">
+                                <ng-template pTemplate="header">
+                                    <div class="flex justify-between align-items-center w-full px-3 py-2">
+                                        <span class="font-semibold">Variant {{ i + 1 }}</span>
+                                        <p-button icon="pi pi-trash" severity="danger" size="small" [text]="true"
+                                            (click)="removeVariant(i)">
+                                        </p-button>
+                                    </div>
+                                </ng-template>
+
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    <div class="field w-full md:col-6">
+                                        <label class="font-semibold">Name *</label>
+                                        <input pInputText formControlName="name" placeholder="Variant name"
+                                            class="w-full"
+                                            [class.ng-invalid]="submitted && variant.get('name')?.invalid" />
+                                        <small class="ng-dirty ng-invalid text-red-500"
+                                            *ngIf="submitted && variant.get('name')?.invalid">
+                                            Name is required and must be at least 2 characters.
+                                        </small>
+                                    </div>
+
+                                    <div class="field w-full md:col-6">
+                                        <label class="font-semibold">Value *</label>
+                                        <input pInputText formControlName="value" placeholder="Variant value"
+                                            class="w-full"
+                                            [class.ng-invalid]="submitted && variant.get('value')?.invalid" />
+                                        <small class="ng-dirty ng-invalid text-red-500"
+                                            *ngIf="submitted && variant.get('value')?.invalid">
+                                            Value is required and must be at least 2 characters.
+                                        </small>
+                                    </div>
+
+                                    <div class="field w-full md:col-4">
+                                        <label class="font-semibold">Price *</label>
+                                        <p-inputNumber formControlName="price" mode="currency" currency="USD"
+                                            locale="en-US" class="w-full"
+                                            [class.ng-invalid]="submitted && variant.get('price')?.invalid">
+                                        </p-inputNumber>
+                                        <small class="ng-dirty ng-invalid text-red-500"
+                                            *ngIf="submitted && variant.get('price')?.invalid">
+                                            Price is required and must be non-negative.
+                                        </small>
+                                    </div>
+
+                                    <div class="field w-full md:col-4">
+                                        <label class="font-semibold">Stock *</label>
+                                        <p-inputNumber formControlName="stock" class="w-full"
+                                            [class.ng-invalid]="submitted && variant.get('stock')?.invalid">
+                                        </p-inputNumber>
+                                        <small class="ng-dirty ng-invalid text-red-500"
+                                            *ngIf="submitted && variant.get('stock')?.invalid">
+                                            Stock is required and must be non-negative.
+                                        </small>
+                                    </div>
+
+                                    <div class="field w-full md:col-4">
+                                        <label class="font-semibold">SKU *</label>
+                                        <input pInputText formControlName="sku" placeholder="Variant SKU" class="w-full"
+                                            [class.ng-invalid]="submitted && variant.get('sku')?.invalid" />
+                                        <small class="ng-dirty ng-invalid text-red-500"
+                                            *ngIf="submitted && variant.get('sku')?.invalid">
+                                            SKU is required and must contain only letters, numbers, or
+                                            hyphens.
+                                        </small>
+                                    </div>
+                                </div>
+                            </p-card>
+                        </div>
+
+                        <div *ngIf="variants.length === 0" class="text-center py-4 text-500">
+                            <i class="pi pi-info-circle mr-2"></i>
+                            No variants added yet. Click "Add Variant" to create one.
+                        </div>
+                    </ng-template>
+                </p-accordionTab>
+
+                <!-- Product Details Panel -->
+                <p-accordionTab header="Product Details">
+                    <ng-template pTemplate="content">
+                        <div class="flex justify-between align-items-center mb-3">
+                            <h6 class="m-0">Details</h6>
+                            <p-button label="Add Detail" icon="pi pi-plus" size="small" (click)="addDetail()">
+                            </p-button>
+                        </div>
+                        <!-- <p-card> -->
+                        <div formArrayName="details">
+                            <p-card *ngFor="let detail of details.controls; let i = index" [formGroupName]="i"
+                                styleClass="mb-3">
+                                <ng-template pTemplate="header">
+                                    <div class="flex justify-between align-items-center w-full px-3 py-2">
+                                        <span class="font-semibold">Detail {{ i + 1 }}</span>
+                                        <p-button icon="pi pi-trash" severity="danger" size="small" [text]="true"
+                                            (click)="removeDetail(i)">
+                                        </p-button>
+                                    </div>
+                                </ng-template>
+                                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                    <div class="field w-full mb-0">
+                                        <label class="font-semibold">Name *</label>
+                                        <input pInputText formControlName="name" placeholder="Detail name"
+                                            class="w-full"
+                                            [class.ng-invalid]="submitted && detail.get('name')?.invalid" />
+                                        <small class="ng-dirty ng-invalid text-red-500"
+                                            *ngIf="submitted && detail.get('name')?.invalid">
+                                            Name is required and must be at least 2 characters.
+                                        </small>
+                                    </div>
+
+                                    <div class="field w-full mb-0">
+                                        <label class="font-semibold">Value *</label>
+                                        <input pInputText formControlName="value" placeholder="Detail value"
+                                            class="w-full"
+                                            [class.ng-invalid]="submitted && detail.get('value')?.invalid" />
+                                        <small class="ng-dirty ng-invalid text-red-500"
+                                            *ngIf="submitted && detail.get('value')?.invalid">
+                                            Value is required and must be at least 2 characters.
+                                        </small>
+                                    </div>
+                                </div>
+                                <!--   
+                        <div class="field w-full md:col-2 mb-0">
+                          <p-button 
+                            icon="pi pi-trash" 
+                            severity="danger" 
+                            size="small" 
+                            [outlined]="true" 
+                            (click)="removeDetail(i)">
+                          </p-button>
+                        </div> -->
+                            </p-card>
+                        </div>
+
+                        <div *ngIf="details.length === 0" class="text-center py-4 text-500">
+                            <i class="pi pi-info-circle mr-2"></i>
+                            No details added yet. Click "Add Detail" to create one.
+                        </div>
+                    </ng-template>
+                </p-accordionTab>
+
+                <!-- Dimensions Panel -->
+                <p-accordionTab header="Dimensions">
+                    <ng-template pTemplate="content">
+                        <div formGroupName="dimensions">
+                            <h6 class="mb-3">Dimensions (cm)</h6>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div class="field w-full md:col-4">
+                                    <label for="length" class="font-semibold">Length</label>
+                                    <p-inputNumber id="length" formControlName="length" suffix=" cm" class="w-full">
+                                    </p-inputNumber>
+                                </div>
+
+                                <div class="field w-full md:col-4">
+                                    <label for="width" class="font-semibold">Width</label>
+                                    <p-inputNumber id="width" formControlName="width" suffix=" cm" class="w-full">
+                                    </p-inputNumber>
+                                </div>
+
+                                <div class="field w-full md:col-4">
+                                    <label for="height" class="font-semibold">Height</label>
+                                    <p-inputNumber id="height" formControlName="height" suffix=" cm" class="w-full">
+                                    </p-inputNumber>
+                                </div>
+                            </div>
+                        </div>
+                    </ng-template>
+                </p-accordionTab>
+
+                <!-- SEO Panel -->
+                <p-accordionTab header="SEO Settings">
+                    <ng-template pTemplate="content">
+                        <div class="grid grid-cols-1 gap-4">
+                            <div class="field w-full">
+                                <label for="seoTitle" class="font-semibold">SEO Title *</label>
+                                <input pInputText id="seoTitle" formControlName="seoTitle" placeholder="Enter SEO title"
+                                    class="w-full">
+                            </div>
+
+                            <div class="field w-full">
+                                <label for="seoDescription" class="font-semibold">SEO Description *</label>
+                                <textarea pTextarea id="seoDescription" formControlName="seoDescription" rows="3"
+                                    placeholder="Enter SEO description" class="w-full">
+                        </textarea>
+                            </div>
+
+                            <div class="field w-full">
+                                <label for="seoKeywords" class="font-semibold">SEO Keywords</label>
+                                <p-chips id="seoKeywords" styleClass="w-full" formControlName="seoKeywords"
+                                    placeholder="Add keywords">
+                                </p-chips>
+                            </div>
+                        </div>
+                    </ng-template>
+                </p-accordionTab>
+
+            </p-accordion>
+        </form>
+    </ng-template>
+
+    <ng-template pTemplate="footer">
+        <div class="flex justify-end gap-2">
+            <p-button label="Cancel" severity="danger" icon="pi pi-times" (click)="hideDialog()">
+            </p-button>
+            <p-button label="Save" severity="success" icon="pi pi-check" [disabled]="productForm.invalid"
+                (click)="saveProduct()">
+            </p-button>
+        </div>
+    </ng-template>
+</p-dialog>
+
+<p-confirmDialog [style]="{width: '450px'}"></p-confirmDialog>
