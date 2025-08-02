@@ -82,6 +82,7 @@ export class OrderListComponent extends ComponentBase implements OnInit {
     selectedOrders: Order[] = [];
     loading = signal<boolean>(false);
     orders = signal<Order[]>([]);
+    isEditOrder: boolean = false;
     pagination = signal<pagination>({
         page: 1,
         limit: 10,
@@ -145,6 +146,7 @@ export class OrderListComponent extends ComponentBase implements OnInit {
         this.exportColumns = this.cols.map(col => ({ title: col.header, dataKey: col.field }));
     }
 
+    // add cashPayment to orderForm if editOrder , else remove cashPayment
     buildForm() {
         this.orderForm = this.fb.group({
             _id: [null],
@@ -153,6 +155,10 @@ export class OrderListComponent extends ComponentBase implements OnInit {
             tax: [0, [Validators.required, Validators.min(0)]],
             shippingCost: [0],
             total: [0, [Validators.required, Validators.min(0.01)]],
+            // cashPayment: this.fb.group({
+            //     amountPaid: [0, [Validators.required, Validators.min(0)]],
+            //     changeDue: [0]
+            // }),
             orderStatus: [OrderStatus.PENDING, Validators.required],
             paymentStatus: [PaymentStatus.PENDING, Validators.required],
             paymentMethod: [PaymentMethod.CASH, Validators.required],
@@ -161,17 +167,25 @@ export class OrderListComponent extends ComponentBase implements OnInit {
                 phone: ['', Validators.required],
                 street: ['', Validators.required],
                 city: ['', Validators.required],
-                state: ['', Validators.required],
-                zipCode: [''],
+                // state: ['', Validators.required],
+                // zipCode: [''],
                 country: ['EG', Validators.required]
             }),
             notes: [''],
             deliveredAt: [null]
         });
     }
-
+    get cashPayment(): FormGroup {
+        return this.orderForm?.get('cashPayment') as FormGroup;
+    }
     get items(): FormArray {
         return this.orderForm.get('items') as FormArray;
+    }
+    calculateChangeDue() {
+        const amountPaid = this.cashPayment.get('amountPaid')?.value || 0;
+        const total = this.orderForm.get('total')?.value || 0;
+        const changeDue = amountPaid - total;
+        this.cashPayment.get('changeDue')?.setValue(changeDue);
     }
 
     addItem(): void {
@@ -181,18 +195,45 @@ export class OrderListComponent extends ComponentBase implements OnInit {
             price: [0, [Validators.required, Validators.min(0)]],
             totalPrice: [0, [Validators.required, Validators.min(0)]],
             discountPrice: [0, [Validators.min(0)]],
-            variantName: [''],
-            variantValue: [''],
+            color: ['', Validators.required],
+            size: ['', Validators.required],
+            listColors: [],
+            listSizes: []
         });
         this.items.push(itemGroup);
-            this.calculateTotal();
+        this.calculateTotal();
     }
 
     removeItem(index: number): void {
         this.items.removeAt(index);
         this.calculateTotal();
     }
-
+    colors(colors: string[], index: number) {
+        console.log(colors, index);
+        colors.map(color => ({ name: color, value: color }));
+        this.items.at(index).get('listColors')?.setValue(colors);
+    }
+    sizes(sizes: string[], index: number) {
+        console.log(sizes, index);
+        sizes.map(size => ({ name: size, value: size }));
+        this.items.at(index).get('listSizes')?.setValue(sizes);
+    }
+    onColorChange(event: any, index: number): void {
+        const item = this.items.at(index);
+        if (item) {
+            item.patchValue({
+                color: event.value,
+            });
+        }
+    }
+    onSizeChange(event: any, index: number): void {
+        const item = this.items.at(index);
+        if (item) {
+            item.patchValue({
+                size: event.value,
+            });
+        }
+    }
     getSeverity(status: string) {
         switch (status) {
             case OrderStatus.DELIVERED:
@@ -254,9 +295,9 @@ export class OrderListComponent extends ComponentBase implements OnInit {
                 this.pagination.set(res.data?.pagination);
             },
             error: () => this.messageService.add({
-                severity: 'error', 
-                summary: 'Error', 
-                detail: 'Failed to load orders', 
+                severity: 'error',
+                summary: 'Error',
+                detail: 'Failed to load orders',
                 life: 3000
             })
         });
@@ -269,9 +310,9 @@ export class OrderListComponent extends ComponentBase implements OnInit {
                 this.products.set(res.data);
             },
             error: () => this.messageService.add({
-                severity: 'error', 
-                summary: 'Error', 
-                detail: 'Failed to load products', 
+                severity: 'error',
+                summary: 'Error',
+                detail: 'Failed to load products',
                 life: 3000
             })
         });
@@ -290,45 +331,56 @@ export class OrderListComponent extends ComponentBase implements OnInit {
                 country: 'EG'
             }
         });
+        this.isEditOrder = false;
         this.orderDialog = true;
     }
 
     editOrder(order: Order) {
+        // add cashPayment to orderForm if editOrder , else remove cashPayment
+
+        this.orderForm.addControl('cashPayment', this.fb.group({
+            amountPaid: [0, [Validators.required, Validators.min(0)]],
+            changeDue: [0]
+        }));
+
         this.orderForm.patchValue({
             ...order,
             deliveredAt: order.deliveredAt ? new Date(order.deliveredAt) : null
         });
-        
+
         // Clear existing items
         while (this.items.length) {
             this.items.removeAt(0);
         }
-        
+
         // Add items from order
         if (order.items && order.items.length > 0) {
             order.items.forEach((item: OrderItem) => {
                 // Use variantName or generate a name based on productId
                 // Calculate total based on quantity and price
                 // const itemTotal = (item.quantity || 0) * (item.price || 0);
-                
+
                 this.items.push(this.fb.group({
-                    productId: [item.productId],
+                    productId: [item.productId.id],
                     quantity: [item.quantity],
                     price: [item.price],
                     totalPrice: [item.totalPrice],
                     discountPrice: [item.discountPrice],
-                    variantName: [item.variantName],
-                    variantValue: [item.variantValue]
+                    color: [item.color],
+                    size: [item.size],
+                    listColors: [item.productId.colors],
+                    listSizes: [item.productId.size]
                 }));
             });
         }
-        
+
+        this.isEditOrder = true;
         this.orderDialog = true;
     }
 
     deleteOrder(order: Order) {
         if (!order._id) return;
-        
+
         this.confirmationService.confirm({
             message: `Are you sure you want to delete order #${order.orderNumber}?`,
             header: 'Confirm',
@@ -337,16 +389,16 @@ export class OrderListComponent extends ComponentBase implements OnInit {
                 this.orderService.deleteOrder(order._id!).pipe(takeUntil(this.destroy$)).subscribe({
                     next: () => {
                         this.loadOrders();
-                        this.messageService.add({ 
-                            severity: 'success', 
-                            summary: 'Deleted', 
-                            detail: 'Order deleted successfully' 
+                        this.messageService.add({
+                            severity: 'success',
+                            summary: 'Deleted',
+                            detail: 'Order deleted successfully'
                         });
                     },
-                    error: () => this.messageService.add({ 
-                        severity: 'error', 
-                        summary: 'Error', 
-                        detail: 'Failed to delete order' 
+                    error: () => this.messageService.add({
+                        severity: 'error',
+                        summary: 'Error',
+                        detail: 'Failed to delete order'
                     })
                 });
             }
@@ -355,18 +407,21 @@ export class OrderListComponent extends ComponentBase implements OnInit {
 
     saveOrder() {
         this.submitted = true;
-        console.log(this.orderForm.value);
         if (this.orderForm.invalid) {
             this.messageService.add({
-                severity: 'error', 
-                summary: 'Error', 
-                detail: 'Please fill in all required fields', 
+                severity: 'error',
+                summary: 'Error',
+                detail: 'Please fill in all required fields',
                 life: 3000
             });
             return;
         }
 
         const formValue = this.orderForm.value;
+        formValue.items.forEach((item: any) => {
+            delete item.listColors;
+            delete item.listSizes;
+        });
         const request$ = formValue._id
             ? this.orderService.updateOrder(formValue._id, formValue)
             : this.orderService.createOrder(formValue);
@@ -384,9 +439,9 @@ export class OrderListComponent extends ComponentBase implements OnInit {
             error: (error) => {
                 console.error('Error saving order:', error);
                 this.messageService.add({
-                    severity: 'error', 
-                    summary: 'Error', 
-                    detail: error.error?.message || 'Failed to save order', 
+                    severity: 'error',
+                    summary: 'Error',
+                    detail: error.error?.message || 'Failed to save order',
                     life: 5000
                 });
             }
@@ -407,8 +462,8 @@ export class OrderListComponent extends ComponentBase implements OnInit {
                 });
             },
             error: () => this.messageService.add({
-                severity: 'error', 
-                summary: 'Error', 
+                severity: 'error',
+                summary: 'Error',
                 detail: 'Failed to update order status'
             })
         });
@@ -420,26 +475,28 @@ export class OrderListComponent extends ComponentBase implements OnInit {
         ).subscribe({
             next: () => {
                 this.loadOrders();
-                this.messageService.add({ 
-                    severity: 'success', 
-                    summary: 'Updated', 
-                    detail: 'Payment status updated successfully' 
+                this.messageService.add({
+                    severity: 'success',
+                    summary: 'Updated',
+                    detail: 'Payment status updated successfully'
                 });
             },
-            error: () => this.messageService.add({ 
-                severity: 'error', 
-                summary: 'Error', 
+            error: () => this.messageService.add({
+                severity: 'error',
+                summary: 'Error',
                 detail: 'Failed to update payment status'
             })
         });
     }
 
-    onProductChange(event: any , index: number) {
-        console.log(event,index);
-        const product = this.products().find(p => p.id === event.value);
+    onProductChange(event: any, index: number) {
+        const product: IProduct | undefined = this.products().find(p => p.id === event.value);
         if (product) {
+            console.log(product, index);
             this.items.controls[index].get('price')?.setValue(product.price);
             this.calculateTotal();
+            this.colors(product.colors || [], index)
+            this.sizes(product.size || [], index)
         }
     }
 
@@ -457,9 +514,9 @@ export class OrderListComponent extends ComponentBase implements OnInit {
         const tax = this.orderForm.get('tax')?.value || 0;
         const shippingCost = this.orderForm.get('shippingCost')?.value || 0;
         const discount = this.orderForm.get('discount')?.value || 0;
-        
+
         const total = subtotal + tax + shippingCost - discount;
-        
+
         this.orderForm.patchValue({
             subtotal: subtotal,
             total: total

@@ -1,3 +1,5 @@
+import { IProduct } from "./product.interface";
+
 export enum OrderStatus {
     PENDING = 'pending',
     PROCESSING = 'processing',
@@ -22,12 +24,12 @@ export enum PaymentMethod {
 }
 
 export interface OrderItem {
-    productId: string;
+    productId: IProduct;
     quantity: number;
     price: number;
     discountPrice?: number;
-    variantName?: string;
-    variantValue?: string;
+    color?: string;
+    size?: string;
     totalPrice: number;
 }
 

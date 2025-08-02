@@ -28,7 +28,7 @@ export class OrderService {
   }
 
   updateOrder(id: string, order: Partial<Order>): Observable<BaseResponse<Order>> {
-    return this.genericApiService.Patch(`${this.apiUrl}`, id, this.commonService.removeNullUndefinedEmptyStringKeys(order));
+    return this.genericApiService.Put(`${this.apiUrl}`, id, this.commonService.removeNullUndefinedEmptyStringKeys(order));
   }
 
   deleteOrder(id: string): Observable<BaseResponse<any>> {

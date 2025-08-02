@@ -31,7 +31,7 @@ export interface IProduct {
   sku: string;
   tags: string[];
   weight?: number;
-  color?: string[];
+  colors?: string[];
   size?: string[];
   gender?: string;
   season?: string;
