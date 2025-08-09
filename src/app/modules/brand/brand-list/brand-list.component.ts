@@ -135,7 +135,7 @@ export class BrandListComponent extends ComponentBase implements OnInit {
           severity: 'error',
           summary: 'Error',
           detail: 'Failed to load brands',
-          life: 3000
+          life: 1000
         });
       }
     });
@@ -178,7 +178,7 @@ export class BrandListComponent extends ComponentBase implements OnInit {
               severity: 'success',
               summary: 'Successful',
               detail: 'Brands Deleted',
-              life: 3000
+              life: 1000
             });
             this.selectedBrands = [];
             this.loadBrands();
@@ -188,7 +188,7 @@ export class BrandListComponent extends ComponentBase implements OnInit {
               severity: 'error',
               summary: 'Error',
               detail: 'Failed to delete brands',
-              life: 3000
+              life: 1000
             });
           }
         });
@@ -208,7 +208,7 @@ export class BrandListComponent extends ComponentBase implements OnInit {
               severity: 'success',
               summary: 'Successful',
               detail: 'Brand Deleted',
-              life: 3000
+              life: 1000
             });
             this.loadBrands();
           },
@@ -217,7 +217,7 @@ export class BrandListComponent extends ComponentBase implements OnInit {
               severity: 'error',
               summary: 'Error',
               detail: 'Failed to delete brand',
-              life: 3000
+              life: 1000
             });
           }
         });
@@ -247,7 +247,7 @@ export class BrandListComponent extends ComponentBase implements OnInit {
           severity: 'success',
           summary: 'Successful',
           detail: `Brand ${brandData._id ? 'Updated' : 'Created'}`,
-          life: 3000
+          life: 1000
         });
         this.loadBrands();
         this.hideDialog();
@@ -257,7 +257,7 @@ export class BrandListComponent extends ComponentBase implements OnInit {
           severity: 'error',
           summary: 'Error',
           detail: `Failed to ${brandData._id ? 'update' : 'create'} brand`,
-          life: 3000
+          life: 1000
         });
       }
     });

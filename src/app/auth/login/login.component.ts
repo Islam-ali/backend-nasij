@@ -45,7 +45,7 @@ export class LoginComponent {
               severity: 'error',
               summary: 'Error',
               detail: error.error.message,
-              life: 3000
+              life: 1000
             });
           }
         })
@@ -58,7 +58,7 @@ export class LoginComponent {
           severity: 'error',
           summary: 'Error',
           detail: error.error.message,
-          life: 3000
+          life: 1000
         });
       }
     })

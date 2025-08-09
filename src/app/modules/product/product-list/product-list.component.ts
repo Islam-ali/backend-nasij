@@ -321,7 +321,7 @@ export class ProductListComponent extends ComponentBase implements OnInit {
                     this.pagination.set(res.data.pagination);
                 },
                 error: () => this.messageService.add({
-                    severity: 'error', summary: 'Error', detail: 'Failed to load products', life: 3000
+                    severity: 'error', summary: 'Error', detail: 'Failed to load products', life: 1000
                 })
             });
     }
@@ -332,7 +332,7 @@ export class ProductListComponent extends ComponentBase implements OnInit {
                 this.categoryOptions = res.data.map((cat: any) => ({ label: cat.name, value: cat._id }));
             },
             error: () => this.messageService.add({
-                severity: 'error', summary: 'Error', detail: 'Failed to load categories', life: 3000
+                severity: 'error', summary: 'Error', detail: 'Failed to load categories', life: 1000
             })
         });
     }
@@ -343,7 +343,7 @@ export class ProductListComponent extends ComponentBase implements OnInit {
                 this.brandOptions = res.data.map((brand: any) => ({ label: brand.name, value: brand._id }));
             },
             error: () => this.messageService.add({
-                severity: 'error', summary: 'Error', detail: 'Failed to load brands', life: 3000
+                severity: 'error', summary: 'Error', detail: 'Failed to load brands', life: 1000
             })
         });
     }
@@ -437,7 +437,7 @@ export class ProductListComponent extends ComponentBase implements OnInit {
         if (this.productForm.invalid) {
             console.log('Frontend - Form is invalid');
             this.messageService.add({
-                severity: 'error', summary: 'Error', detail: 'Please fix form errors', life: 3000
+                severity: 'error', summary: 'Error', detail: 'Please fix form errors', life: 1000
             });
             return;
         }
@@ -445,7 +445,9 @@ export class ProductListComponent extends ComponentBase implements OnInit {
         const formValue = this.productForm.value;
         console.log('Frontend - Sending data to backend:', JSON.stringify(formValue, null, 2));
         formValue.variants.forEach((variant: any) => {
-            variant.image = variant.image[0];
+            if (variant.image && variant.image.length > 0) {
+                variant.image = variant.image[0];
+            }
         });
         const request$ = formValue._id
             ? this.productsService.updateProduct(formValue._id, formValue)
@@ -465,7 +467,7 @@ export class ProductListComponent extends ComponentBase implements OnInit {
             error: (error) => {
                 console.log('Frontend - Backend error:', error);
                 this.messageService.add({
-                    severity: 'error', summary: 'Error', detail: 'Save failed', life: 3000
+                    severity: 'error', summary: 'Error', detail: 'Save failed', life: 1000
                 });
             }
         });

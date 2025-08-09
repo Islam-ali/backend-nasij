@@ -301,7 +301,7 @@ export class OrderListComponent extends ComponentBase implements OnInit {
                 severity: 'error',
                 summary: 'Error',
                 detail: 'Failed to load orders',
-                life: 3000
+                life: 1000
             })
         });
     }
@@ -316,7 +316,7 @@ export class OrderListComponent extends ComponentBase implements OnInit {
                 severity: 'error',
                 summary: 'Error',
                 detail: 'Failed to load products',
-                life: 3000
+                life: 1000
             })
         });
     }
@@ -417,7 +417,7 @@ export class OrderListComponent extends ComponentBase implements OnInit {
                 severity: 'error',
                 summary: 'Error',
                 detail: 'Please fill in all required fields',
-                life: 3000
+                life: 1000
             });
             return;
         }
@@ -447,7 +447,7 @@ export class OrderListComponent extends ComponentBase implements OnInit {
                     severity: 'error',
                     summary: 'Error',
                     detail: error.error?.message || 'Failed to save order',
-                    life: 5000
+                    life: 1000
                 });
             }
         });

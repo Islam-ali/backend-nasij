@@ -134,7 +134,7 @@ export class CatgoryListComponent extends ComponentBase implements OnInit {
           severity: 'error',
           summary: 'Error',
           detail: 'Failed to load categories',
-          life: 3000
+          life: 1000
         });
       }
     });
@@ -156,7 +156,7 @@ export class CatgoryListComponent extends ComponentBase implements OnInit {
           severity: 'error',
           summary: 'Error',
           detail: 'Failed to load categories',
-          life: 3000
+          life: 1000
         });
       }
     });
@@ -197,7 +197,7 @@ export class CatgoryListComponent extends ComponentBase implements OnInit {
               severity: 'success',
               summary: 'Successful',
               detail: 'Category Deleted',
-              life: 3000
+              life: 1000
             });
             this.loadCategories();
           },
@@ -206,7 +206,7 @@ export class CatgoryListComponent extends ComponentBase implements OnInit {
               severity: 'error',
               summary: 'Error',
               detail: 'Failed to delete category',
-              life: 3000
+              life: 1000
             });
           }
         });
@@ -235,7 +235,7 @@ export class CatgoryListComponent extends ComponentBase implements OnInit {
           severity: 'success',
           summary: 'Successful',
           detail: `Category ${categoryData._id ? 'Updated' : 'Created'}`,
-          life: 3000
+          life: 1000
         });
         this.loadCategories();
         this.hideDialog();
@@ -245,7 +245,7 @@ export class CatgoryListComponent extends ComponentBase implements OnInit {
           severity: 'error',
           summary: 'Error',
           detail: `Failed to ${categoryData._id ? 'update' : 'create'} category`,
-          life: 3000
+          life: 1000
         });
       }
     });
