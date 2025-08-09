@@ -12,6 +12,6 @@ export class CommonService {
       if (Array.isArray(obj)) {
         return obj.map((item) => this.removeNullUndefinedEmptyStringKeys(item));
       }
-      return Object.fromEntries(Object.entries(obj).filter(([_, v]) => v !== null && v !== undefined && v !== '' && _ !== '_id'));
+      return Object.fromEntries(Object.entries(obj).filter(([_, v]) => v !== null && v !== undefined && _ !== '_id'));
     }
 }

@@ -1,6 +1,6 @@
 import { Component, OnInit, signal, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormArray, FormsModule, FormControl } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormArray, FormsModule, FormControl, AbstractControl } from '@angular/forms';
 
 // PrimeNG Services
 import { ConfirmationService, MessageService } from 'primeng/api';
@@ -40,6 +40,13 @@ import { Paginator } from "primeng/paginator";
 import { ComponentBase } from '../../../core/directives/component-base.directive';
 import { finalize, takeUntil } from 'rxjs';
 import { Skeleton } from "primeng/skeleton";
+import { ToggleSwitchModule } from "primeng/toggleswitch";
+import { EditorModule } from 'primeng/editor';
+
+export enum EnumProductVariant {
+    SIZE = 'size',
+    COLOR = 'color',
+}
 
 interface Column {
     field: string;
@@ -58,35 +65,37 @@ interface ExportColumn {
     styleUrls: ['./product-list.component.scss'],
     standalone: true,
     imports: [
-    CommonModule,
-    ReactiveFormsModule,
-    TableModule,
-    ButtonModule,
-    RippleModule,
-    ToastModule,
-    ToolbarModule,
-    RatingModule,
-    InputTextModule,
-    DropdownModule,
-    ChipsModule,
-    InputNumberModule,
-    SelectModule,
-    RadioButtonModule,
-    DialogModule,
-    TagModule,
-    InputIconModule,
-    IconFieldModule,
-    ConfirmDialogModule,
-    FallbackImgDirective,
-    FormsModule,
-    TextareaModule,
-    UploadFilesComponent,
-    AccordionModule,
-    DividerModule,
-    CardModule,
-    PanelModule,
-    Paginator,
-],
+        CommonModule,
+        ReactiveFormsModule,
+        TableModule,
+        ButtonModule,
+        RippleModule,
+        ToastModule,
+        ToolbarModule,
+        RatingModule,
+        InputTextModule,
+        DropdownModule,
+        ChipsModule,
+        InputNumberModule,
+        SelectModule,
+        RadioButtonModule,
+        DialogModule,
+        TagModule,
+        InputIconModule,
+        IconFieldModule,
+        ConfirmDialogModule,
+        FallbackImgDirective,
+        FormsModule,
+        TextareaModule,
+        UploadFilesComponent,
+        AccordionModule,
+        DividerModule,
+        CardModule,
+        PanelModule,
+        Paginator,
+        ToggleSwitchModule,
+        EditorModule
+    ],
     providers: [MessageService, ConfirmationService, ProductsService]
 })
 export class ProductListComponent extends ComponentBase implements OnInit {
@@ -125,6 +134,11 @@ export class ProductListComponent extends ComponentBase implements OnInit {
         { label: 'Winter', value: 'winter' }
     ];
 
+    variantOptions = [
+        { label: 'Size', value: EnumProductVariant.SIZE },
+        { label: 'Color', value: EnumProductVariant.COLOR }
+    ];
+
     @ViewChild('dt') dt: Table | undefined;
     exportColumns!: ExportColumn[];
     cols!: Column[];
@@ -144,11 +158,17 @@ export class ProductListComponent extends ComponentBase implements OnInit {
         return this.productForm?.get('images') as FormControl;
     }
 
+    formControlImageVariant(variantIndex: number): FormControl {
+        return this.variants.at(variantIndex).get('image') as FormControl;
+    }
+    
+
     ngOnInit() {
         this.buildForm();
         this.loadProducts();
         this.loadCategories();
         this.loadBrands();
+        this.checkUseVariantPrice();
         this.cols = [
             { field: 'code', header: 'Code' },
             { field: 'name', header: 'Name' },
@@ -159,36 +179,58 @@ export class ProductListComponent extends ComponentBase implements OnInit {
         this.exportColumns = this.cols.map(col => ({ title: col.header, dataKey: col.field }));
     }
 
+    checkUseVariantPrice(): void {
+        this.productForm.get('useVariantPrice')?.valueChanges.subscribe((value: boolean) => {
+            const variantsArray = this.productForm.get('variants') as FormArray;
+            variantsArray.controls.forEach((control: AbstractControl) => {
+                const variant = control as FormGroup;
+                const priceControl = variant.get('price');
+
+                if (value) {
+                    priceControl?.setValidators([Validators.required, Validators.min(1)]);
+                } else {
+                    priceControl?.clearValidators();
+                }
+                priceControl?.updateValueAndValidity({ emitEvent: false });
+            });
+        });
+    }
+
+    sumStock(): number {
+        return this.variants.controls.reduce((sum: number, variant: AbstractControl) => {
+            return sum + (variant as FormGroup).get('stock')?.value;
+        }, 0);
+    }
+
+    onStockInput(event: any): void {
+        const totalStock = this.sumStock();
+        this.productForm.get('stock')?.setValue(totalStock, { emitEvent: false });
+        this.productForm.updateValueAndValidity();
+    }
+
+
     buildForm() {
         this.productForm = this.fb.group({
             _id: [null],
             name: ['', Validators.required],
-            discountPrice: [0, [Validators.required, Validators.min(0)]],
             description: ['', Validators.required],
             price: [0, [Validators.required, Validators.min(0)]],
-            factoryPrice: [0, [Validators.required, Validators.min(0)]],
+            discountPrice: [0, [Validators.min(0)]],
+            factoryPrice: [0, [Validators.min(0)]],
             category: ['', Validators.required],
             brand: ['', Validators.required],
             images: [null, [Validators.required]],
             variants: this.fb.array([]),
             stock: [0, [Validators.required, Validators.min(0)]],
             status: [ProductStatus.ACTIVE],
-            sku: ['', Validators.required],
             tags: [[]],
-            colors: [[]],
-            size: [[]],
-            season: [[]],
             gender: [''],
+            season: [''],
             details: this.fb.array([]),
-            material: [''],
             seoTitle: ['', Validators.required],
             seoDescription: ['', Validators.required],
-            seoKeywords: [''],
-            dimensions: this.fb.group({
-                length: [0, Validators.min(0)],
-                width: [0, Validators.min(0)],
-                height: [0, Validators.min(0)]
-            })
+            seoKeywords: [[]],
+            useVariantPrice: [false],
         });
     }
 
@@ -198,6 +240,22 @@ export class ProductListComponent extends ComponentBase implements OnInit {
 
     get details(): FormArray {
         return this.productForm?.get('details') as FormArray;
+    }
+
+    getAttributes(variantIndex: number): FormArray {
+        return this.variants.at(variantIndex).get('attributes') as FormArray;
+    }
+
+    addAttribute(variantIndex: number): void {
+        const attributeGroup = this.fb.group({
+            variant: [EnumProductVariant.SIZE, [Validators.required]],
+            value: ['', [Validators.required, Validators.minLength(1)]]
+        });
+        this.getAttributes(variantIndex).push(attributeGroup);
+    }
+
+    removeAttribute(variantIndex: number, attributeIndex: number): void {
+        this.getAttributes(variantIndex).removeAt(attributeIndex);
     }
 
     addDetail(): void {
@@ -213,12 +271,18 @@ export class ProductListComponent extends ComponentBase implements OnInit {
     }
 
     addVariant(): void {
+        const price = this.productForm.get('useVariantPrice')?.value ? 0 : this.productForm.get('price')?.value;
         const variantGroup = this.fb.group({
-            name: ['', [Validators.required, Validators.minLength(2)]],
-            value: ['', [Validators.required, Validators.minLength(2)]],
-            price: [0, [Validators.required, Validators.min(0)]],
+            attributes: this.fb.array([
+                this.fb.group({
+                    variant: [EnumProductVariant.SIZE, [Validators.required]],
+                    value: ['', [Validators.required, Validators.minLength(1)]]
+                })
+            ]),
+            price: [price, [Validators.required, Validators.min(0)]],
             stock: [0, [Validators.required, Validators.min(0)]],
-            sku: ['', [Validators.required, Validators.pattern(/^[A-Za-z0-9-]+$/)]],
+            sku: ['', [Validators.pattern(/^[A-Za-z0-9-]+$/)]],
+            image: [null]
         });
         this.variants.push(variantGroup);
     }
@@ -304,13 +368,33 @@ export class ProductListComponent extends ComponentBase implements OnInit {
         // add variants to form
         this.variants.clear();
         product.variants.forEach((variant: any) => {
-            this.variants.push(this.fb.group({
-                name: variant.name,
-                value: variant.value,
+            const variantGroup = this.fb.group({
+                attributes: this.fb.array([]),
                 price: variant.price,
                 stock: variant.stock,
-                sku: variant.sku
-            }));
+                sku: variant.sku,
+                image: variant.image
+            });
+
+            // Add attributes to the variant
+            if (variant.attributes && variant.attributes.length > 0) {
+                variant.attributes.forEach((attr: any) => {
+                    const attributeGroup = this.fb.group({
+                        variant: attr.variant,
+                        value: attr.value
+                    });
+                    (variantGroup.get('attributes') as FormArray).push(attributeGroup);
+                });
+            } else {
+                // Handle legacy variant structure (single variant/value)
+                const attributeGroup = this.fb.group({
+                    variant: variant.variant || 'size',
+                    value: variant.value || ''
+                });
+                (variantGroup.get('attributes') as FormArray).push(attributeGroup);
+            }
+
+            this.variants.push(variantGroup);
         });
 
         // add details to form
@@ -346,7 +430,12 @@ export class ProductListComponent extends ComponentBase implements OnInit {
 
     saveProduct() {
         this.submitted = true;
+        console.log('Frontend - Form value:', this.productForm.value);
+        console.log('Frontend - Form valid:', this.productForm.valid);
+        console.log('Frontend - Form errors:', this.productForm.errors);
+
         if (this.productForm.invalid) {
+            console.log('Frontend - Form is invalid');
             this.messageService.add({
                 severity: 'error', summary: 'Error', detail: 'Please fix form errors', life: 3000
             });
@@ -354,12 +443,17 @@ export class ProductListComponent extends ComponentBase implements OnInit {
         }
 
         const formValue = this.productForm.value;
+        console.log('Frontend - Sending data to backend:', JSON.stringify(formValue, null, 2));
+        formValue.variants.forEach((variant: any) => {
+            variant.image = variant.image[0];
+        });
         const request$ = formValue._id
             ? this.productsService.updateProduct(formValue._id, formValue)
             : this.productsService.createProduct(formValue);
 
         request$.pipe(takeUntil(this.destroy$)).subscribe({
             next: (res: BaseResponse<any>) => {
+                console.log('Frontend - Backend response:', res);
                 this.loadProducts();
                 this.messageService.add({
                     severity: 'success',
@@ -368,9 +462,12 @@ export class ProductListComponent extends ComponentBase implements OnInit {
                 });
                 this.hideDialog();
             },
-            error: () => this.messageService.add({
-                severity: 'error', summary: 'Error', detail: 'Save failed', life: 3000
-            })
+            error: (error) => {
+                console.log('Frontend - Backend error:', error);
+                this.messageService.add({
+                    severity: 'error', summary: 'Error', detail: 'Save failed', life: 3000
+                });
+            }
         });
     }
 

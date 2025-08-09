@@ -32,7 +32,8 @@ import { finalize, takeUntil } from 'rxjs';
 import { TextareaModule } from 'primeng/textarea';
 import { Product } from '../../../pages/service/product.service';
 import { ProductsService } from '../../../services/products.service';
-import { IProduct } from '../../../interfaces/product.interface';
+import { IProduct, ProductVariant, ProductVariantAttribute } from '../../../interfaces/product.interface';
+import { EnumProductVariant } from '../../product/product-list/product-list.component';
 
 interface Column {
     field: string;
@@ -165,7 +166,7 @@ export class OrderListComponent extends ComponentBase implements OnInit {
             shippingAddress: this.fb.group({
                 fullName: ['', Validators.required],
                 phone: ['', Validators.required],
-                street: ['', Validators.required],
+                address: ['', Validators.required],
                 city: ['', Validators.required],
                 // state: ['', Validators.required],
                 // zipCode: [''],
@@ -197,8 +198,8 @@ export class OrderListComponent extends ComponentBase implements OnInit {
             discountPrice: [0, [Validators.min(0)]],
             color: ['', Validators.required],
             size: ['', Validators.required],
-            listColors: [],
-            listSizes: []
+            listColors: [[]],
+            listSizes: [[]]
         });
         this.items.push(itemGroup);
         this.calculateTotal();
@@ -208,6 +209,8 @@ export class OrderListComponent extends ComponentBase implements OnInit {
         this.items.removeAt(index);
         this.calculateTotal();
     }
+
+    
     colors(colors: string[], index: number) {
         console.log(colors, index);
         colors.map(color => ({ name: color, value: color }));
@@ -237,7 +240,7 @@ export class OrderListComponent extends ComponentBase implements OnInit {
     getSeverity(status: string) {
         switch (status) {
             case OrderStatus.DELIVERED:
-                return 'success';
+                return 'succes';
             case OrderStatus.PROCESSING:
             case OrderStatus.SHIPPED:
                 return 'info';
@@ -253,7 +256,7 @@ export class OrderListComponent extends ComponentBase implements OnInit {
     getPaymentSeverity(status: string) {
         switch (status) {
             case PaymentStatus.PAID:
-                return 'success';
+                return 'succes';
             case PaymentStatus.PENDING:
                 return 'warn';
             case PaymentStatus.FAILED:
@@ -359,21 +362,23 @@ export class OrderListComponent extends ComponentBase implements OnInit {
                 // Use variantName or generate a name based on productId
                 // Calculate total based on quantity and price
                 // const itemTotal = (item.quantity || 0) * (item.price || 0);
-
+                const { colors, sizes } = this.extractColorsAndSizes(item.productId);
+                console.log(item.productId._id , 'item.productId');
+                
                 this.items.push(this.fb.group({
-                    productId: [item.productId.id],
+                    productId: [item.productId._id],
                     quantity: [item.quantity],
                     price: [item.price],
                     totalPrice: [item.totalPrice],
                     discountPrice: [item.discountPrice],
                     color: [item.color],
                     size: [item.size],
-                    listColors: [item.productId.colors],
-                    listSizes: [item.productId.size]
+                    listColors: [colors],
+                    listSizes: [sizes]
                 }));
             });
         }
-
+        console.log(this.orderForm.value , 'orderForm' , order);
         this.isEditOrder = true;
         this.orderDialog = true;
     }
@@ -495,10 +500,34 @@ export class OrderListComponent extends ComponentBase implements OnInit {
             console.log(product, index);
             this.items.controls[index].get('price')?.setValue(product.price);
             this.calculateTotal();
-            this.colors(product.colors || [], index)
-            this.sizes(product.size || [], index)
+            const { colors, sizes } = this.extractColorsAndSizes(product);
+            this.colors(colors, index)
+            this.sizes(sizes, index)
+            console.log(colors, sizes);
         }
     }
+
+    private extractColorsAndSizes(product: IProduct): { colors: string[], sizes: string[] } {
+        if (!product || !product.variants) return { colors: [], sizes: [] };
+    
+        const colors = new Set<string>();
+        const sizes = new Set<string>();
+        product.variants.forEach((variant:ProductVariant) => {
+          if (variant.attributes) {
+            variant.attributes.forEach((attr:ProductVariantAttribute) => {
+              if (attr.variant === EnumProductVariant.COLOR) {
+                colors.add(attr.value);
+              } else if (attr.variant === EnumProductVariant.SIZE) {
+                sizes.add(attr.value);
+              }
+            });
+          }
+        });
+    
+        product.colors = Array.from(colors);
+        product.sizes = Array.from(sizes);
+        return { colors: product.colors, sizes: product.sizes };
+      }
 
     calculateTotal() {
         let subtotal = 0;

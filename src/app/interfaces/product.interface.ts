@@ -2,11 +2,16 @@ import { IBrand } from "./brand.interface";
 import { ICategory } from "./category.interface";
 
 export interface ProductVariant {
-  name: string;
-  value: string;
+
   price: number;
   stock?: number;
   sku?: string;
+  attributes?: ProductVariantAttribute[];
+}
+
+export interface ProductVariantAttribute {
+  variant: string;
+  value: string;
 }
 
 export enum ProductStatus {
@@ -32,7 +37,7 @@ export interface IProduct {
   tags: string[];
   weight?: number;
   colors?: string[];
-  size?: string[];
+  sizes?: string[];
   gender?: string;
   season?: string;
   material?: string;
@@ -45,6 +50,7 @@ export interface IProduct {
     width: number;
     height: number;
   };
+  useVariantPrice?: boolean;
   averageRating?: number;
   reviewCount?: number;
   soldCount?: number;

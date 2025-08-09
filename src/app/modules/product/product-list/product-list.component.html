@@ -114,8 +114,8 @@
                 <!-- Basic Information Panel -->
                 <p-accordionTab header="Basic Information" [selected]="true">
                     <ng-template pTemplate="content">
-                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                            <div class="field w-full md:col-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="field w-full">
                                 <label for="name" class="font-semibold">Product Name *</label>
                                 <input pInputText id="name" class="w-full" formControlName="name"
                                     placeholder="Enter product name"
@@ -123,16 +123,6 @@
                                 <small class="ng-dirty ng-invalid text-red-500"
                                     *ngIf="submitted && productForm.get('name')?.invalid">
                                     Name is required
-                                </small>
-                            </div>
-
-                            <div class="field w-full md:col-6">
-                                <label for="sku" class="font-semibold">SKU *</label>
-                                <input pInputText id="sku" class="w-full" formControlName="sku" placeholder="Enter SKU"
-                                    [class.ng-invalid]="submitted && productForm.get('sku')?.invalid" />
-                                <small class="ng-dirty ng-invalid text-red-500"
-                                    *ngIf="submitted && productForm.get('sku')?.invalid">
-                                    SKU is required
                                 </small>
                             </div>
 
@@ -155,7 +145,7 @@
                 <p-accordionTab header="Pricing & Inventory" [selected]="true">
                     <ng-template pTemplate="content">
                         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                            <div class="field w-full md:col-4">
+                            <div class="field w-full ">
                                 <label for="factoryPrice" class="font-semibold">Factory Price *</label>
                                 <p-inputNumber id="factoryPrice" class="w-full" formControlName="factoryPrice"
                                     mode="currency" currency="USD" locale="en-US"
@@ -167,7 +157,7 @@
                                 </small>
                             </div>
                             
-                            <div class="field w-full md:col-4">
+                            <div class="field w-full ">
                                 <label for="price" class="font-semibold">Price *</label>
                                 <p-inputNumber id="price" class="w-full" formControlName="price" mode="currency"
                                     currency="USD" locale="en-US"
@@ -178,15 +168,19 @@
                                     Price is required
                                 </small>
                             </div>
+                            <div class="field w-full">
+                                <label for="useVariantPrice" class="font-semibold">Use Variant Price</label>
+                                <p-toggleswitch id="useVariantPrice" formControlName="useVariantPrice" />
+                            </div>
 
-                            <div class="field w-full md:col-4">
+                            <div class="field w-full ">
                                 <label for="discountPrice" class="font-semibold">Discount Price</label>
                                 <p-inputNumber id="discountPrice" class="w-full" formControlName="discountPrice"
                                     mode="currency" currency="USD" locale="en-US">
                                 </p-inputNumber>
                             </div>
 
-                            <div class="field w-full md:col-4">
+                            <div class="field w-full ">
                                 <label for="stock" class="font-semibold">Stock *</label>
                                 <p-inputNumber id="stock" styleClass="w-full" formControlName="stock"
                                     [class.ng-invalid]="submitted && productForm.get('stock')?.invalid">
@@ -264,37 +258,18 @@
                                 </p-chips>
                             </div>
 
-                            <div class="field w-full md:col-6">
-                                <label for="colors" class="font-semibold">Colors</label>
-                                <p-chips id="colors" styleClass="w-full" formControlName="colors"
-                                    placeholder="Add colors">
-                                </p-chips>
-                            </div>
-
-                            <div class="field w-full md:col-4">
-                                <label for="size" class="font-semibold">Sizes</label>
-                                <p-chips id="size" styleClass="w-full" formControlName="size" placeholder="Add sizes">
-                                </p-chips>
-                            </div>
-
-                            <div class="field w-full md:col-4">
+                            <div class="field w-full ">
                                 <label for="gender" class="font-semibold">Gender</label>
                                 <p-dropdown appendTo="body" id="gender" styleClass="w-full" formControlName="gender"
                                     [options]="genderOptions" placeholder="Select Gender">
                                 </p-dropdown>
                             </div>
 
-                            <div class="field w-full md:col-4">
+                            <div class="field w-full ">
                                 <label for="season" class="font-semibold">Season</label>
                                 <p-dropdown appendTo="body" id="season" styleClass="w-full" formControlName="season"
                                     [options]="seasonOptions" placeholder="Select Season">
                                 </p-dropdown>
-                            </div>
-
-                            <div class="field w-full">
-                                <label for="material" class="font-semibold">Material</label>
-                                <input pInputText id="material" class="w-full" formControlName="material"
-                                    placeholder="Enter material">
                             </div>
                         </div>
                     </ng-template>
@@ -305,7 +280,7 @@
                     <ng-template pTemplate="content">
                         <div class="flex justify-between align-items-center mb-3">
                             <h6 class="m-0">Variants</h6>
-                            <p-button label="Add Variant" icon="pi pi-plus" size="small" (click)="addVariant()">
+                            <p-button *ngIf="variants.length == 0" label="Add Variant" icon="pi pi-plus" size="small" (click)="addVariant()">
                             </p-button>
                         </div>
 
@@ -322,63 +297,84 @@
                                 </ng-template>
 
                                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                    <div class="field w-full md:col-6">
-                                        <label class="font-semibold">Name *</label>
-                                        <input pInputText formControlName="name" placeholder="Variant name"
-                                            class="w-full"
-                                            [class.ng-invalid]="submitted && variant.get('name')?.invalid" />
+                                    <div class="field w-full col-span-2">
+                                        <label class="font-semibold">Attributes *</label>
+                                        <div formArrayName="attributes" class="space-y-3">
+                                            <div *ngFor="let attribute of getAttributes(i).controls; let j = index" [formGroupName]="j" class="flex gap-2 items-center">
+                                                <div class="flex-1">
+                                                    <p-dropdown formControlName="variant" [options]="variantOptions" 
+                                                        placeholder="Select variant type" class="w-full"
+                                                        [class.ng-invalid]="submitted && attribute.get('variant')?.invalid">
+                                                    </p-dropdown>
+                                                </div>
+                                                <div class="flex-1">
+                                                    <input pInputText formControlName="value" placeholder="Value" class="w-full"
+                                                        [class.ng-invalid]="submitted && attribute.get('value')?.invalid" />
+                                                </div>
+                                                <div class="flex-shrink-0">
+                                                    <p-button icon="pi pi-trash" severity="danger" size="small" [text]="true"
+                                                        (click)="removeAttribute(i, j)" *ngIf="getAttributes(i).length > 1">
+                                                    </p-button>
+                                                </div>
+                                            </div>
+                                            <div class="flex justify-center">
+                                                <p-button label="Add Attribute" icon="pi pi-plus" size="small" 
+                                                    (click)="addAttribute(i)" [outlined]="true">
+                                                </p-button>
+                                            </div>
+                                        </div>
                                         <small class="ng-dirty ng-invalid text-red-500"
-                                            *ngIf="submitted && variant.get('name')?.invalid">
-                                            Name is required and must be at least 2 characters.
+                                            *ngIf="submitted && variant.get('attributes')?.invalid">
+                                            At least one attribute is required.
                                         </small>
                                     </div>
 
-                                    <div class="field w-full md:col-6">
-                                        <label class="font-semibold">Value *</label>
-                                        <input pInputText formControlName="value" placeholder="Variant value"
-                                            class="w-full"
-                                            [class.ng-invalid]="submitted && variant.get('value')?.invalid" />
-                                        <small class="ng-dirty ng-invalid text-red-500"
-                                            *ngIf="submitted && variant.get('value')?.invalid">
-                                            Value is required and must be at least 2 characters.
-                                        </small>
-                                    </div>
-
-                                    <div class="field w-full md:col-4">
+                                    <div class="field w-full " *ngIf="productForm.get('useVariantPrice')?.value">
                                         <label class="font-semibold">Price *</label>
                                         <p-inputNumber formControlName="price" mode="currency" currency="USD"
                                             locale="en-US" class="w-full"
-                                            [class.ng-invalid]="submitted && variant.get('price')?.invalid">
+                                            [class.ng-invalid]="variant.get('price')?.dirty && variant.get('price')?.invalid">
                                         </p-inputNumber>
                                         <small class="ng-dirty ng-invalid text-red-500"
-                                            *ngIf="submitted && variant.get('price')?.invalid">
+                                            *ngIf="variant.get('price')?.dirty && variant.get('price')?.invalid">
                                             Price is required and must be non-negative.
                                         </small>
                                     </div>
 
-                                    <div class="field w-full md:col-4">
+                                    <div class="field w-full ">
                                         <label class="font-semibold">Stock *</label>
-                                        <p-inputNumber formControlName="stock" class="w-full"
-                                            [class.ng-invalid]="submitted && variant.get('stock')?.invalid">
+                                        <p-inputNumber (onInput)="onStockInput($event)" formControlName="stock" class="w-full"
+                                            [class.ng-invalid]="variant.get('stock')?.dirty && variant.get('stock')?.invalid">
                                         </p-inputNumber>
                                         <small class="ng-dirty ng-invalid text-red-500"
-                                            *ngIf="submitted && variant.get('stock')?.invalid">
+                                            *ngIf="variant.get('stock')?.dirty && variant.get('stock')?.invalid">
                                             Stock is required and must be non-negative.
                                         </small>
                                     </div>
 
-                                    <div class="field w-full md:col-4">
-                                        <label class="font-semibold">SKU *</label>
+                                    <!-- image -->
+                                    <!-- <div class="field w-full col-span-2">
+                                        <label class="font-semibold">Image</label>
+                                        <app-upload-files [control]="formControlImageVariant(i)"
+                                            [filesServer]="variant.get('image')?.value" [multiple]="false" [accept]="'image/*'">
+                                        </app-upload-files>
+                                    </div> -->
+
+                                    <div class="field w-full col-span-2 ">
+                                        <label class="font-semibold">SKU (Auto-generated if empty)</label>
                                         <input pInputText formControlName="sku" placeholder="Variant SKU" class="w-full"
                                             [class.ng-invalid]="submitted && variant.get('sku')?.invalid" />
                                         <small class="ng-dirty ng-invalid text-red-500"
                                             *ngIf="submitted && variant.get('sku')?.invalid">
-                                            SKU is required and must contain only letters, numbers, or
-                                            hyphens.
+                                            SKU must contain only letters, numbers, or hyphens.
                                         </small>
                                     </div>
                                 </div>
                             </p-card>
+                            <div class="my-2" *ngIf="variants.length > 0">
+                                <p-button label="Add Variant" icon="pi pi-plus" size="small" (click)="addVariant()">
+                                </p-button>
+                            </div>
                         </div>
 
                         <div *ngIf="variants.length === 0" class="text-center py-4 text-500">
@@ -420,11 +416,13 @@
                                         </small>
                                     </div>
 
-                                    <div class="field w-full mb-0">
+                                    <div class="field w-full mb-0 col-span-2">
                                         <label class="font-semibold">Value *</label>
-                                        <input pInputText formControlName="value" placeholder="Detail value"
+                                        <p-editor formControlName="value" [style]="{ height: '320px' }" />
+
+                                        <!-- <input pInputText formControlName="value" placeholder="Detail value"
                                             class="w-full"
-                                            [class.ng-invalid]="submitted && detail.get('value')?.invalid" />
+                                            [class.ng-invalid]="submitted && detail.get('value')?.invalid" /> -->
                                         <small class="ng-dirty ng-invalid text-red-500"
                                             *ngIf="submitted && detail.get('value')?.invalid">
                                             Value is required and must be at least 2 characters.
@@ -447,34 +445,6 @@
                         <div *ngIf="details.length === 0" class="text-center py-4 text-500">
                             <i class="pi pi-info-circle mr-2"></i>
                             No details added yet. Click "Add Detail" to create one.
-                        </div>
-                    </ng-template>
-                </p-accordionTab>
-
-                <!-- Dimensions Panel -->
-                <p-accordionTab header="Dimensions">
-                    <ng-template pTemplate="content">
-                        <div formGroupName="dimensions">
-                            <h6 class="mb-3">Dimensions (cm)</h6>
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <div class="field w-full md:col-4">
-                                    <label for="length" class="font-semibold">Length</label>
-                                    <p-inputNumber id="length" formControlName="length" suffix=" cm" class="w-full">
-                                    </p-inputNumber>
-                                </div>
-
-                                <div class="field w-full md:col-4">
-                                    <label for="width" class="font-semibold">Width</label>
-                                    <p-inputNumber id="width" formControlName="width" suffix=" cm" class="w-full">
-                                    </p-inputNumber>
-                                </div>
-
-                                <div class="field w-full md:col-4">
-                                    <label for="height" class="font-semibold">Height</label>
-                                    <p-inputNumber id="height" formControlName="height" suffix=" cm" class="w-full">
-                                    </p-inputNumber>
-                                </div>
-                            </div>
                         </div>
                     </ng-template>
                 </p-accordionTab>

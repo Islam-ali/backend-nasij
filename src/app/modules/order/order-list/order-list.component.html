@@ -166,10 +166,10 @@
                         required</small>
                 </div>
                 <div class="field">
-                    <label for="street">Street</label>
-                    <input id="street" pInputText formControlName="street"
-                        [class.p-invalid]="submitted && orderForm.get('shippingAddress.street')?.invalid">
-                    <small class="p-error" *ngIf="submitted && orderForm.get('shippingAddress.street')?.invalid">Street
+                    <label for="address">address</label>
+                    <input id="address" pInputText formControlName="address"
+                        [class.p-invalid]="submitted && orderForm.get('shippingAddress.address')?.invalid">
+                    <small class="p-error" *ngIf="submitted && orderForm.get('shippingAddress.address')?.invalid">address
                         is
                         required</small>
                 </div>
@@ -235,7 +235,7 @@
                             [options]="products()" 
                             appendTo="body"
                             optionLabel="name" 
-                            optionValue="id"
+                            optionValue="_id"
                             placeholder="Select Product" 
                             styleClass="w-full"
                             filter="true"
