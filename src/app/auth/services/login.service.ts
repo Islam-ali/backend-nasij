@@ -7,7 +7,7 @@ import { User } from '../../interfaces/user.interface';
   providedIn: 'root'
 })
 export class LoginService {
-  private apiUrl = 'http://localhost:3000/api/v1/auth';
+  private apiUrl = 'https://nasig-backend-sigma.vercel.app/api/v1/auth';
   private tokenKey = 'token_Nasig';
   user: BehaviorSubject<User | null> = new BehaviorSubject<User | null>(null);
   constructor(private http: HttpClient) { 
