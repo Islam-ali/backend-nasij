@@ -10,9 +10,8 @@ import { jwtInterceptor } from './app/core/interceptores/jwt.interceptor';
 export const appConfig: ApplicationConfig = {
     providers: [
         provideRouter(appRoutes, withInMemoryScrolling({ anchorScrolling: 'enabled', scrollPositionRestoration: 'enabled' }), withEnabledBlockingInitialNavigation()),
-        provideHttpClient(withFetch()),
+        provideHttpClient(withFetch(), withInterceptors([jwtInterceptor])),
         provideAnimationsAsync(),
-        providePrimeNG({ theme: { preset: Aura, options: { darkModeSelector: '.app-dark' } } }),
-        provideHttpClient(withInterceptors([jwtInterceptor]))
+        providePrimeNG({ theme: { preset: Aura, options: { darkModeSelector: '.app-dark' } } })
     ]
 };

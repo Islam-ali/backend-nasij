@@ -33,7 +33,7 @@ export class OrderService {
   updateOrder(id: string, order: Partial<Order>): Observable<BaseResponse<Order>> {
     // Transform the order data to match backend expectations
     const transformedOrder = this.transformOrderForBackend(order);
-    const cleanedOrder = this.commonService.removeNullUndefinedEmptyStringKeys(transformedOrder);
+    const cleanedOrder = this.commonService.removeNullUndefinedEmptyStringKeysAndId(transformedOrder);
     
     console.log('🔧 Order Update Debug:', {
       originalOrder: order,
