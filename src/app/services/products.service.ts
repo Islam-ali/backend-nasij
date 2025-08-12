@@ -10,7 +10,7 @@ import { BaseResponse, pagination } from '../core/models/baseResponse';
   providedIn: 'root'
 })
 export class ProductsService {
-  private apiUrl = 'https://nasig-backend-sigma.vercel.app/api/v1/products';
+  private apiUrl = 'http://localhost:3000/api/v1/products';
 
   constructor(
     private genericApiService: GenericApiService<any>,

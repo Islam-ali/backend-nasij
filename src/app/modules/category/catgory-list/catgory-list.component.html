@@ -44,7 +44,7 @@
                 <ng-template pTemplate="body" let-category>
                     <tr>
                         <td>
-                            <img [src]="'https://nasig-backend-sigma.vercel.app/'+category.image.filePath" [fallback]="'/images/picture.png'" [alt]="category.name" class="w-10 h-10 object-cover">
+                            <img [src]="category.image.filePath" [fallback]="'/images/picture.png'" [alt]="category.name" class="w-10 h-10 object-cover">
                         </td>
                         <td>
                             <span class="font-medium">{{category.name}}</span>

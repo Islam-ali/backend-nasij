@@ -74,7 +74,7 @@ export class UploadFilesComponent extends ComponentBase implements OnChanges {
       this.selectedFiles = this.filesServer.map((file: Archived) => ({
         file: file,
         type: file.mimeType,
-        content: `https://nasig-backend-sigma.vercel.app/${file.filePath}`,
+        content: file.filePath,
         iconClass: this.getFileIconClass(file.mimeType),
         size: this.formatBytes(file.fileSize),
         sizeBytes: file.fileSize,

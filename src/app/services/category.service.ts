@@ -10,7 +10,7 @@ import { CommonService } from '../core/services/common.service';
   providedIn: 'root'
 })
 export class CategoryService {
-  private apiUrl = 'https://nasig-backend-sigma.vercel.app/api/v1/categories'; // Update with your API URL
+  private apiUrl = 'http://localhost:3000/api/v1/categories'; // Update with your API URL
 
   constructor(
     private _genericApiService: GenericApiService<any>,

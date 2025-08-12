@@ -15,8 +15,9 @@ export class UploadFilesService {
     const formData = new FormData();
     formData.append('file', form.file);
     formData.append('folderName', form.folderName);
+    formData.append('useCloudinary', 'true');
 
-    const req = new HttpRequest('POST', `https://nasig-backend-sigma.vercel.app/api/v1/file-upload`, formData, {
+    const req = new HttpRequest('POST', `http://localhost:3000/api/v1/file-upload`, formData, {
       reportProgress: true,
       responseType: 'json'
     });

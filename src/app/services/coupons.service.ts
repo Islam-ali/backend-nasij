@@ -7,7 +7,7 @@ import { Coupon } from '../interfaces/coupon.interface';
   providedIn: 'root'
 })
 export class CouponsService {
-  private apiUrl = '/api/coupons';
+  private apiUrl = 'http://localhost:3000/api/coupons';
 
   constructor(private http: HttpClient) {}
 

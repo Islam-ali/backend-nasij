@@ -36,19 +36,19 @@ export class LoginComponent {
       next: (response) => {
         this.loginService.saveToken(response.data.token);
         this.loginService.saveUser(response.data.user);
-        this.loginService.getUser().subscribe({
-          next: (user) => {
-            this.loginService.user.next(user);
-          },
-          error: (error) => {
-            this.messageService.add({
-              severity: 'error',
-              summary: 'Error',
-              detail: error.error.message,
-              life: 1000
-            });
-          }
-        })
+        // this.loginService.getUser().subscribe({
+        //   next: (user) => {
+        //     this.loginService.user.next(user);
+        //   },
+        //   error: (error) => {
+        //     this.messageService.add({
+        //       severity: 'error',
+        //       summary: 'Error',
+        //       detail: error.error.message,
+        //       life: 1000
+        //     });
+        //   }
+        // })
 
         this.router.navigate(['/']);
       },
