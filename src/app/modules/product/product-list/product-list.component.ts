@@ -158,8 +158,18 @@ export class ProductListComponent extends ComponentBase implements OnInit {
         return this.productForm?.get('images') as FormControl;
     }
 
-    formControlImageVariant(variantIndex: number): FormControl {
-        return this.variants.at(variantIndex).get('image') as FormControl;
+    formControlImageVariant(variantIndex: number, attributeIndex: number): FormControl {
+        return this.getAttribute(variantIndex)?.at(attributeIndex).get('image') as FormControl;
+    }
+
+    // get attribute by index
+    getAttribute(variantIndex: number): FormArray {
+        return this.variants.at(variantIndex).get('attributes') as FormArray;
+    }
+
+
+    get availableImages() {
+        return this.productForm?.get('images')?.value || [];
     }
     
 
@@ -177,6 +187,9 @@ export class ProductListComponent extends ComponentBase implements OnInit {
             { field: 'category', header: 'Category' }
         ];
         this.exportColumns = this.cols.map(col => ({ title: col.header, dataKey: col.field }));
+        this.productForm.valueChanges.subscribe((value: any) => {
+            console.log('Frontend - Images value:', value);
+        });
     }
 
     checkUseVariantPrice(): void {
@@ -249,7 +262,8 @@ export class ProductListComponent extends ComponentBase implements OnInit {
     addAttribute(variantIndex: number): void {
         const attributeGroup = this.fb.group({
             variant: [EnumProductVariant.SIZE, [Validators.required]],
-            value: ['', [Validators.required, Validators.minLength(1)]]
+            value: ['', [Validators.required, Validators.minLength(1)]],
+            image: [null]
         });
         this.getAttributes(variantIndex).push(attributeGroup);
     }
@@ -276,7 +290,8 @@ export class ProductListComponent extends ComponentBase implements OnInit {
             attributes: this.fb.array([
                 this.fb.group({
                     variant: [EnumProductVariant.SIZE, [Validators.required]],
-                    value: ['', [Validators.required, Validators.minLength(1)]]
+                    value: ['', [Validators.required, Validators.minLength(1)]],
+                    image: [null]
                 })
             ]),
             price: [price, [Validators.required, Validators.min(0)]],
@@ -381,7 +396,8 @@ export class ProductListComponent extends ComponentBase implements OnInit {
                 variant.attributes.forEach((attr: any) => {
                     const attributeGroup = this.fb.group({
                         variant: attr.variant,
-                        value: attr.value
+                        value: attr.value,
+                        image: attr.image
                     });
                     (variantGroup.get('attributes') as FormArray).push(attributeGroup);
                 });
@@ -389,7 +405,8 @@ export class ProductListComponent extends ComponentBase implements OnInit {
                 // Handle legacy variant structure (single variant/value)
                 const attributeGroup = this.fb.group({
                     variant: variant.variant || 'size',
-                    value: variant.value || ''
+                    value: variant.value || '',
+                    image: variant.image
                 });
                 (variantGroup.get('attributes') as FormArray).push(attributeGroup);
             }
@@ -477,5 +494,20 @@ export class ProductListComponent extends ComponentBase implements OnInit {
         this.productDialog = false;
         this.submitted = false;
         this.productForm.reset();
+    }
+
+    getVariantIcon(variantType: EnumProductVariant): string {
+        switch (variantType) {
+            case 'size':
+                return 'pi-arrows-alt';
+            case 'color':
+                return 'pi-palette';
+            // case 'material':
+            //     return 'pi-box';
+            // case 'style':
+            //     return 'pi-star';
+            default:
+                return 'pi-tag';
+        }
     }
 }

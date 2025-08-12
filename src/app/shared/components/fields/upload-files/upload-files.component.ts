@@ -125,27 +125,32 @@ export class UploadFilesComponent extends ComponentBase implements OnChanges {
         description: '',
       }));
 
-      // Filter out duplicates
-      const filteredFiles = newFiles.filter(
-        (newFile) =>
-          !this.selectedFiles.some(
-            (existing) => existing.name === newFile.name
-          )
-      );
-
-      // Add new files to selectedFiles
-      this.selectedFiles = [...this.selectedFiles, ...filteredFiles];
+      if (!this.multiple) {
+        // For single file upload, replace the current file
+        this.selectedFiles = [newFiles[0]];
+        this.files = [];
+      } else {
+        // For multiple files, filter out duplicates and add new files
+        const filteredFiles = newFiles.filter(
+          (newFile) =>
+            !this.selectedFiles.some(
+              (existing) => existing.name === newFile.name
+            )
+        );
+        this.selectedFiles = [...this.selectedFiles, ...filteredFiles];
+      }
 
       if (this.isApi) {
         // Start uploading each file
-        filteredFiles.forEach((fileObj) => {
+        const filesToUpload = this.multiple ? newFiles : [newFiles[0]];
+        filesToUpload.forEach((fileObj) => {
           this.uploadFile(fileObj);
         });
       } else {
         this.updateFormControl();
       }
 
-      this.readFiles(filteredFiles);
+      this.readFiles(this.multiple ? newFiles : [newFiles[0]]);
     }
   }
 
@@ -277,6 +282,21 @@ export class UploadFilesComponent extends ComponentBase implements OnChanges {
     const fileObj = this.selectedFiles.find(f => f.id === fileId);
     if (fileObj && fileObj.error) {
       this.uploadFile(fileObj);
+    }
+  }
+
+  replaceFile(): void {
+    if (!this.multiple && this.selectedFiles.length > 0) {
+      // Remove the current file
+      this.selectedFiles = [];
+      this.files = [];
+      this.updateFormControl();
+      
+      // Trigger file input click
+      const fileInput = document.getElementById('dropzone-file') as HTMLInputElement;
+      if (fileInput) {
+        fileInput.click();
+      }
     }
   }
 

@@ -3,12 +3,13 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, BehaviorSubject } from 'rxjs';
 import { User } from '../../interfaces/user.interface';
 import { Router } from '@angular/router';
+import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class LoginService {
-  private apiUrl = 'http://localhost:3000/api/v1/auth';
+  private apiUrl = environment.apiUrl + '/auth';
   private tokenKey = 'token_Nasig';
   user: BehaviorSubject<User | null> = new BehaviorSubject<User | null>(null);
   constructor(

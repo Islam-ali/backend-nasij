@@ -5,12 +5,13 @@ import { IProduct } from '../interfaces/product.interface';
 import { CommonService } from '../core/services/common.service';
 import { GenericApiService } from '../core/services/generic-api.service';
 import { BaseResponse, pagination } from '../core/models/baseResponse';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ProductsService {
-  private apiUrl = 'http://localhost:3000/api/v1/products';
+  private apiUrl = `${environment.apiUrl}/products`;
 
   constructor(
     private genericApiService: GenericApiService<any>,

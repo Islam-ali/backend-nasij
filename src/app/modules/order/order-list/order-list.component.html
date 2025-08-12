@@ -32,7 +32,7 @@
                 <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
             </th> -->
             <th pSortableColumn="orderNumber">Order # <p-sortIcon field="orderNumber"></p-sortIcon></th>
-            <th pSortableColumn="user.name">User <p-sortIcon field="user.name"></p-sortIcon></th>
+            <!-- <th pSortableColumn="user.name">User <p-sortIcon field="user.name"></p-sortIcon></th> -->
             <th pSortableColumn="total">Total <p-sortIcon field="total"></p-sortIcon></th>
             <th pSortableColumn="status">Status <p-sortIcon field="status"></p-sortIcon></th>
             <th pSortableColumn="paymentStatus">Payment <p-sortIcon field="paymentStatus"></p-sortIcon></th>
@@ -65,7 +65,7 @@
                 <p-tableCheckbox [value]="order"></p-tableCheckbox>
             </td> -->
             <td>{{ order.orderNumber }}</td>
-            <td>{{ order.user?.name }}</td>
+            <!-- <td>{{ order.user?.name }}</td> -->
             <td>{{ order.total | currency:'USD':'symbol':'1.2-2' }}</td>
             <td>
                 <p-tag [value]="order.orderStatus | titlecase" [severity]="getSeverity(order.orderStatus)"></p-tag>

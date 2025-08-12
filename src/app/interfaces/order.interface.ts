@@ -7,7 +7,8 @@ export enum OrderStatus {
     DELIVERED = 'delivered',
     CANCELLED = 'cancelled',
     RETURNED = 'returned'
-}
+  }
+  
 
 export enum PaymentStatus {
     PENDING = 'pending',

@@ -9,10 +9,9 @@
     </ng-template>
 </p-toolbar>
 
-<p-table #dt [value]="products()" [columns]="cols" responsiveLayout="scroll" [lazy]="true"
-    [loading]="loading()" [globalFilterFields]="['name','category.name','status']"
-    [showCurrentPageReport]="true" [(selection)]="selectedProducts" selectionMode="multiple"
-    [rowHover]="true" dataKey="_id">
+<p-table #dt [value]="products()" [columns]="cols" responsiveLayout="scroll" [lazy]="true" [loading]="loading()"
+    [globalFilterFields]="['name','category.name','status']" [showCurrentPageReport]="true"
+    [(selection)]="selectedProducts" selectionMode="multiple" [rowHover]="true" dataKey="_id">
     <ng-template pTemplate="caption">
         <div class="flex flex-column md:flex-row md:justify-between md:align-items-center">
             <h5 class="m-0">Manage Products</h5>
@@ -44,8 +43,8 @@
                 <span class="font-medium">{{ product.name }}</span>
             </td>
             <td style="width:14%; min-width: 10rem;">
-                <img [src]="product.images?.[0].filePath" [alt]="product.name" width="64"
-                    height="64" class="shadow-4 border-round" [fallback]="'/images/picture.png'" />
+                <img [src]="product.images?.[0].filePath" [alt]="product.name" width="64" height="64"
+                    class="shadow-4 border-round" [fallback]="'/images/picture.png'" />
             </td>
             <td style="width:14%; min-width:8rem;">
                 <span class="font-semibold">${{ product.price }}</span>
@@ -92,9 +91,10 @@
     <ng-template pTemplate="footer">
         <tr>
             <td colspan="7" class="text-center py-6">
-                <p-paginator appendTo="body" [dropdownAppendTo]="'body'" [rows]="pagination().limit" [totalRecords]="pagination().total"
-                    (onPageChange)="loadProducts($event.page, $event.rows)" [rowsPerPageOptions]="[5,10,20,30]"
-                    [pageLinkSize]="5" [showPageLinks]="true" [showCurrentPageReport]="true"
+                <p-paginator appendTo="body" [dropdownAppendTo]="'body'" [rows]="pagination().limit"
+                    [totalRecords]="pagination().total" (onPageChange)="loadProducts($event.page, $event.rows)"
+                    [rowsPerPageOptions]="[5,10,20,30]" [pageLinkSize]="5" [showPageLinks]="true"
+                    [showCurrentPageReport]="true"
                     currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries">
                 </p-paginator>
             </td>
@@ -156,7 +156,7 @@
                                     Factory Price is required
                                 </small>
                             </div>
-                            
+
                             <div class="field w-full ">
                                 <label for="price" class="font-semibold">Price *</label>
                                 <p-inputNumber id="price" class="w-full" formControlName="price" mode="currency"
@@ -280,7 +280,8 @@
                     <ng-template pTemplate="content">
                         <div class="flex justify-between align-items-center mb-3">
                             <h6 class="m-0">Variants</h6>
-                            <p-button *ngIf="variants.length == 0" label="Add Variant" icon="pi pi-plus" size="small" (click)="addVariant()">
+                            <p-button *ngIf="variants.length == 0" label="Add Variant" icon="pi pi-plus" size="small"
+                                (click)="addVariant()">
                             </p-button>
                         </div>
 
@@ -296,78 +297,206 @@
                                     </div>
                                 </ng-template>
 
-                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                    <div class="field w-full col-span-2">
-                                        <label class="font-semibold">Attributes *</label>
-                                        <div formArrayName="attributes" class="space-y-3">
-                                            <div *ngFor="let attribute of getAttributes(i).controls; let j = index" [formGroupName]="j" class="flex gap-2 items-center">
-                                                <div class="flex-1">
-                                                    <p-dropdown formControlName="variant" [options]="variantOptions" 
-                                                        placeholder="Select variant type" class="w-full"
-                                                        [class.ng-invalid]="submitted && attribute.get('variant')?.invalid">
-                                                    </p-dropdown>
-                                                </div>
-                                                <div class="flex-1">
-                                                    <input pInputText formControlName="value" placeholder="Value" class="w-full"
-                                                        [class.ng-invalid]="submitted && attribute.get('value')?.invalid" />
-                                                </div>
-                                                <div class="flex-shrink-0">
-                                                    <p-button icon="pi pi-trash" severity="danger" size="small" [text]="true"
-                                                        (click)="removeAttribute(i, j)" *ngIf="getAttributes(i).length > 1">
+                                <div class="grid grid-cols-1 gap-6">
+                                    <!-- Attributes Section -->
+                                    <div class="field w-full">
+                                        <div class="flex items-center justify-between mb-4">
+                                            <label class="text-lg font-semibold text-gray-800 flex items-center gap-2">
+                                                <i class="pi pi-tag text-primary"></i>
+                                                Variant Attributes *
+                                            </label>
+                                        </div>
+                                        
+                                        <div formArrayName="attributes" class="space-y-4 w-full">
+                                            <div *ngFor="let attribute of getAttributes(i).controls; let j = index"
+                                                [formGroupName]="j" 
+                                                class="bg-gray-50 rounded-lg p-4 border border-gray-200 hover:border-gray-300 transition-all duration-200">
+                                                
+                                                <div class="flex items-center justify-between mb-3">
+                                                    <span class="text-sm font-medium text-gray-700">Attribute {{ j + 1 }}</span>
+                                                    <p-button 
+                                                        icon="pi pi-trash" 
+                                                        severity="danger" 
+                                                        size="small"
+                                                        [text]="true" 
+                                                        (click)="removeAttribute(i, j)"
+                                                        *ngIf="getAttributes(i).length > 1"
+                                                        class="hover:bg-red-100">
                                                     </p-button>
                                                 </div>
+                                                
+                                                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                                                    <!-- Variant Type -->
+                                                    <div class="field">
+                                                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                                                            <i class="pi pi-list text-primary mr-1"></i>
+                                                            Type
+                                                        </label>
+                                                        <p-dropdown 
+                                                            formControlName="variant" 
+                                                            [options]="variantOptions"
+                                                            placeholder="Select variant type" 
+                                                            class="w-full"
+                                                            [class.ng-invalid]="submitted && attribute.get('variant')?.invalid">
+                                                            <ng-template pTemplate="selectedItem" let-option>
+                                                                <div class="flex items-center gap-2">
+                                                                    <i class="pi" [class]="getVariantIcon(option.value)"></i>
+                                                                    <span>{{ option.label }}</span>
+                                                                </div>
+                                                            </ng-template>
+                                                            <ng-template pTemplate="item" let-option>
+                                                                <div class="flex items-center gap-2">
+                                                                    <i class="pi" [class]="getVariantIcon(option.value)"></i>
+                                                                    <span>{{ option.label }}</span>
+                                                                </div>
+                                                            </ng-template>
+                                                        </p-dropdown>
+                                                        <small class="text-red-500 text-xs" 
+                                                            *ngIf="submitted && attribute.get('variant')?.invalid">
+                                                            Variant type is required.
+                                                        </small>
+                                                    </div>
+                                                    
+                                                    <!-- Value -->
+                                                    <div class="field">
+                                                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                                                            <i class="pi pi-pencil text-primary mr-1"></i>
+                                                            Value
+                                                        </label>
+                                                        <input 
+                                                            pInputText 
+                                                            formControlName="value" 
+                                                            placeholder="Enter value"
+                                                            class="w-full"
+                                                            [class.ng-invalid]="submitted && attribute.get('value')?.invalid" />
+                                                        <small class="text-red-500 text-xs" 
+                                                            *ngIf="submitted && attribute.get('value')?.invalid">
+                                                            Value is required.
+                                                        </small>
+                                                    </div>
+                                                    
+                                                    <!-- Image Selection -->
+                                                    <div class="field">
+                                                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                                                            <i class="pi pi-image text-primary mr-1"></i>
+                                                            Image (Optional)
+                                                        </label>
+                                                        <p-dropdown 
+                                                            formControlName="image" 
+                                                            class="w-full"
+                                                            [options]="availableImages" 
+                                                            optionLabel="fileName"
+                                                            placeholder="Select an image" 
+                                                            [showClear]="true">
+                                                            <ng-template pTemplate="selectedItem" let-image>
+                                                                <div class="flex items-center gap-2">
+                                                                    <img *ngIf="image.filePath" 
+                                                                        [src]="image.filePath"
+                                                                        [alt]="image.originalFileName"
+                                                                        class="w-6 h-6 object-cover rounded border">
+                                                                    <span class="truncate">{{ image.originalFileName }}</span>
+                                                                </div>
+                                                            </ng-template>
+                                                            <ng-template pTemplate="item" let-image>
+                                                                <div class="flex items-center gap-2">
+                                                                    <img *ngIf="image.filePath" 
+                                                                        [src]="image.filePath"
+                                                                        [alt]="image.originalFileName"
+                                                                        class="w-6 h-6 object-cover rounded border">
+                                                                    <span class="truncate">{{ image.originalFileName }}</span>
+                                                                </div>
+                                                            </ng-template>
+                                                        </p-dropdown>
+                                                    </div>
+                                                </div>
                                             </div>
-                                            <div class="flex justify-center">
-                                                <p-button label="Add Attribute" icon="pi pi-plus" size="small" 
-                                                    (click)="addAttribute(i)" [outlined]="true">
-                                                </p-button>
+                                            
+                                            <!-- Empty State -->
+                                            <div *ngIf="getAttributes(i).length === 0" 
+                                                class="text-center py-8 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
+                                                <i class="pi pi-tag text-4xl text-gray-400 mb-3"></i>
+                                                <p class="text-gray-500 mb-2">No attributes added yet</p>
+                                                <p class="text-sm text-gray-400">Click "Add Attribute" to get started</p>
                                             </div>
                                         </div>
-                                        <small class="ng-dirty ng-invalid text-red-500"
+                                        <div class="col-span-2 mt-2">
+                                            <p-button 
+                                            label="Add Attribute" 
+                                            icon="pi pi-plus" 
+                                            size="small"
+                                            (click)="addAttribute(i)" 
+                                            [outlined]="true"
+                                            class="">
+                                        </p-button>
+                                    </div>
+                                        
+                                        <small class="text-red-500 text-sm mt-2 block"
                                             *ngIf="submitted && variant.get('attributes')?.invalid">
+                                            <i class="pi pi-exclamation-triangle mr-1"></i>
                                             At least one attribute is required.
                                         </small>
                                     </div>
 
-                                    <div class="field w-full " *ngIf="productForm.get('useVariantPrice')?.value">
-                                        <label class="font-semibold">Price *</label>
-                                        <p-inputNumber formControlName="price" mode="currency" currency="USD"
-                                            locale="en-US" class="w-full"
-                                            [class.ng-invalid]="variant.get('price')?.dirty && variant.get('price')?.invalid">
-                                        </p-inputNumber>
-                                        <small class="ng-dirty ng-invalid text-red-500"
-                                            *ngIf="variant.get('price')?.dirty && variant.get('price')?.invalid">
-                                            Price is required and must be non-negative.
-                                        </small>
-                                    </div>
+                                    <!-- Variant Details Section -->
+                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
+                                        <!-- Price -->
+                                        <div class="field" *ngIf="productForm.get('useVariantPrice')?.value">
+                                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                                <i class="pi pi-dollar text-primary mr-1"></i>
+                                                Price *
+                                            </label>
+                                            <p-inputNumber 
+                                                formControlName="price" 
+                                                mode="currency" 
+                                                currency="USD"
+                                                locale="en-US" 
+                                                class="w-full"
+                                                [class.ng-invalid]="variant.get('price')?.dirty && variant.get('price')?.invalid">
+                                            </p-inputNumber>
+                                            <small class="text-red-500 text-xs" 
+                                                *ngIf="variant.get('price')?.dirty && variant.get('price')?.invalid">
+                                                <i class="pi pi-exclamation-triangle mr-1"></i>
+                                                Price is required and must be non-negative.
+                                            </small>
+                                        </div>
 
-                                    <div class="field w-full ">
-                                        <label class="font-semibold">Stock *</label>
-                                        <p-inputNumber (onInput)="onStockInput($event)" formControlName="stock" class="w-full"
-                                            [class.ng-invalid]="variant.get('stock')?.dirty && variant.get('stock')?.invalid">
-                                        </p-inputNumber>
-                                        <small class="ng-dirty ng-invalid text-red-500"
-                                            *ngIf="variant.get('stock')?.dirty && variant.get('stock')?.invalid">
-                                            Stock is required and must be non-negative.
-                                        </small>
-                                    </div>
+                                        <!-- Stock -->
+                                        <div class="field">
+                                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                                <i class="pi pi-box text-primary mr-1"></i>
+                                                Stock *
+                                            </label>
+                                            <p-inputNumber 
+                                                (onInput)="onStockInput($event)" 
+                                                formControlName="stock"
+                                                class="w-full"
+                                                [class.ng-invalid]="variant.get('stock')?.dirty && variant.get('stock')?.invalid">
+                                            </p-inputNumber>
+                                            <small class="text-red-500 text-xs" 
+                                                *ngIf="variant.get('stock')?.dirty && variant.get('stock')?.invalid">
+                                                <i class="pi pi-exclamation-triangle mr-1"></i>
+                                                Stock is required and must be non-negative.
+                                            </small>
+                                        </div>
 
-                                    <!-- image -->
-                                    <!-- <div class="field w-full col-span-2">
-                                        <label class="font-semibold">Image</label>
-                                        <app-upload-files [control]="formControlImageVariant(i)"
-                                            [filesServer]="variant.get('image')?.value" [multiple]="false" [accept]="'image/*'">
-                                        </app-upload-files>
-                                    </div> -->
-
-                                    <div class="field w-full col-span-2 ">
-                                        <label class="font-semibold">SKU (Auto-generated if empty)</label>
-                                        <input pInputText formControlName="sku" placeholder="Variant SKU" class="w-full"
-                                            [class.ng-invalid]="submitted && variant.get('sku')?.invalid" />
-                                        <small class="ng-dirty ng-invalid text-red-500"
-                                            *ngIf="submitted && variant.get('sku')?.invalid">
-                                            SKU must contain only letters, numbers, or hyphens.
-                                        </small>
+                                        <!-- SKU -->
+                                        <div class="field">
+                                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                                <i class="pi pi-barcode text-primary mr-1"></i>
+                                                SKU <span class="text-xs text-gray-500">(Auto-generated if empty)</span>
+                                            </label>
+                                            <input 
+                                                pInputText 
+                                                formControlName="sku" 
+                                                placeholder="Variant SKU" 
+                                                class="w-full"
+                                                [class.ng-invalid]="submitted && variant.get('sku')?.invalid" />
+                                            <small class="text-red-500 text-xs" 
+                                                *ngIf="submitted && variant.get('sku')?.invalid">
+                                                <i class="pi pi-exclamation-triangle mr-1"></i>
+                                                SKU must contain only letters, numbers, or hyphens.
+                                            </small>
+                                        </div>
                                     </div>
                                 </div>
                             </p-card>

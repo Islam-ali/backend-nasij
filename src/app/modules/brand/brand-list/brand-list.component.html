@@ -37,7 +37,6 @@
                 <th pSortableColumn="slug">
                     Slug <p-sortIcon field="slug"></p-sortIcon>
                 </th>
-                <th>Logo</th>
                 <th pSortableColumn="isActive">
                     Status <p-sortIcon field="isActive"></p-sortIcon>
                 </th>
@@ -54,10 +53,6 @@
                 </td>
                 <td>{{ brand.name }}</td>
                 <td>{{ brand.slug }}</td>
-                <td>
-                    <img [src]="brand.logo.filePath" [fallback]="'/images/picture.png'" [alt]="brand.name"
-                        class="shadow-2 w-10 h-10 object-cover" />
-                </td>
                 <td>
                     <p-tag [severity]="brand.isActive ? 'success' : 'danger'"
                         [value]="brand.isActive ? 'Active' : 'Inactive'"></p-tag>
@@ -141,10 +136,6 @@
                     [filesServer]="brandForm.get('logo')?.value"></app-upload-files>
             </div>
 
-            <div class="field-checkbox w-full flex items-center col-span-2">
-                <label class="block text-sm font-medium text-gray-700 me-4" for="isActive">Active</label>
-                <p-toggleswitch id="isActive" formControlName="isActive" />
-            </div>
         </div>
     </form>
 

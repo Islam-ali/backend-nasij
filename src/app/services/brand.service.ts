@@ -4,12 +4,13 @@ import { GenericApiService } from '../core/services/generic-api.service';
 import { CommonService } from '../core/services/common.service';
 import { IBrand } from '../interfaces/brand.interface';
 import { BaseResponse, pagination } from '../core/models/baseResponse';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class BrandService {
-  private apiUrl = 'http://localhost:3000/api/v1/brands';
+  private apiUrl = `${environment.apiUrl}/brands`;
 
   constructor(
     private _genericApiService: GenericApiService<any>,

@@ -33,7 +33,6 @@
                     <tr>
                         <th>Image</th>
                         <th pSortableColumn="name">Name <p-sortIcon field="name"></p-sortIcon></th>
-                        <th pSortableColumn="slug">Slug <p-sortIcon field="slug"></p-sortIcon></th>
                         <th pSortableColumn="sortOrder">Sort Order <p-sortIcon field="sortOrder"></p-sortIcon></th>
                         <th pSortableColumn="isActive">Status <p-sortIcon field="isActive"></p-sortIcon></th>
                         <th pSortableColumn="productCount">Products <p-sortIcon field="productCount"></p-sortIcon></th>
@@ -49,7 +48,6 @@
                         <td>
                             <span class="font-medium">{{category.name}}</span>
                         </td>
-                        <td>{{category.slug}}</td>
                         <td>{{category.sortOrder}}</td>
                         <td>
                             <p-tag [value]="category.isActive ? 'Active' : 'Inactive'"

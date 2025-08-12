@@ -210,7 +210,7 @@ export class OrderListComponent extends ComponentBase implements OnInit {
         this.calculateTotal();
     }
 
-    
+
     colors(colors: string[], index: number) {
         console.log(colors, index);
         colors.map(color => ({ name: color, value: color }));
@@ -237,11 +237,12 @@ export class OrderListComponent extends ComponentBase implements OnInit {
             });
         }
     }
-    getSeverity(status: string) {
+    getSeverity(status: OrderStatus) {
         switch (status) {
             case OrderStatus.DELIVERED:
-                return 'succes';
+                return 'success';
             case OrderStatus.PROCESSING:
+                return 'info';
             case OrderStatus.SHIPPED:
                 return 'info';
             case OrderStatus.PENDING:
@@ -251,12 +252,13 @@ export class OrderListComponent extends ComponentBase implements OnInit {
             default:
                 return 'info';
         }
+        
     }
 
     getPaymentSeverity(status: string) {
         switch (status) {
             case PaymentStatus.PAID:
-                return 'succes';
+                return 'success';
             case PaymentStatus.PENDING:
                 return 'warn';
             case PaymentStatus.FAILED:
@@ -363,8 +365,8 @@ export class OrderListComponent extends ComponentBase implements OnInit {
                 // Calculate total based on quantity and price
                 // const itemTotal = (item.quantity || 0) * (item.price || 0);
                 const { colors, sizes } = this.extractColorsAndSizes(item.productId);
-                console.log(item.productId._id , 'item.productId');
-                
+                console.log(item.productId._id, 'item.productId');
+
                 this.items.push(this.fb.group({
                     productId: [item.productId._id],
                     quantity: [item.quantity],
@@ -378,7 +380,7 @@ export class OrderListComponent extends ComponentBase implements OnInit {
                 }));
             });
         }
-        console.log(this.orderForm.value , 'orderForm' , order);
+        console.log(this.orderForm.value, 'orderForm', order);
         this.isEditOrder = true;
         this.orderDialog = true;
     }
@@ -509,25 +511,25 @@ export class OrderListComponent extends ComponentBase implements OnInit {
 
     private extractColorsAndSizes(product: IProduct): { colors: string[], sizes: string[] } {
         if (!product || !product.variants) return { colors: [], sizes: [] };
-    
+
         const colors = new Set<string>();
         const sizes = new Set<string>();
-        product.variants.forEach((variant:ProductVariant) => {
-          if (variant.attributes) {
-            variant.attributes.forEach((attr:ProductVariantAttribute) => {
-              if (attr.variant === EnumProductVariant.COLOR) {
-                colors.add(attr.value);
-              } else if (attr.variant === EnumProductVariant.SIZE) {
-                sizes.add(attr.value);
-              }
-            });
-          }
+        product.variants.forEach((variant: ProductVariant) => {
+            if (variant.attributes) {
+                variant.attributes.forEach((attr: ProductVariantAttribute) => {
+                    if (attr.variant === EnumProductVariant.COLOR) {
+                        colors.add(attr.value);
+                    } else if (attr.variant === EnumProductVariant.SIZE) {
+                        sizes.add(attr.value);
+                    }
+                });
+            }
         });
-    
+
         product.colors = Array.from(colors);
         product.sizes = Array.from(sizes);
         return { colors: product.colors, sizes: product.sizes };
-      }
+    }
 
     calculateTotal() {
         let subtotal = 0;

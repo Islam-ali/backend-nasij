@@ -5,12 +5,13 @@ import { GenericApiService } from '../core/services/generic-api.service';
 import { BaseResponse, pagination } from '../core/models/baseResponse';
 import { ICategory } from '../interfaces/category.interface';
 import { CommonService } from '../core/services/common.service';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class CategoryService {
-  private apiUrl = 'http://localhost:3000/api/v1/categories'; // Update with your API URL
+  private apiUrl = `${environment.apiUrl}/categories`;
 
   constructor(
     private _genericApiService: GenericApiService<any>,
