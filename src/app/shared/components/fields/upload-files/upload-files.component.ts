@@ -6,7 +6,7 @@ import { CommonModule } from "@angular/common";
 import { BadgeModule } from "primeng/badge";
 import { ProgressBarModule } from "primeng/progressbar";
 import { ToastModule } from "primeng/toast";
-import { FormsModule, FormControl } from "@angular/forms";
+import { FormsModule, FormControl, AbstractControl } from "@angular/forms";
 import { HttpEvent, HttpEventType, HttpResponse } from '@angular/common/http';
 import { UploadFilesService } from "./upload-files.service";
 import { SafePipe } from "../../../../core/pipes/safe.pipe";
@@ -48,14 +48,19 @@ interface FileWithProgress {
   providers: [MessageService],
 })
 export class UploadFilesComponent extends ComponentBase implements OnChanges {
-  @Input() control!: FormControl;
+  @Input() index: number = 0;
+  @Input() control!: AbstractControl;
+  
+  ngOnInit() {
+    console.log('UploadFilesComponent initialized with index:', this.index, 'ID:', `dropzone-file-${this.index}`);
+  }
   @Input() isApi: boolean = true;
   @Input() isDescription: boolean = false;
   @Input() loadingExport: boolean = false;
-  @Input() filesServer: Archived[] = [];
+  @Input() filesServer: Archived | Archived[] = [];
   @Input() multiple: boolean = false;
   @Input() accept: string = "";
-  @Output() onExportFiles: EventEmitter<any[]> = new EventEmitter<any[]>();
+  @Output() onExportFiles: EventEmitter<any> = new EventEmitter<any>();
   files: { file: FileWithProgress, Result: Archived }[] = [];
   totalSize: number = 0;
   totalSizePercent: number = 0;
@@ -70,8 +75,13 @@ export class UploadFilesComponent extends ComponentBase implements OnChanges {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
+    console.log('ngOnChanges - index:', this.index, 'changes:', changes);
+    console.log(this.control.value);
     if (changes['filesServer'] && changes['filesServer'].currentValue) {
-      this.selectedFiles = this.filesServer.map((file: Archived) => ({
+      // Convert to array if single object
+      const filesArray = Array.isArray(this.filesServer) ? this.filesServer : [this.filesServer];
+      
+      this.selectedFiles = filesArray.map((file: Archived) => ({
         file: file,
         type: file.mimeType,
         content: file.filePath,
@@ -87,7 +97,7 @@ export class UploadFilesComponent extends ComponentBase implements OnChanges {
         description: file.description || '',
       }));
       this.files = this.selectedFiles.map((file) => {
-        const existingFile = this.filesServer.find((f) => f.originalFileName === file.name);
+        const existingFile = filesArray.find((f: Archived) => f.originalFileName === file.name);
         return {
           file: {
             ...file,
@@ -108,6 +118,7 @@ export class UploadFilesComponent extends ComponentBase implements OnChanges {
   }
 
   onFilesSelected(event: Event): void {
+    console.log('onFilesSelected - index:', this.index, 'ID:', `dropzone-file-${this.index}`);
     const input = event.target as HTMLInputElement;
 
     if (input.files) {
@@ -155,6 +166,7 @@ export class UploadFilesComponent extends ComponentBase implements OnChanges {
   }
 
   uploadFile(fileObj: FileWithProgress): void {
+    console.log('uploadFile - index:', this.index, 'file:', fileObj.name);
     this.updateFileState(fileObj.id, { uploading: true, progress: 0, error: undefined });
 
     this._uploadFilesService.PostImageFile({ file: fileObj.file, folderName: 'Uploads' }).subscribe({
@@ -258,11 +270,16 @@ export class UploadFilesComponent extends ComponentBase implements OnChanges {
   
 
   updateFormControl(): void {
+    console.log('updateFormControl called - index:', this.index);
     // Extract filePath from files
     const files = this.files
       .filter(f => f.Result && f.Result)
       .map(f => f.Result);
-    this.control.setValue(files);
+    
+    // Return single object if multiple = false, array if multiple = true
+    const value = this.multiple ? files : (files.length > 0 ? files[0] : null);
+    this.control.setValue(value);
+    console.log('updateFormControl completed - index:', this.index, 'value:', value);
   }
 
   get showError() {
@@ -293,7 +310,7 @@ export class UploadFilesComponent extends ComponentBase implements OnChanges {
       this.updateFormControl();
       
       // Trigger file input click
-      const fileInput = document.getElementById('dropzone-file') as HTMLInputElement;
+      const fileInput = document.getElementById(`dropzone-file-${this.index}`) as HTMLInputElement;
       if (fileInput) {
         fileInput.click();
       }
@@ -379,12 +396,15 @@ export class UploadFilesComponent extends ComponentBase implements OnChanges {
     }) as { file: FileWithProgress; Result: Archived }[];
 
     this.loadingExport = true;
-    this.onExportFiles.emit(this.files);
+    // Return single object if multiple = false, array if multiple = true
+    const value = this.multiple ? this.files : (this.files.length > 0 ? this.files[0] : null);
+    this.onExportFiles.emit(value);
   }
 
   override ngOnDestroy(): void {
     this.selectedFiles = [];
     this.files = [];
-    this.control.setValue(null)
+    const value = this.multiple ? [] : null;
+    this.control.setValue(value)
   }
 }

@@ -3,3 +3,11 @@
 @use './assets/layout/layout.scss';
 @use 'primeicons/primeicons.css';
 @use './assets/demo/demo.scss';
+
+
+.ql-editor p {
+  margin: 10px 0;
+}
+.p-togglebutton-checked .p-togglebutton-content {
+    background: transparent !important;
+  }

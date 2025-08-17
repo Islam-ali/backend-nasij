@@ -3,9 +3,9 @@
     "version": "19.0.1",
     "scripts": {
         "ng": "ng",
-        "start": "ng serve",
-        "start:dev": "ng serve --configuration development",
-        "start:prod": "ng serve --configuration production",
+        "start": "ng serve --port 4001",
+        "start:dev": "ng serve --configuration development --port 4001",
+        "start:prod": "ng serve --configuration production --port 4001",
         "build": "ng build --configuration production",
         "build:dev": "ng build --configuration development",
         "build:prod": "ng build --configuration production",

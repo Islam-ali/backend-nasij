@@ -12,24 +12,7 @@ import { CommonModule } from '@angular/common';
             <div class="loading-container">
                 <div class="logo-container">
                     <div class="loading-logo">
-                        <svg width="120" height="120" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <circle cx="60" cy="60" r="50" stroke="rgba(255,255,255,0.3)" stroke-width="4" fill="none"/>
-                            <circle cx="60" cy="60" r="50" stroke="white" stroke-width="4" fill="none" 
-                                    stroke-dasharray="314" stroke-dashoffset="314"
-                                    [style.stroke-dashoffset]="strokeDashoffset">
-                                <animate attributeName="stroke-dashoffset" 
-                                         values="314;0;314" 
-                                         dur="2s" 
-                                         repeatCount="indefinite"/>
-                            </circle>
-                            <text x="60" y="65" text-anchor="middle" fill="white" font-size="24" font-weight="bold">LOGO</text>
-                        </svg>
-                    </div>
-                </div>
-                <div class="loading-text">
-                    <p class="loading-message">{{ loadingMessage }}</p>
-                    <div class="loading-spinner">
-                        <div class="spinner"></div>
+                        <img src="images/logo-Nasij.png" alt="NASIJ Logo" class="loading-logo-image">
                     </div>
                 </div>
             </div>
@@ -67,11 +50,30 @@ import { CommonModule } from '@angular/common';
             margin: 0 auto;
             border-radius: 50%;
             background: rgba(255, 255, 255, 0.1);
-            padding: 1rem;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.2);
             transition: transform 0.3s ease;
+            padding: 1rem;
+        }
+        // .loading-logo animation border
+        .loading-logo::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: 2px solid #667eea;
+            border-top: 2px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        .loading-logo-image {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
         }
 
         .loading-logo:hover {
@@ -115,10 +117,6 @@ import { CommonModule } from '@angular/common';
 
         /* Responsive design */
         @media (max-width: 768px) {
-            .loading-logo {
-                width: 80px;
-                height: 80px;
-            }
 
             .loading-message {
                 font-size: 1rem;
@@ -140,8 +138,6 @@ import { CommonModule } from '@angular/common';
 })
 export class AppComponent {
     isLoading: boolean = true;
-    loadingMessage: string = 'Initializing application...';
-    strokeDashoffset: number = 314;
 
     constructor() {
         // Show initial loading for 2 seconds
@@ -151,8 +147,7 @@ export class AppComponent {
     }
 
     // Method to show loading (can be called from other components)
-    showLoading(message: string = 'Loading...') {
-        this.loadingMessage = message;
+    showLoading() {
         this.isLoading = true;
     }
 

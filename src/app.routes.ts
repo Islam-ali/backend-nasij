@@ -30,6 +30,26 @@ export const appRoutes: Routes = [
             {
                 path: 'orders',
                 loadComponent: () => import('./app/modules/order/order-list/order-list.component').then(m => m.OrderListComponent)
+            },
+            {
+                path: 'hero',
+                loadComponent: () => import('./app/modules/hero/hero-list/hero-list.component').then(m => m.HeroListComponent)
+            },
+            {
+                path: 'business-profile',
+                loadComponent: () => import('./app/modules/business-profile/business-profile-list/business-profile-list.component').then(m => m.BusinessProfileListComponent)
+            },
+            {
+                path: 'featured-collections',
+                loadComponent: () => import('./app/modules/featured-collections/featured-collections-list/featured-collections-list.component').then(m => m.FeaturedCollectionsListComponent)
+            },
+            {
+                path: 'banners',
+                loadComponent: () => import('./app/modules/banner/banner-list/banner-list.component').then(m => m.BannerListComponent)
+            },
+            {
+                path: 'features',
+                loadComponent: () => import('./app/modules/feature/feature-list/feature-list.component').then(m => m.FeatureListComponent)
             }
         ]
     },

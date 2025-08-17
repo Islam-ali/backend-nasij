@@ -13,7 +13,7 @@
     <!-- Upload Area -->
     <div class="flex items-center justify-center w-full max-w-6xl mx-auto mb-6">
       <label
-        for="dropzone-file"
+        [for]="'dropzone-file-' + index"
         class="flex flex-col items-center justify-center w-full border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors"
         [class.h-28]="multiple || selectedFiles.length === 0"
         [class.h-40]="!multiple && selectedFiles.length > 0"
@@ -31,12 +31,12 @@
                 @if (selectedFiles[0].type.includes("image") && selectedFiles[0].content) {
                   <img
                     class="h-16 w-16 object-cover rounded-lg border-2 border-gray-200 shadow-sm"
-                    [src]="selectedFiles[0].content | safe"
+                    [src]="selectedFiles[0].content | safe:'url'"
                     [alt]="selectedFiles[0].name"
                   />
                 } @else if (selectedFiles[0].type.includes("video") && selectedFiles[0].content) {
-                  <video class="h-16 w-16 rounded-lg border-2 border-gray-200 shadow-sm" [poster]="selectedFiles[0].content | safe">
-                    <source [src]="selectedFiles[0].content | safe" type="video/mp4" />
+                  <video class="h-16 w-16 rounded-lg border-2 border-gray-200 shadow-sm" [poster]="selectedFiles[0].content | safe:'url'">
+                    <source [src]="selectedFiles[0].content | safe:'url'" type="video/mp4" />
                   </video>
                 } @else if (selectedFiles[0].type.includes("audio") && selectedFiles[0].content) {
                   <div class="h-16 w-16 flex items-center justify-center bg-purple-100 rounded-lg border-2 border-gray-200 shadow-sm">
@@ -136,7 +136,7 @@
           }
         </div>
         <input
-          id="dropzone-file"
+          [id]="'dropzone-file-' + index"
           type="file"
           class="hidden"
           [multiple]="multiple"
@@ -167,12 +167,12 @@
               @if (file.type.includes("image") && file.content) {
                 <img
                   class="h-12 w-12 object-cover rounded border"
-                  [src]="file.content | safe"
+                  [src]="file.content | safe:'url'"
                   [alt]="file.name"
                 />
               } @else if (file.type.includes("video") && file.content) {
-                <video class="h-12 w-12 rounded border" [poster]="file.content | safe">
-                  <source [src]="file.content | safe" type="video/mp4" />
+                <video class="h-12 w-12 rounded border" [poster]="file.content | safe:'url'">
+                  <source [src]="file.content | safe:'url'" type="video/mp4" />
                 </video>
               } @else if (file.type.includes("audio") && file.content) {
                 <div class="h-12 w-12 flex items-center justify-center bg-purple-100 rounded border">
@@ -266,8 +266,8 @@
           @if (file.type.includes("audio") && file.content && file.uploaded) {
             <div class="mt-3">
               <audio controls class="w-full">
-                <source [src]="file.content | safe" type="audio/mpeg" />
-                <source [src]="file.content | safe" type="audio/ogg" />
+                <source [src]="file.content | safe:'url'" type="audio/mpeg" />
+                <source [src]="file.content | safe:'url'" type="audio/ogg" />
                 Your browser does not support the audio element.
               </audio>
             </div>

@@ -27,10 +27,15 @@ export class AppMenu {
             {
                 label: 'Products',
                 items: [
+                    { label: 'Business Profile', icon: 'pi pi-fw pi-box', routerLink: ['/business-profile'] },
+                    { label: 'Hero Sections', icon: 'pi pi-fw pi-image', routerLink: ['/hero'] },
+                    { label: 'Featured Collections', icon: 'pi pi-fw pi-box', routerLink: ['/featured-collections'] },
+                    { label: 'Banners', icon: 'pi pi-fw pi-box', routerLink: ['/banners'] },
+                    { label: 'Features', icon: 'pi pi-fw pi-box', routerLink: ['/features'] },
                     { label: 'Products', icon: 'pi pi-fw pi-box', routerLink: ['/products'] },
                     { label: 'Categories', icon: 'pi pi-fw pi-box', routerLink: ['/categories'] },
                     { label: 'Brands', icon: 'pi pi-fw pi-box', routerLink: ['/brands'] },
-                    { label: 'Orders', icon: 'pi pi-fw pi-box', routerLink: ['/orders'] }
+                    { label: 'Orders', icon: 'pi pi-fw pi-box', routerLink: ['/orders'] },
                 ]
             },
             // {

@@ -19,6 +19,7 @@ import { InputIconModule } from 'primeng/inputicon';
 import { IconFieldModule } from 'primeng/iconfield';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { Product, ProductService } from '../service/product.service';
+import { BusinessProfileListComponent } from '../../modules/business-profile/business-profile-list/business-profile-list.component';
 
 interface Column {
     field: string;
@@ -52,19 +53,29 @@ interface ExportColumn {
         TagModule,
         InputIconModule,
         IconFieldModule,
-        ConfirmDialogModule
+        ConfirmDialogModule,
+        BusinessProfileListComponent
     ],
     template: `
-        <p-toolbar styleClass="mb-6">
-            <ng-template #start>
-                <p-button label="New" icon="pi pi-plus" severity="secondary" class="mr-2" (onClick)="openNew()" />
-                <p-button severity="secondary" label="Delete" icon="pi pi-trash" outlined (onClick)="deleteSelectedProducts()" [disabled]="!selectedProducts || !selectedProducts.length" />
-            </ng-template>
+        <div class="card">
+            <h5>CRUD Operations</h5>
+            <div class="flex gap-3 mb-4">
+                <p-button label="Products" icon="pi pi-box" (onClick)="showProducts = true; showBusinessProfiles = false" [outlined]="!showProducts" />
+                <p-button label="Business Profiles" icon="pi pi-building" (onClick)="showProducts = false; showBusinessProfiles = true" [outlined]="!showBusinessProfiles" />
+            </div>
 
-            <ng-template #end>
-                <p-button label="Export" icon="pi pi-upload" severity="secondary" (onClick)="exportCSV()" />
-            </ng-template>
-        </p-toolbar>
+            <!-- Products Section -->
+            <div *ngIf="showProducts">
+                <p-toolbar styleClass="mb-6">
+                    <ng-template #start>
+                        <p-button label="New" icon="pi pi-plus" severity="secondary" class="mr-2" (onClick)="openNew()" />
+                        <p-button severity="secondary" label="Delete" icon="pi pi-trash" outlined (onClick)="deleteSelectedProducts()" [disabled]="!selectedProducts || !selectedProducts.length" />
+                    </ng-template>
+
+                    <ng-template #end>
+                        <p-button label="Export" icon="pi pi-upload" severity="secondary" (onClick)="exportCSV()" />
+                    </ng-template>
+                </p-toolbar>
 
         <p-table
             #dt
@@ -145,6 +156,13 @@ interface ExportColumn {
                 </tr>
             </ng-template>
         </p-table>
+            </div>
+
+            <!-- Business Profiles Section -->
+            <div *ngIf="showBusinessProfiles">
+                <app-business-profile-list></app-business-profile-list>
+            </div>
+        </div>
 
         <p-dialog [(visible)]="productDialog" [style]="{ width: '450px' }" header="Product Details" [modal]="true">
             <ng-template #content>
@@ -212,6 +230,8 @@ interface ExportColumn {
 })
 export class Crud implements OnInit {
     productDialog: boolean = false;
+    showProducts: boolean = true;
+    showBusinessProfiles: boolean = false;
 
     products = signal<Product[]>([]);
 

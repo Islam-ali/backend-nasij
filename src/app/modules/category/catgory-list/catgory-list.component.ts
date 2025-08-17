@@ -178,7 +178,7 @@ export class CatgoryListComponent extends ComponentBase implements OnInit {
       slug: category.slug,
       description: category.description,
       parentId: category.parentId,
-      image: category.image ? [category.image] : [],
+      image: category.image,
       sortOrder: category.sortOrder,
       isActive: category.isActive
     });
@@ -222,9 +222,6 @@ export class CatgoryListComponent extends ComponentBase implements OnInit {
     }
 
     const categoryData = this.categoryForm.value;
-    const image = this.formControlImage.value;
-    // if image is array then take first image and if not then take image
-    categoryData.image = Array.isArray(image) ? image[0] : image;
     const request = categoryData._id
       ? this.categoryService.updateCategory(categoryData._id, categoryData)
       : this.categoryService.createCategory(categoryData);
