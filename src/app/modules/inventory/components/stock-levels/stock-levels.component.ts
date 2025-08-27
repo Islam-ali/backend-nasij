@@ -1,7 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { InventoryService, StockLevel } from '../../../../services/inventory.service';
-import { BaseResponse } from '../../../../core/models/baseResponse';
+import { InventoryService, StockLevel, BaseResponse } from '../../../../services/inventory.service';
 
 @Component({
   selector: 'app-stock-levels',

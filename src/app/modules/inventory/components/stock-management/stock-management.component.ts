@@ -1,8 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
-import { InventoryService, StockMovement, StockLevel } from '../../../../services/inventory.service';
-import { BaseResponse } from '../../../../core/models/baseResponse';
+import { InventoryService, StockMovement, StockLevel, BaseResponse } from '../../../../services/inventory.service';
 
 @Component({
   selector: 'app-stock-management',
@@ -66,15 +65,31 @@ export class StockManagementComponent implements OnInit {
 
   loadStockMovements(): void {
     this.loading = true;
-    const query = {
+    const query: any = {
       page: this.currentPage,
-      limit: this.itemsPerPage,
-      productId: this.selectedProduct || undefined,
-      movementType: this.selectedMovementType || undefined,
-      reason: this.selectedReason || undefined,
-      startDate: this.startDate ? new Date(this.startDate) : undefined,
-      endDate: this.endDate ? new Date(this.endDate) : undefined
+      limit: this.itemsPerPage
     };
+
+    // إضافة المعاملات فقط إذا كانت لها قيم صحيحة
+    if (this.selectedProduct && this.selectedProduct.trim() !== '') {
+      query.productId = this.selectedProduct;
+    }
+    
+    if (this.selectedMovementType && this.selectedMovementType.trim() !== '') {
+      query.movementType = this.selectedMovementType;
+    }
+    
+    if (this.selectedReason && this.selectedReason.trim() !== '') {
+      query.reason = this.selectedReason;
+    }
+    
+    if (this.startDate && this.startDate.trim() !== '') {
+      query.startDate = new Date(this.startDate);
+    }
+    
+    if (this.endDate && this.endDate.trim() !== '') {
+      query.endDate = new Date(this.endDate);
+    }
 
     this.inventoryService.getStockMovements(query).subscribe({
       next: (response: BaseResponse<{ movements: StockMovement[]; pagination: any }>) => {
@@ -103,8 +118,8 @@ export class StockManagementComponent implements OnInit {
 
   loadLowStockAlerts(): void {
     this.inventoryService.getLowStockAlerts(10).subscribe({
-      next: (alerts) => {
-        this.lowStockAlerts = alerts;
+      next: (alerts: BaseResponse<StockLevel[]>) => {
+        this.lowStockAlerts = alerts.data;
       },
       error: (error) => {
         console.error('Error loading low stock alerts:', error);
@@ -175,7 +190,7 @@ export class StockManagementComponent implements OnInit {
           this.loadStockLevels();
           this.loadLowStockAlerts();
         },
-        error: (error) => {
+        error: (error: any) => {
           console.error('Error adjusting stock:', error);
         }
       });

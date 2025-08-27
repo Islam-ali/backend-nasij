@@ -1,8 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
-import { InventoryService, ProfitReport, CashFlowReport, TopSellingProduct } from '../../../../services/inventory.service';
-import { BaseResponse } from '../../../../core/models/baseResponse';
+import { InventoryService, ProfitReport, CashFlowReport, TopSellingProduct, BaseResponse } from '../../../../services/inventory.service';
 
 @Component({
   selector: 'app-financial-reports',
@@ -108,7 +107,21 @@ export class FinancialReportsComponent implements OnInit {
       this.loadingProfit = true;
       const formData = this.profitReportForm.value;
       
-      this.inventoryService.generateProfitReport(formData).subscribe({
+      // تنظيف البيانات قبل الإرسال
+      const cleanData: any = {
+        period: formData.period,
+        recalculate: formData.recalculate || false
+      };
+      
+      if (formData.startDate && formData.startDate.trim() !== '') {
+        cleanData.startDate = new Date(formData.startDate);
+      }
+      
+      if (formData.endDate && formData.endDate.trim() !== '') {
+        cleanData.endDate = new Date(formData.endDate);
+      }
+      
+      this.inventoryService.generateProfitReport(cleanData).subscribe({
         next: (report) => {
           this.profitReport = report;
           this.loadingProfit = false;
@@ -126,7 +139,18 @@ export class FinancialReportsComponent implements OnInit {
       this.loadingCashFlow = true;
       const formData = this.cashFlowForm.value;
       
-      this.inventoryService.getCashFlow(formData).subscribe({
+      // تنظيف البيانات قبل الإرسال
+      const cleanData: any = {};
+      
+      if (formData.startDate && formData.startDate.trim() !== '') {
+        cleanData.startDate = new Date(formData.startDate);
+      }
+      
+      if (formData.endDate && formData.endDate.trim() !== '') {
+        cleanData.endDate = new Date(formData.endDate);
+      }
+      
+      this.inventoryService.getCashFlow(cleanData).subscribe({
         next: (response: BaseResponse<CashFlowReport>) => {
           this.cashFlowReport = response.data;
           this.loadingCashFlow = false;
@@ -144,7 +168,20 @@ export class FinancialReportsComponent implements OnInit {
       this.loadingTopProducts = true;
       const formData = this.topProductsForm.value;
       
-      this.inventoryService.getTopSellingProducts(formData).subscribe({
+      // تنظيف البيانات قبل الإرسال
+      const cleanData: any = {
+        limit: formData.limit || 10
+      };
+      
+      if (formData.startDate && formData.startDate.trim() !== '') {
+        cleanData.startDate = new Date(formData.startDate);
+      }
+      
+      if (formData.endDate && formData.endDate.trim() !== '') {
+        cleanData.endDate = new Date(formData.endDate);
+      }
+      
+      this.inventoryService.getTopSellingProducts(cleanData).subscribe({
         next: (products) => {
           this.topProducts = products;
           this.loadingTopProducts = false;

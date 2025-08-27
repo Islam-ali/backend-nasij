@@ -89,15 +89,35 @@ export class ExpenseManagementComponent implements OnInit {
 
   loadExpenses(): void {
     this.loading = true;
-    const query = {
+    const query: any = {
       page: this.currentPage,
-      limit: this.itemsPerPage,
-      category: this.selectedCategory || undefined,
-      paymentMethod: this.selectedPaymentMethod || undefined,
-      isApproved: this.selectedStatus === 'approved' ? true : this.selectedStatus === 'pending' ? false : undefined,
-      startDate: this.startDate ? new Date(this.startDate) : undefined,
-      endDate: this.endDate ? new Date(this.endDate) : undefined
+      limit: this.itemsPerPage
     };
+
+    // إضافة المعاملات فقط إذا كانت لها قيم صحيحة
+    if (this.selectedCategory && this.selectedCategory.trim() !== '') {
+      query.category = this.selectedCategory;
+    }
+    
+    if (this.selectedPaymentMethod && this.selectedPaymentMethod.trim() !== '') {
+      query.paymentMethod = this.selectedPaymentMethod;
+    }
+    
+    if (this.selectedStatus && this.selectedStatus.trim() !== '') {
+      if (this.selectedStatus === 'approved') {
+        query.isApproved = true;
+      } else if (this.selectedStatus === 'pending') {
+        query.isApproved = false;
+      }
+    }
+    
+    if (this.startDate && this.startDate.trim() !== '') {
+      query.startDate = new Date(this.startDate);
+    }
+    
+    if (this.endDate && this.endDate.trim() !== '') {
+      query.endDate = new Date(this.endDate);
+    }
 
     this.inventoryService.getExpenses(query).subscribe({
       next: (response: BaseResponse<{ expenses: Expense[]; pagination: any }>) => {
@@ -201,7 +221,7 @@ export class ExpenseManagementComponent implements OnInit {
           }
         });
       } else if (this.showEditForm && this.selectedExpense) {
-        this.inventoryService.updateExpense(this.selectedExpense._id!, formData).subscribe({
+        this.inventoryService.updateExpense(this.selectedExpense.id || this.selectedExpense._id!, formData).subscribe({
           next: () => {
             this.hideForms();
             this.loadExpenses();
@@ -216,7 +236,7 @@ export class ExpenseManagementComponent implements OnInit {
 
   deleteExpense(expense: Expense): void {
     if (confirm('هل أنت متأكد من حذف هذا المصروف؟')) {
-      this.inventoryService.deleteExpense(expense._id!).subscribe({
+      this.inventoryService.deleteExpense(expense.id || expense._id!).subscribe({
         next: () => {
           this.loadExpenses();
         },

@@ -1,37 +1,32 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
-import { BaseResponse } from '../core/models/baseResponse';
-import { Product } from '../pages/service/product.service';
+import { IProduct } from '../interfaces/product.interface';
 
-// Interfaces
 export interface StockMovement {
-  _id?: string;
-  productId: Product;
-  movementType: 'IN' | 'OUT' | 'ADJUSTMENT' | 'SALE' | 'RETURN' | 'DAMAGED' | 'EXPIRED';
-  reason: 'PURCHASE' | 'SALE' | 'RETURN' | 'ADJUSTMENT' | 'DAMAGED' | 'EXPIRED' | 'TRANSFER' | 'INITIAL_STOCK';
+  id: string;
+  productId: IProduct;
+  movementType: string;
   quantity: number;
   unitCost: number;
   totalCost: number;
   previousStock: number;
   newStock: number;
-  orderId?: string;
-  reference?: string;
-  notes?: string;
   movementDate: Date;
-  createdBy?: string;
-  createdAt?: Date;
-  updatedAt?: Date;
+  reason: string;
+  orderId?: string;
+  notes?: string;
 }
 
 export interface Expense {
-  _id?: string;
+  id: string;
+  _id?: string; // For compatibility
   title: string;
   description?: string;
   amount: number;
-  category: 'RENT' | 'UTILITIES' | 'SALARY' | 'MARKETING' | 'INVENTORY' | 'SHIPPING' | 'MAINTENANCE' | 'INSURANCE' | 'TAXES' | 'OFFICE_SUPPLIES' | 'TRAVEL' | 'PROFESSIONAL_SERVICES' | 'OTHER';
-  paymentMethod: 'CASH' | 'BANK_TRANSFER' | 'CREDIT_CARD' | 'CHECK' | 'DIGITAL_PAYMENT';
+  category: string;
+  paymentMethod: string;
   expenseDate: Date;
   receiptNumber?: string;
   vendor?: string;
@@ -39,16 +34,12 @@ export interface Expense {
   recurringPeriod?: string;
   nextDueDate?: Date;
   isApproved: boolean;
-  approvedBy?: string;
   notes?: string;
-  createdBy?: string;
-  createdAt?: Date;
-  updatedAt?: Date;
 }
 
 export interface ProfitReport {
-  _id?: string;
-  period: 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'QUARTERLY' | 'YEARLY';
+  id: string;
+  period: string;
   startDate: Date;
   endDate: Date;
   totalRevenue: number;
@@ -60,31 +51,6 @@ export interface ProfitReport {
   totalOrders: number;
   totalItemsSold: number;
   averageOrderValue: number;
-  topSellingProducts: Array<{
-    productId: string;
-    productName: string;
-    quantitySold: number;
-    revenue: number;
-    cost: number;
-    profit: number;
-  }>;
-  expensesByCategory: Array<{
-    category: string;
-    amount: number;
-    percentage: number;
-  }>;
-  isCalculated: boolean;
-  calculatedAt?: Date;
-  createdAt?: Date;
-  updatedAt?: Date;
-}
-
-export interface CashFlowItem {
-  date: Date;
-  amount: number;
-  type: 'INFLOW' | 'OUTFLOW';
-  description: string;
-  category: string;
 }
 
 export interface CashFlowReport {
@@ -100,6 +66,14 @@ export interface CashFlowReport {
     total: number;
     pages: number;
   };
+}
+
+export interface CashFlowItem {
+  date: Date;
+  amount: number;
+  type: 'INFLOW' | 'OUTFLOW';
+  description: string;
+  category: string;
 }
 
 export interface TopSellingProduct {
@@ -123,169 +97,94 @@ export interface DashboardSummary {
 }
 
 export interface StockLevel {
-  _id: string;
+  factoryPrice: number;
   name: string;
-  stock: number;
   price: number;
-  factoryPrice?: number;
+  stock: number;
+  _id: string;
 }
 
-// Query interfaces
-export interface StockMovementQuery {
-  productId?: string;
-  movementType?: string;
-  reason?: string;
-  startDate?: Date;
-  endDate?: Date;
-  page?: number;
-  limit?: number;
-}
-
-export interface ExpenseQuery {
-  category?: string;
-  paymentMethod?: string;
-  startDate?: Date;
-  endDate?: Date;
-  isRecurring?: boolean;
-  isApproved?: boolean;
-  page?: number;
-  limit?: number;
-}
-
-export interface ProfitReportQuery {
-  period: string;
-  startDate: Date;
-  endDate: Date;
-  recalculate?: boolean;
-}
-
-export interface CashFlowQuery {
-  startDate: Date;
-  endDate: Date;
-  page?: number;
-  limit?: number;
-}
-
-export interface TopSellingProductsQuery {
-  startDate: Date;
-  endDate: Date;
-  limit?: number;
-  categoryId?: string;
+export interface BaseResponse<T> {
+  success: boolean;
+  data: T;
+  message?: string;
+  timestamp: string;
+  statusCode: number;
 }
 
 @Injectable({
   providedIn: 'root'
 })
 export class InventoryService {
+
   private apiUrl = `${environment.apiUrl}/inventory`;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
-  // Stock Movement Methods
-  createStockMovement(movement: Partial<StockMovement>): Observable<StockMovement> {
+  // Stock Movements
+  getStockMovements(params?: any): Observable<BaseResponse<{ movements: StockMovement[]; pagination: any }>> {
+    const cleanParams = this.cleanQueryParams(params);
+    return this.http.get<BaseResponse<{ movements: StockMovement[]; pagination: any }>>(`${this.apiUrl}/stock-movements`, { params: cleanParams });
+  }
+
+  createStockMovement(movement: any): Observable<StockMovement> {
     return this.http.post<StockMovement>(`${this.apiUrl}/stock-movements`, movement);
   }
 
-  getStockMovements(query: StockMovementQuery = {}): Observable<BaseResponse<{ movements: StockMovement[]; pagination: any }>> {
-    let params = new HttpParams();
-    
-    if (query.productId) params = params.set('productId', query.productId);
-    if (query.movementType) params = params.set('movementType', query.movementType);
-    if (query.reason) params = params.set('reason', query.reason);
-    if (query.startDate) params = params.set('startDate', query.startDate.toString());
-    if (query.endDate) params = params.set('endDate', query.endDate.toString());
-    if (query.page) params = params.set('page', query.page.toString());
-    if (query.limit) params = params.set('limit', query.limit.toString());
-
-    return this.http.get<BaseResponse<{ movements: StockMovement[]; pagination: any }>>(`${this.apiUrl}/stock-movements`, { params });
+  // Expenses
+  getExpenses(params?: any): Observable<BaseResponse<{ expenses: Expense[]; pagination: any }>> {
+    const cleanParams = this.cleanQueryParams(params);
+    return this.http.get<BaseResponse<{ expenses: Expense[]; pagination: any }>>(`${this.apiUrl}/expenses`, { params: cleanParams });
   }
 
-  getStockMovementById(id: string): Observable<StockMovement> {
-    return this.http.get<StockMovement>(`${this.apiUrl}/stock-movements/${id}`);
-  }
-
-  updateStockMovement(id: string, update: Partial<StockMovement>): Observable<StockMovement> {
-    return this.http.put<StockMovement>(`${this.apiUrl}/stock-movements/${id}`, update);
-  }
-
-  // Expense Methods
-  createExpense(expense: Partial<Expense>): Observable<Expense> {
+  createExpense(expense: any): Observable<Expense> {
     return this.http.post<Expense>(`${this.apiUrl}/expenses`, expense);
   }
 
-  getExpenses(query: ExpenseQuery = {}): Observable<BaseResponse<{ expenses: Expense[]; pagination: any }>> {
-    let params = new HttpParams();
-    
-    if (query.category) params = params.set('category', query.category);
-    if (query.paymentMethod) params = params.set('paymentMethod', query.paymentMethod);
-    if (query.isRecurring !== undefined) params = params.set('isRecurring', query.isRecurring.toString());
-    if (query.isApproved !== undefined) params = params.set('isApproved', query.isApproved.toString());
-    if (query.startDate) params = params.set('startDate', query.startDate.toString());
-    if (query.endDate) params = params.set('endDate', query.endDate.toString());
-    if (query.page) params = params.set('page', query.page.toString());
-    if (query.limit) params = params.set('limit', query.limit.toString());
-
-    return this.http.get<BaseResponse<{ expenses: Expense[]; pagination: any }>>(`${this.apiUrl}/expenses`, { params });
-  }
-
-  getExpenseById(id: string): Observable<Expense> {
-    return this.http.get<Expense>(`${this.apiUrl}/expenses/${id}`);
-  }
-
-  updateExpense(id: string, update: Partial<Expense>): Observable<Expense> {
-    return this.http.put<Expense>(`${this.apiUrl}/expenses/${id}`, update);
+  updateExpense(id: string, expense: any): Observable<Expense> {
+    return this.http.put<Expense>(`${this.apiUrl}/expenses/${id}`, expense);
   }
 
   deleteExpense(id: string): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/expenses/${id}`);
   }
 
-  // Report Methods
-  generateProfitReport(query: ProfitReportQuery): Observable<ProfitReport> {
-    return this.http.post<ProfitReport>(`${this.apiUrl}/reports/profit`, query);
+  // Profit Reports
+  generateProfitReport(params: any): Observable<ProfitReport> {
+    return this.http.post<ProfitReport>(`${this.apiUrl}/reports/profit`, params);
   }
 
   getProfitReports(period?: string, limit?: number): Observable<ProfitReport[]> {
-    let params = new HttpParams();
-    if (period) params = params.set('period', period);
-    if (limit) params = params.set('limit', limit.toString());
-    
+    const params: any = {};
+    if (period) params.period = period;
+    if (limit) params.limit = limit;
     return this.http.get<ProfitReport[]>(`${this.apiUrl}/reports/profit`, { params });
   }
 
-  getCashFlow(query: CashFlowQuery): Observable<BaseResponse<CashFlowReport>> {
-    let params = new HttpParams();
-    params = params.set('startDate', query.startDate.toString());
-    params = params.set('endDate', query.endDate.toString());
-    if (query.page) params = params.set('page', query.page.toString());
-    if (query.limit) params = params.set('limit', query.limit.toString());
-
-    return this.http.get<BaseResponse<CashFlowReport>>(`${this.apiUrl}/reports/cash-flow`, { params });
+  // Cash Flow
+  getCashFlow(params: any): Observable<BaseResponse<CashFlowReport>> {
+    const cleanParams = this.cleanQueryParams(params);
+    return this.http.get<BaseResponse<CashFlowReport>>(`${this.apiUrl}/reports/cash-flow`, { params: cleanParams });
   }
 
-  getTopSellingProducts(query: TopSellingProductsQuery): Observable<TopSellingProduct[]> {
-    let params = new HttpParams();
-    params = params.set('startDate', query.startDate.toString());
-    params = params.set('endDate', query.endDate.toString());
-    if (query.limit) params = params.set('limit', query.limit.toString());
-    if (query.categoryId) params = params.set('categoryId', query.categoryId);
-
-    return this.http.get<TopSellingProduct[]>(`${this.apiUrl}/reports/top-selling-products`, { params });
-  }
-
-  // Stock Management Methods
+  // Stock Levels
   getCurrentStockLevels(): Observable<BaseResponse<StockLevel[]>> {
     return this.http.get<BaseResponse<StockLevel[]>>(`${this.apiUrl}/stock/current-levels`);
   }
 
-  getLowStockAlerts(threshold?: number): Observable<StockLevel[]> {
-    let params = new HttpParams();
-    if (threshold) params = params.set('threshold', threshold.toString());
-    
-    return this.http.get<StockLevel[]>(`${this.apiUrl}/stock/low-stock-alerts`, { params });
+  getLowStockAlerts(threshold: number = 10): Observable<BaseResponse<StockLevel[]>> {
+    return this.http.get<BaseResponse<StockLevel[]>>(`${this.apiUrl}/stock/low-stock-alerts`, { 
+      params: { threshold: threshold.toString() } 
+    });
   }
 
-  // Dashboard Methods
+  // Top Selling Products
+  getTopSellingProducts(params: any): Observable<TopSellingProduct[]> {
+    const cleanParams = this.cleanQueryParams(params);
+    return this.http.get<TopSellingProduct[]>(`${this.apiUrl}/reports/top-selling-products`, { params: cleanParams });
+  }
+
+  // Dashboard
   getDashboardSummary(): Observable<DashboardSummary> {
     return this.http.get<DashboardSummary>(`${this.apiUrl}/dashboard/summary`);
   }
@@ -297,5 +196,38 @@ export class InventoryService {
 
   quickAdjustStock(data: { productId: string; newStock: number; reason: string }): Observable<StockMovement> {
     return this.http.post<StockMovement>(`${this.apiUrl}/quick/adjust-stock`, data);
+  }
+
+  // Record sale (called automatically when order is created)
+  recordSale(orderId: string, items: any[]): Observable<any> {
+    return this.http.post(`${this.apiUrl}/record-sale`, { orderId, items });
+  }
+
+  // Record accounting transaction
+  recordAccountingTransaction(orderId: string, orderData: any): Observable<any> {
+    return this.http.post(`${this.apiUrl}/record-accounting-transaction`, { orderId, orderData });
+  }
+
+  // Helper method to clean query parameters
+  private cleanQueryParams(params: any): any {
+    if (!params) return {};
+    
+    const cleanParams: any = {};
+    
+    Object.keys(params).forEach(key => {
+      const value = params[key];
+      
+      // تجاهل القيم undefined, null, أو النصوص الفارغة
+      if (value !== undefined && value !== null && value !== '') {
+        // إذا كانت القيمة نص، تأكد من أنها ليست فارغة بعد إزالة المسافات
+        if (typeof value === 'string' && value.trim() !== '') {
+          cleanParams[key] = value.trim();
+        } else if (typeof value !== 'string') {
+          cleanParams[key] = value;
+        }
+      }
+    });
+    
+    return cleanParams;
   }
 } 

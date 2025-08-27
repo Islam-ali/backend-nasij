@@ -30,7 +30,6 @@ import { BaseResponse, pagination } from '../../../core/models/baseResponse';
 import { ComponentBase } from '../../../core/directives/component-base.directive';
 import { finalize, takeUntil } from 'rxjs';
 import { TextareaModule } from 'primeng/textarea';
-import { Product } from '../../../pages/service/product.service';
 import { ProductsService } from '../../../services/products.service';
 import { IProduct, ProductVariant, ProductVariantAttribute } from '../../../interfaces/product.interface';
 import { EnumProductVariant } from '../../product/product-list/product-list.component';

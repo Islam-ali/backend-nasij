@@ -6,21 +6,15 @@
 
   <!-- Tabs Navigation -->
   <div class="tabs-navigation">
-    <button class="tab-btn" 
-            [class.active]="activeTab === 'profit'"
-            (click)="setActiveTab('profit')">
+    <button class="tab-btn" [class.active]="activeTab === 'profit'" (click)="setActiveTab('profit')">
       <i class="fas fa-chart-pie"></i>
       تقرير الأرباح
     </button>
-    <button class="tab-btn" 
-            [class.active]="activeTab === 'cashflow'"
-            (click)="setActiveTab('cashflow')">
+    <button class="tab-btn" [class.active]="activeTab === 'cashflow'" (click)="setActiveTab('cashflow')">
       <i class="fas fa-money-bill-wave"></i>
       تدفق النقد
     </button>
-    <button class="tab-btn" 
-            [class.active]="activeTab === 'top-products'"
-            (click)="setActiveTab('top-products')">
+    <button class="tab-btn" [class.active]="activeTab === 'top-products'" (click)="setActiveTab('top-products')">
       <i class="fas fa-star"></i>
       أفضل المنتجات
     </button>
@@ -28,7 +22,7 @@
 
   <!-- Profit Report Tab -->
   @if(activeTab === 'profit') {
-  <div class="tab-content" >
+  <div class="tab-content">
     <div class="report-section">
       <div class="report-header">
         <h3><i class="fas fa-chart-pie"></i> تقرير الأرباح</h3>
@@ -64,7 +58,7 @@
         </form>
       </div>
       @if(profitReport) {
-      <div class="report-content" >
+      <div class="report-content">
         <!-- Summary Cards -->
         <div class="summary-cards">
           <div class="summary-card revenue">
@@ -128,7 +122,7 @@
         </div>
 
         <!-- Top Selling Products -->
-        @if(profitReport.topSellingProducts && profitReport.topSellingProducts.length > 0) {
+        <!-- @if(profitReport && profitReport.topSellingProducts.length > 0) {
         <div class="top-products-section" >
           <h4>أفضل المنتجات مبيعاً</h4>
           <div class="products-list">
@@ -149,9 +143,9 @@
             }
           </div>
         </div>
-        }
+        } -->
         <!-- Expenses by Category -->
-        @if(profitReport.expensesByCategory && profitReport.expensesByCategory.length > 0) {
+        <!-- @if(profitReport.expensesByCategory && profitReport.expensesByCategory.length > 0) {
         <div class="expenses-section" >
           <h4>المصروفات حسب الفئة</h4>
           <div class="expenses-list">
@@ -169,9 +163,9 @@
             }
           </div>
         </div>
+      } -->
+      </div>
       }
-    </div>
-    }
       <!-- Loading State -->
       @if(loadingProfit) {
       <div class="loading-state">
@@ -185,7 +179,7 @@
 
   <!-- Cash Flow Tab -->
   @if(activeTab === 'cashflow') {
-  <div class="tab-content" >
+  <div class="tab-content">
     <div class="report-section">
       <div class="report-header">
         <h3><i class="fas fa-money-bill-wave"></i> تقرير تدفق النقد</h3>
@@ -209,7 +203,7 @@
         </form>
       </div>
       @if(cashFlowReport) {
-      <div class="report-content" >
+      <div class="report-content">
         <!-- Summary -->
         <div class="cash-flow-summary">
           <div class="summary-item">
@@ -261,7 +255,7 @@
   }
   <!-- Top Products Tab -->
   @if(activeTab === 'top-products') {
-  <div class="tab-content" >
+  <div class="tab-content">
     <div class="report-section">
       <div class="report-header">
         <h3><i class="fas fa-star"></i> أفضل المنتجات مبيعاً</h3>
@@ -295,7 +289,7 @@
       </div>
 
       @if(topProducts.length > 0) {
-      <div class="report-content" >
+      <div class="report-content">
         <div class="top-products-grid">
           @for(product of topProducts; track product.productId; let i = $index) {
           <div class="product-card">
@@ -324,7 +318,7 @@
               </div>
             </div>
           </div>
-        }
+          }
         </div>
       </div>
       }
@@ -338,4 +332,4 @@
     </div>
   </div>
   }
-</div> 
+</div>

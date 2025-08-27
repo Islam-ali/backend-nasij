@@ -2,7 +2,123 @@
   <div class="page-header">
     <h1><i class="fas fa-bolt"></i> الإجراءات السريعة</h1>
   </div>
+  
   <div class="content">
-    <p>محتوى الإجراءات السريعة</p>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      
+      <!-- Quick Order Creation -->
+      <div class="card p-6">
+        <div class="flex items-center mb-4">
+          <i class="fas fa-shopping-cart text-blue-500 text-2xl mr-3"></i>
+          <h3 class="text-lg font-semibold">إنشاء طلب سريع</h3>
+        </div>
+        <p class="text-gray-600 mb-4">إنشاء طلب جديد مع تحديث المخزون والمحاسبة تلقائياً</p>
+        <button class="btn btn-primary w-full" (click)="createQuickOrder()">
+          <i class="fas fa-plus mr-2"></i>إنشاء طلب
+        </button>
+      </div>
+
+      <!-- Stock Management -->
+      <div class="card p-6">
+        <div class="flex items-center mb-4">
+          <i class="fas fa-boxes text-green-500 text-2xl mr-3"></i>
+          <h3 class="text-lg font-semibold">إدارة المخزون</h3>
+        </div>
+        <p class="text-gray-600 mb-4">تحديث كميات المنتجات وإضافة حركات المخزون</p>
+        <button class="btn btn-success w-full" (click)="manageStock()">
+          <i class="fas fa-edit mr-2"></i>إدارة المخزون
+        </button>
+      </div>
+
+      <!-- Financial Reports -->
+      <div class="card p-6">
+        <div class="flex items-center mb-4">
+          <i class="fas fa-chart-line text-purple-500 text-2xl mr-3"></i>
+          <h3 class="text-lg font-semibold">التقارير المالية</h3>
+        </div>
+        <p class="text-gray-600 mb-4">عرض تقارير الأرباح والتدفقات النقدية</p>
+        <button class="btn btn-info w-full" (click)="viewFinancialReports()">
+          <i class="fas fa-chart-bar mr-2"></i>عرض التقارير
+        </button>
+      </div>
+
+      <!-- Expense Management -->
+      <div class="card p-6">
+        <div class="flex items-center mb-4">
+          <i class="fas fa-receipt text-orange-500 text-2xl mr-3"></i>
+          <h3 class="text-lg font-semibold">إدارة المصروفات</h3>
+        </div>
+        <p class="text-gray-600 mb-4">إضافة وتتبع المصروفات والإيرادات</p>
+        <button class="btn btn-warning w-full" (click)="manageExpenses()">
+          <i class="fas fa-plus mr-2"></i>إدارة المصروفات
+        </button>
+      </div>
+
+      <!-- Low Stock Alerts -->
+      <div class="card p-6">
+        <div class="flex items-center mb-4">
+          <i class="fas fa-exclamation-triangle text-red-500 text-2xl mr-3"></i>
+          <h3 class="text-lg font-semibold">تنبيهات المخزون</h3>
+        </div>
+        <p class="text-gray-600 mb-4">عرض المنتجات منخفضة المخزون</p>
+        <button class="btn btn-danger w-full" (click)="viewLowStockAlerts()">
+          <i class="fas fa-eye mr-2"></i>عرض التنبيهات
+        </button>
+      </div>
+
+      <!-- Accounting Dashboard -->
+      <div class="card p-6">
+        <div class="flex items-center mb-4">
+          <i class="fas fa-calculator text-teal-500 text-2xl mr-3"></i>
+          <h3 class="text-lg font-semibold">لوحة المحاسبة</h3>
+        </div>
+        <p class="text-gray-600 mb-4">نظرة عامة على الوضع المالي</p>
+        <button class="btn btn-secondary w-full" (click)="viewAccountingDashboard()">
+          <i class="fas fa-tachometer-alt mr-2"></i>لوحة المحاسبة
+        </button>
+      </div>
+
+    </div>
+
+    <!-- Recent Transactions -->
+    <div class="mt-8">
+      <div class="card p-6">
+        <h3 class="text-xl font-semibold mb-4">
+          <i class="fas fa-history mr-2"></i>آخر المعاملات
+        </h3>
+        <div class="overflow-x-auto">
+          <table class="table table-striped">
+            <thead>
+              <tr>
+                <th>التاريخ</th>
+                <th>النوع</th>
+                <th>الوصف</th>
+                <th>المبلغ</th>
+                <th>الحالة</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let transaction of recentTransactions">
+                <td>{{ transaction.date | date:'short' }}</td>
+                <td>
+                  <span [class]="getTransactionTypeClass(transaction.type)">
+                    {{ getTransactionTypeText(transaction.type) }}
+                  </span>
+                </td>
+                <td>{{ transaction.description }}</td>
+                <td [class]="transaction.amount > 0 ? 'text-success' : 'text-danger'">
+                  {{ transaction.amount | currency:'USD' }}
+                </td>
+                <td>
+                  <span [class]="getStatusClass(transaction.status)">
+                    {{ transaction.status }}
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
   </div>
 </div> 
