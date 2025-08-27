@@ -1,0 +1,303 @@
+<div class="stock-management">
+  <!-- Header -->
+  <div class="page-header">
+    <h1><i class="fas fa-boxes"></i> إدارة المخزون</h1>
+    <div class="header-actions">
+      <button class="btn btn-primary" (click)="showAddStockForm()">
+        <i class="fas fa-plus"></i> إضافة مخزون
+      </button>
+      <button class="btn btn-secondary" (click)="showAdjustStockForm()">
+        <i class="fas fa-edit"></i> تعديل المخزون
+      </button>
+    </div>
+  </div>
+
+  <!-- Stock Overview Cards -->
+  <div class="overview-cards">
+    <div class="card stock-card">
+      <div class="card-icon">
+        <i class="fas fa-box"></i>
+      </div>
+      <div class="card-content">
+        <h3>إجمالي المنتجات</h3>
+        <p class="card-value">{{ stockLevels.length }}</p>
+      </div>
+    </div>
+
+    <div class="card alert-card">
+      <div class="card-icon">
+        <i class="fas fa-exclamation-triangle"></i>
+      </div>
+      <div class="card-content">
+        <h3>منتجات منخفضة المخزون</h3>
+        <p class="card-value">{{ lowStockAlerts.length }}</p>
+      </div>
+    </div>
+
+    <div class="card movement-card">
+      <div class="card-icon">
+        <i class="fas fa-exchange-alt"></i>
+      </div>
+      <div class="card-content">
+        <h3>إجمالي الحركات</h3>
+        <p class="card-value">{{ totalItems }}</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Forms -->
+   @if(showAddForm || showAdjustForm) {
+  <div class="forms-section">
+    <!-- Add Stock Form -->
+     @if(showAddForm) {
+    <div class="form-container" >
+      <div class="form-header">
+        <h3><i class="fas fa-plus"></i> إضافة مخزون جديد</h3>
+        <button class="close-btn" (click)="hideForms()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <form [formGroup]="addStockForm" (ngSubmit)="addStock()" class="stock-form">
+        <div class="form-row">
+          <div class="form-group">
+            <label>المنتج</label>
+            <select formControlName="productId" class="form-control">
+              <option value="">اختر المنتج</option>
+              <option *ngFor="let product of stockLevels" [value]="product._id">
+                {{ product.name }}
+              </option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>الكمية</label>
+            <input type="number" formControlName="quantity" class="form-control" min="1">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>سعر الوحدة</label>
+            <input type="number" formControlName="unitCost" class="form-control" min="0" step="0.01">
+          </div>
+          <div class="form-group">
+            <label>ملاحظات</label>
+            <input type="text" formControlName="notes" class="form-control">
+          </div>
+        </div>
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary" [disabled]="!addStockForm.valid">
+            <i class="fas fa-save"></i> حفظ
+          </button>
+          <button type="button" class="btn btn-secondary" (click)="hideForms()">
+            إلغاء
+          </button>
+        </div>
+      </form>
+    </div>
+    }
+
+    <!-- Adjust Stock Form -->
+    @if(showAdjustForm) {
+    <div class="form-container" >
+      <div class="form-header">
+        <h3><i class="fas fa-edit"></i> تعديل المخزون</h3>
+        <button class="close-btn" (click)="hideForms()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <form [formGroup]="adjustStockForm" (ngSubmit)="adjustStock()" class="stock-form">
+        <div class="form-row">
+          <div class="form-group">
+            <label>المنتج</label>
+            <select formControlName="productId" class="form-control">
+              <option value="">اختر المنتج</option>
+              @for(product of stockLevels; track product._id) {
+              <option [value]="product._id">
+                {{ product.name }} (المخزون الحالي: {{ product.stock }})
+              </option>
+              }
+            </select>
+          </div>
+          <div class="form-group">
+            <label>المخزون الجديد</label>
+            <input type="number" formControlName="newStock" class="form-control" min="0">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group full-width">
+            <label>سبب التعديل</label>
+            <textarea formControlName="reason" class="form-control" rows="3"></textarea>
+          </div>
+        </div>
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary" [disabled]="!adjustStockForm.valid">
+            <i class="fas fa-save"></i> حفظ
+          </button>
+          <button type="button" class="btn btn-secondary" (click)="hideForms()">
+            إلغاء
+          </button>
+        </div>
+      </form>
+    </div>
+    }
+  </div>
+}
+
+  <!-- Filters -->
+  <div class="filters-section">
+    <div class="filters-header">
+      <h3><i class="fas fa-filter"></i> فلاتر البحث</h3>
+      <button class="btn btn-outline" (click)="clearFilters()">
+        <i class="fas fa-times"></i> مسح الفلاتر
+      </button>
+    </div>
+    <div class="filters-grid">
+      <div class="filter-group">
+        <label>نوع الحركة</label>
+        <select [(ngModel)]="selectedMovementType" (change)="onFilterChange()" class="form-control">
+          <option value="">جميع الأنواع</option>
+          <option value="IN">إضافة</option>
+          <option value="OUT">سحب</option>
+          <option value="SALE">بيع</option>
+          <option value="RETURN">إرجاع</option>
+          <option value="ADJUSTMENT">تعديل</option>
+          <option value="DAMAGED">تالف</option>
+          <option value="EXPIRED">منتهي الصلاحية</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>السبب</label>
+        <select [(ngModel)]="selectedReason" (change)="onFilterChange()" class="form-control">
+          <option value="">جميع الأسباب</option>
+          <option value="PURCHASE">شراء</option>
+          <option value="SALE">بيع</option>
+          <option value="RETURN">إرجاع</option>
+          <option value="ADJUSTMENT">تعديل</option>
+          <option value="DAMAGED">تالف</option>
+          <option value="EXPIRED">منتهي الصلاحية</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>من تاريخ</label>
+        <input type="date" [(ngModel)]="startDate" (change)="onFilterChange()" class="form-control">
+      </div>
+      <div class="filter-group">
+        <label>إلى تاريخ</label>
+        <input type="date" [(ngModel)]="endDate" (change)="onFilterChange()" class="form-control">
+      </div>
+    </div>
+  </div>
+
+  <!-- Stock Movements Table -->
+  <div class="table-section">
+    <div class="table-header">
+      <h3><i class="fas fa-list"></i> حركات المخزون</h3>
+      <div class="table-info">
+        إجمالي النتائج: {{ totalItems }}
+      </div>
+    </div>
+
+    <div class="table-container">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>التاريخ</th>
+            <th>المنتج</th>
+            <th>نوع الحركة</th>
+            <th>الكمية</th>
+            <th>سعر الوحدة</th>
+            <th>التكلفة الإجمالية</th>
+            <th>المخزون السابق</th>
+            <th>المخزون الجديد</th>
+            <th>السبب</th>
+            <th>ملاحظات</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let movement of stockMovements" class="movement-row">
+            <td>{{ movement.movementDate | date:'short' }}</td>
+            <td>{{ movement.productId.name }}</td>
+            <td>
+              <span class="movement-type" [style.background-color]="getMovementTypeColor(movement.movementType)">
+                {{ movement.movementType }}
+              </span>
+            </td>
+            <td>{{ movement.quantity }}</td>
+            <td>{{ movement.unitCost | currency:'EGP':'symbol':'1.2-2' }}</td>
+            <td>{{ movement.totalCost | currency:'EGP':'symbol':'1.2-2' }}</td>
+            <td>{{ movement.previousStock }}</td>
+            <td>{{ movement.newStock }}</td>
+            <td>{{ movement.reason }}</td>
+            <td>{{ movement.notes || '-' }}</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- Loading State -->
+      @if(loading) {
+      <div class="loading-overlay">
+        <div class="loading-spinner">
+          <i class="fas fa-spinner fa-spin"></i>
+          <p>جاري التحميل...</p>
+        </div>
+      </div>
+      }
+      <!-- Empty State -->
+      @if(!loading && stockMovements?.length === 0) {
+      <div class="empty-state">
+        <i class="fas fa-inbox"></i>
+        <p>لا توجد حركات مخزون</p>
+      </div>
+      }
+    </div>
+
+    <!-- Pagination -->
+    <div class="pagination" *ngIf="totalPages > 1">
+      <button class="btn btn-outline" 
+              [disabled]="currentPage === 1"
+              (click)="onPageChange(currentPage - 1)">
+        <i class="fas fa-chevron-right"></i> السابق
+      </button>
+      
+      <div class="page-numbers">
+        <span *ngFor="let page of getPageNumbers()" 
+              class="page-number"
+              [class.active]="page === currentPage"
+              (click)="onPageChange(page)">
+          {{ page }}
+        </span>
+      </div>
+      
+      <button class="btn btn-outline" 
+              [disabled]="currentPage === totalPages"
+              (click)="onPageChange(currentPage + 1)">
+        التالي <i class="fas fa-chevron-left"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Low Stock Alerts -->
+  <div class="alerts-section" *ngIf="lowStockAlerts.length > 0">
+    <div class="section-header">
+      <h3><i class="fas fa-exclamation-triangle"></i> تنبيهات المخزون المنخفض</h3>
+    </div>
+    <div class="alerts-grid">
+      <div *ngFor="let alert of lowStockAlerts" class="alert-card">
+        <div class="alert-icon">
+          <i class="fas fa-exclamation-triangle"></i>
+        </div>
+        <div class="alert-content">
+          <h4>{{ alert.name }}</h4>
+          <p class="alert-stock">
+            المخزون الحالي: 
+            <span [style.color]="getStockStatusColor(alert.stock)">
+              {{ alert.stock }}
+            </span>
+          </p>
+          <p class="alert-status" [style.color]="getStockStatusColor(alert.stock)">
+            {{ getStockStatusText(alert.stock) }}
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div> 

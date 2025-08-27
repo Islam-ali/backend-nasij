@@ -1,0 +1,29 @@
+<div class="stock-levels">
+  <div class="page-header">
+    <h1><i class="fas fa-boxes"></i> مستويات المخزون</h1>
+  </div>
+
+  <div class="content">
+    <div class="stock-grid" *ngIf="!loading">
+      <div *ngFor="let item of stockLevels" class="stock-item">
+        <div class="stock-info">
+          <h3>{{ item.name }}</h3>
+          <div class="stock-details">
+            <p class="stock-quantity">
+              الكمية: <span [style.color]="getStockStatusColor(item.stock)">{{ item.stock }}</span>
+            </p>
+            <p class="stock-price">السعر: {{ item.price | currency:'EGP':'symbol':'1.0-0' }}</p>
+          </div>
+          <div class="stock-status" [style.color]="getStockStatusColor(item.stock)">
+            {{ getStockStatusText(item.stock) }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="loading" class="loading">
+      <i class="fas fa-spinner fa-spin"></i>
+      <p>جاري التحميل...</p>
+    </div>
+  </div>
+</div> 

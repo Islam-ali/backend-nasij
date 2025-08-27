@@ -1,0 +1,331 @@
+<div class="expense-management">
+  <!-- Header -->
+  <div class="page-header">
+    <h1><i class="fas fa-receipt"></i> إدارة المصروفات</h1>
+    <div class="header-actions">
+      <button class="btn btn-primary" (click)="showAddExpenseForm()">
+        <i class="fas fa-plus"></i> إضافة مصروف جديد
+      </button>
+    </div>
+  </div>
+
+  <!-- Expense Overview Cards -->
+  <div class="overview-cards">
+    <div class="card total-card">
+      <div class="card-icon">
+        <i class="fas fa-money-bill-wave"></i>
+      </div>
+      <div class="card-content">
+        <h3>إجمالي المصروفات</h3>
+        <p class="card-value">{{ getTotalExpenses() | currency:'EGP':'symbol':'1.0-0' }}</p>
+      </div>
+    </div>
+
+    <div class="card pending-card">
+      <div class="card-icon">
+        <i class="fas fa-clock"></i>
+      </div>
+      <div class="card-content">
+        <h3>مصروفات في الانتظار</h3>
+        <p class="card-value">{{ getTotalPendingExpenses() | currency:'EGP':'symbol':'1.0-0' }}</p>
+      </div>
+    </div>
+
+    <div class="card approved-card">
+      <div class="card-icon">
+        <i class="fas fa-check-circle"></i>
+      </div>
+      <div class="card-content">
+        <h3>مصروفات معتمدة</h3>
+        <p class="card-value">{{ getTotalApprovedExpenses() | currency:'EGP':'symbol':'1.0-0' }}</p>
+      </div>
+    </div>
+
+    <div class="card recurring-card">
+      <div class="card-icon">
+        <i class="fas fa-redo"></i>
+      </div>
+      <div class="card-content">
+        <h3>مصروفات متكررة</h3>
+        <p class="card-value">{{ getTotalRecurringExpenses() | currency:'EGP':'symbol':'1.0-0' }}</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Expense Form -->
+  @if(showAddForm || showEditForm) {
+  <div class="form-section" >
+    <div class="form-container">
+      <div class="form-header">
+        <h3>
+          <i class="fas" [class.fa-plus]="showAddForm" [class.fa-edit]="showEditForm"></i>
+          {{ showAddForm ? 'إضافة مصروف جديد' : 'تعديل المصروف' }}
+        </h3>
+        <button class="close-btn" (click)="hideForms()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <form [formGroup]="expenseForm" (ngSubmit)="saveExpense()" class="expense-form">
+        <div class="form-row">
+          <div class="form-group">
+            <label>عنوان المصروف *</label>
+            <input type="text" formControlName="title" class="form-control" placeholder="أدخل عنوان المصروف">
+          </div>
+          <div class="form-group">
+            <label>المبلغ *</label>
+            <input type="number" formControlName="amount" class="form-control" min="0.01" step="0.01" placeholder="0.00">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>الفئة *</label>
+            <select formControlName="category" class="form-control">
+              <option value="">اختر الفئة</option>
+              <option *ngFor="let category of categories" [value]="category.value">
+                {{ category.label }}
+              </option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>طريقة الدفع *</label>
+            <select formControlName="paymentMethod" class="form-control">
+              <option value="">اختر طريقة الدفع</option>
+              <option *ngFor="let method of paymentMethods" [value]="method.value">
+                {{ method.label }}
+              </option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>تاريخ المصروف *</label>
+            <input type="date" formControlName="expenseDate" class="form-control">
+          </div>
+          <div class="form-group">
+            <label>رقم الإيصال</label>
+            <input type="text" formControlName="receiptNumber" class="form-control" placeholder="رقم الإيصال">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>المورد/الشركة</label>
+            <input type="text" formControlName="vendor" class="form-control" placeholder="اسم المورد">
+          </div>
+          <div class="form-group">
+            <label>مصروف متكرر</label>
+            <div class="checkbox-group">
+              <input type="checkbox" formControlName="isRecurring" (change)="onRecurringChange()" id="isRecurring">
+              <label for="isRecurring">مصروف متكرر</label>
+            </div>
+          </div>
+        </div>
+
+        @if(expenseForm.get('isRecurring')?.value) {
+        <div class="form-row" >
+          <div class="form-group">
+            <label>فترة التكرار</label>
+            <select formControlName="recurringPeriod" class="form-control">
+              <option value="">اختر الفترة</option>
+              <option value="monthly">شهري</option>
+              <option value="quarterly">ربع سنوي</option>
+              <option value="yearly">سنوي</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>تاريخ الاستحقاق التالي</label>
+            <input type="date" formControlName="nextDueDate" class="form-control">
+          </div>
+        </div>
+        }
+        <div class="form-row">
+          <div class="form-group full-width">
+            <label>الوصف</label>
+            <textarea formControlName="description" class="form-control" rows="3" placeholder="وصف المصروف"></textarea>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group full-width">
+            <label>ملاحظات</label>
+            <textarea formControlName="notes" class="form-control" rows="2" placeholder="ملاحظات إضافية"></textarea>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary" [disabled]="!expenseForm.valid">
+            <i class="fas fa-save"></i> {{ showAddForm ? 'إضافة' : 'حفظ التعديلات' }}
+          </button>
+          <button type="button" class="btn btn-secondary" (click)="hideForms()">
+            إلغاء
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}
+
+  <!-- Filters -->
+  <div class="filters-section">
+    <div class="filters-header">
+      <h3><i class="fas fa-filter"></i> فلاتر البحث</h3>
+      <button class="btn btn-outline" (click)="clearFilters()">
+        <i class="fas fa-times"></i> مسح الفلاتر
+      </button>
+    </div>
+    <div class="filters-grid">
+      <div class="filter-group">
+        <label>الفئة</label>
+        <select [(ngModel)]="selectedCategory" (change)="onFilterChange()" class="form-control">
+          <option value="">جميع الفئات</option>
+          @for(category of categories; track category.value) {
+          <option [value]="category.value">
+            {{ category.label }}
+          </option>
+          }
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>طريقة الدفع</label>
+        <select [(ngModel)]="selectedPaymentMethod" (change)="onFilterChange()" class="form-control">
+          <option value="">جميع الطرق</option>
+          @for(method of paymentMethods; track method.value) {
+          <option [value]="method.value">
+            {{ method.label }}
+          </option>
+          }
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>الحالة</label>
+        <select [(ngModel)]="selectedStatus" (change)="onFilterChange()" class="form-control">
+          <option value="">جميع الحالات</option>
+          <option value="approved">معتمد</option>
+          <option value="pending">في الانتظار</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>من تاريخ</label>
+        <input type="date" [(ngModel)]="startDate" (change)="onFilterChange()" class="form-control">
+      </div>
+      <div class="filter-group">
+        <label>إلى تاريخ</label>
+        <input type="date" [(ngModel)]="endDate" (change)="onFilterChange()" class="form-control">
+      </div>
+    </div>
+  </div>
+
+  <!-- Expenses Table -->
+  <div class="table-section">
+    <div class="table-header">
+      <h3><i class="fas fa-list"></i> قائمة المصروفات</h3>
+      <div class="table-info">
+        إجمالي النتائج: {{ totalItems }}
+      </div>
+    </div>
+
+    <div class="table-container">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>التاريخ</th>
+            <th>العنوان</th>
+            <th>الفئة</th>
+            <th>المبلغ</th>
+            <th>طريقة الدفع</th>
+            <th>المورد</th>
+            <th>الحالة</th>
+            <th>متكرر</th>
+            <th>الإجراءات</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for(expense of expenses; track expense._id) {
+          <tr class="expense-row">
+            <td>{{ expense.expenseDate | date:'shortDate' }}</td>
+            <td>
+              <div class="expense-title">{{ expense.title }}</div>
+              @if(expense.description) {
+              <div class="expense-description">{{ expense.description }}</div>
+              }
+            </td>
+            <td>
+              <span class="category-badge" [style.background-color]="getCategoryColor(expense.category)">
+                {{ getCategoryLabel(expense.category) }}
+              </span>
+            </td>
+            <td class="amount-cell">{{ expense.amount | currency:'EGP':'symbol':'1.2-2' }}</td>
+            <td>{{ getPaymentMethodLabel(expense.paymentMethod) }}</td>
+            <td>{{ expense.vendor || '-' }}</td>
+            <td>
+              <span class="status-badge" [style.background-color]="getStatusColor(expense.isApproved)">
+                {{ getStatusText(expense.isApproved) }}
+              </span>
+            </td>
+            <td>
+              <i class="fas" [class.fa-check]="expense.isRecurring" [class.fa-times]="!expense.isRecurring"
+                 [style.color]="expense.isRecurring ? '#27ae60' : '#e74c3c'"></i>
+            </td>
+            <td>
+              <div class="action-buttons">
+                <button class="btn-icon" (click)="showEditExpenseForm(expense)" title="تعديل">
+                  <i class="fas fa-edit"></i>
+                </button>
+                <button class="btn-icon delete" (click)="deleteExpense(expense)" title="حذف">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+          }
+        </tbody>
+      </table>
+
+      <!-- Loading State -->
+      @if(loading) {
+      <div class="loading-overlay">
+        <div class="loading-spinner">
+          <i class="fas fa-spinner fa-spin"></i>
+          <p>جاري التحميل...</p>
+        </div>
+      </div>
+      } 
+      <!-- Empty State -->
+      @if(!loading && expenses?.length === 0) {
+      <div class="empty-state">
+        <i class="fas fa-receipt"></i>
+        <p>لا توجد مصروفات</p>
+      </div>
+      }
+    </div>
+
+    <!-- Pagination -->
+    @if(totalPages > 1) {
+    <div class="pagination" >
+      <button class="btn btn-outline" 
+              [disabled]="currentPage === 1"
+              (click)="onPageChange(currentPage - 1)">
+        <i class="fas fa-chevron-right"></i> السابق
+      </button>
+      
+      <div class="page-numbers">
+        @for(page of getPageNumbers(); track page) {
+        <span 
+              class="page-number"
+              [class.active]="page === currentPage"
+              (click)="onPageChange(page)">
+          {{ page }}
+        </span>
+        }
+      </div>
+      <button class="btn btn-outline" 
+              [disabled]="currentPage === totalPages"
+              (click)="onPageChange(currentPage + 1)">
+        التالي <i class="fas fa-chevron-left"></i>
+      </button>
+    </div>
+    }
+  </div>
+</div> 

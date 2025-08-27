@@ -1,0 +1,341 @@
+<div class="financial-reports">
+  <!-- Header -->
+  <div class="page-header">
+    <h1><i class="fas fa-chart-bar"></i> التقارير المالية</h1>
+  </div>
+
+  <!-- Tabs Navigation -->
+  <div class="tabs-navigation">
+    <button class="tab-btn" 
+            [class.active]="activeTab === 'profit'"
+            (click)="setActiveTab('profit')">
+      <i class="fas fa-chart-pie"></i>
+      تقرير الأرباح
+    </button>
+    <button class="tab-btn" 
+            [class.active]="activeTab === 'cashflow'"
+            (click)="setActiveTab('cashflow')">
+      <i class="fas fa-money-bill-wave"></i>
+      تدفق النقد
+    </button>
+    <button class="tab-btn" 
+            [class.active]="activeTab === 'top-products'"
+            (click)="setActiveTab('top-products')">
+      <i class="fas fa-star"></i>
+      أفضل المنتجات
+    </button>
+  </div>
+
+  <!-- Profit Report Tab -->
+  @if(activeTab === 'profit') {
+  <div class="tab-content" >
+    <div class="report-section">
+      <div class="report-header">
+        <h3><i class="fas fa-chart-pie"></i> تقرير الأرباح</h3>
+        <form [formGroup]="profitReportForm" (ngSubmit)="generateProfitReport()" class="report-form">
+          <div class="form-row">
+            <div class="form-group">
+              <label>الفترة</label>
+              <select formControlName="period" class="form-control">
+                <option *ngFor="let period of periods" [value]="period.value">
+                  {{ period.label }}
+                </option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>من تاريخ</label>
+              <input type="date" formControlName="startDate" class="form-control">
+            </div>
+            <div class="form-group">
+              <label>إلى تاريخ</label>
+              <input type="date" formControlName="endDate" class="form-control">
+            </div>
+            <div class="form-group">
+              <label>إعادة حساب</label>
+              <input type="checkbox" formControlName="recalculate" class="form-checkbox">
+            </div>
+            <div class="form-group">
+              <button type="submit" class="btn btn-primary" [disabled]="!profitReportForm.valid || loadingProfit">
+                <i class="fas fa-sync-alt" [class.fa-spin]="loadingProfit"></i>
+                {{ loadingProfit ? 'جاري التحميل...' : 'توليد التقرير' }}
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+      @if(profitReport) {
+      <div class="report-content" >
+        <!-- Summary Cards -->
+        <div class="summary-cards">
+          <div class="summary-card revenue">
+            <div class="card-icon">
+              <i class="fas fa-dollar-sign"></i>
+            </div>
+            <div class="card-content">
+              <h4>إجمالي الإيرادات</h4>
+              <p class="amount">{{ formatCurrency(profitReport.totalRevenue ?? 0) }}</p>
+            </div>
+          </div>
+
+          <div class="summary-card expenses">
+            <div class="card-icon">
+              <i class="fas fa-receipt"></i>
+            </div>
+            <div class="card-content">
+              <h4>إجمالي المصروفات</h4>
+              <p class="amount">{{ formatCurrency(profitReport.totalExpenses ?? 0) }}</p>
+            </div>
+          </div>
+
+          <div class="summary-card gross-profit">
+            <div class="card-icon">
+              <i class="fas fa-chart-line"></i>
+            </div>
+            <div class="card-content">
+              <h4>إجمالي الربح</h4>
+              <p class="amount">{{ formatCurrency(profitReport.grossProfit ?? 0) }}</p>
+            </div>
+          </div>
+
+          <div class="summary-card net-profit">
+            <div class="card-icon">
+              <i class="fas fa-chart-pie"></i>
+            </div>
+            <div class="card-content">
+              <h4>صافي الربح</h4>
+              <p class="amount" [style.color]="getProfitColor(profitReport.netProfit)">
+                {{ formatCurrency(profitReport.netProfit ?? 0) }}
+              </p>
+              <p class="margin">هامش الربح: {{ formatPercentage(profitReport.profitMargin) }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Additional Metrics -->
+        <div class="metrics-grid">
+          <div class="metric-item">
+            <h5>عدد الطلبات</h5>
+            <p>{{ profitReport.totalOrders ?? 0 }}</p>
+          </div>
+          <div class="metric-item">
+            <h5>المنتجات المباعة</h5>
+            <p>{{ profitReport.totalItemsSold ?? 0 }}</p>
+          </div>
+          <div class="metric-item">
+            <h5>متوسط قيمة الطلب</h5>
+            <p>{{ formatCurrency(profitReport.averageOrderValue ?? 0) }}</p>
+          </div>
+        </div>
+
+        <!-- Top Selling Products -->
+        @if(profitReport.topSellingProducts && profitReport.topSellingProducts.length > 0) {
+        <div class="top-products-section" >
+          <h4>أفضل المنتجات مبيعاً</h4>
+          <div class="products-list">
+            @for(product of profitReport.topSellingProducts; track product.productId; let i = $index) {
+            <div class="product-item">
+              <div class="product-rank">{{ i + 1 }}</div>
+              <div class="product-info">
+                <h5>{{ product.productName }}</h5>
+                <p>الكمية المباعة: {{ product.quantitySold }}</p>
+              </div>
+              <div class="product-stats">
+                <p class="revenue">الإيرادات: {{ formatCurrency(product.revenue ?? 0) }}</p>
+                <p class="profit" [style.color]="getProfitColor(product.profit ?? 0)">
+                  الربح: {{ formatCurrency(product.profit ?? 0) }}
+                </p>
+              </div>
+            </div>
+            }
+          </div>
+        </div>
+        }
+        <!-- Expenses by Category -->
+        @if(profitReport.expensesByCategory && profitReport.expensesByCategory.length > 0) {
+        <div class="expenses-section" >
+          <h4>المصروفات حسب الفئة</h4>
+          <div class="expenses-list">
+            @for(expense of profitReport.expensesByCategory; track expense.category) {
+            <div class="expense-item">
+              <div class="expense-category">
+                <span class="category-color" [style.background-color]="getCategoryColor(expense.category)"></span>
+                <span>{{ getExpenseCategoryLabel(expense.category) }}</span>
+              </div>
+              <div class="expense-amount">
+                <p>{{ formatCurrency(expense.amount ?? 0) }}</p>
+                <p class="percentage">{{ formatPercentage(expense.percentage) }}</p>
+              </div>
+            </div>
+            }
+          </div>
+        </div>
+      }
+    </div>
+    }
+      <!-- Loading State -->
+      @if(loadingProfit) {
+      <div class="loading-state">
+        <i class="fas fa-spinner fa-spin"></i>
+        <p>جاري توليد تقرير الأرباح...</p>
+      </div>
+      }
+    </div>
+  </div>
+  }
+
+  <!-- Cash Flow Tab -->
+  @if(activeTab === 'cashflow') {
+  <div class="tab-content" >
+    <div class="report-section">
+      <div class="report-header">
+        <h3><i class="fas fa-money-bill-wave"></i> تقرير تدفق النقد</h3>
+        <form [formGroup]="cashFlowForm" (ngSubmit)="generateCashFlowReport()" class="report-form">
+          <div class="form-row">
+            <div class="form-group">
+              <label>من تاريخ</label>
+              <input type="date" formControlName="startDate" class="form-control">
+            </div>
+            <div class="form-group">
+              <label>إلى تاريخ</label>
+              <input type="date" formControlName="endDate" class="form-control">
+            </div>
+            <div class="form-group">
+              <button type="submit" class="btn btn-primary" [disabled]="!cashFlowForm.valid || loadingCashFlow">
+                <i class="fas fa-sync-alt" [class.fa-spin]="loadingCashFlow"></i>
+                {{ loadingCashFlow ? 'جاري التحميل...' : 'توليد التقرير' }}
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+      @if(cashFlowReport) {
+      <div class="report-content" >
+        <!-- Summary -->
+        <div class="cash-flow-summary">
+          <div class="summary-item">
+            <h4>إجمالي التدفقات الداخلة</h4>
+            <p class="amount positive">{{ formatCurrency(cashFlowReport.summary.totalInflows ?? 0) }}</p>
+          </div>
+          <div class="summary-item">
+            <h4>إجمالي التدفقات الخارجة</h4>
+            <p class="amount negative">{{ formatCurrency(cashFlowReport.summary.totalOutflows ?? 0) }}</p>
+          </div>
+          <div class="summary-item">
+            <h4>صافي التدفق النقدي</h4>
+            <p class="amount" [style.color]="getCashFlowColor(cashFlowReport.summary.netCashFlow ?? 0)">
+              {{ formatCurrency(cashFlowReport.summary.netCashFlow ?? 0) }}
+            </p>
+          </div>
+        </div>
+
+        <!-- Cash Flow List -->
+        <div class="cash-flow-list">
+          <h4>تفاصيل التدفق النقدي</h4>
+          <div class="flow-items">
+            <div *ngFor="let item of cashFlowReport.cashFlow" class="flow-item">
+              <div class="flow-icon" [style.color]="getCashFlowTypeColor(item.type)">
+                <i class="fas" [class]="getCashFlowTypeIcon(item.type)"></i>
+              </div>
+              <div class="flow-info">
+                <h5>{{ item.description }}</h5>
+                <p class="category">{{ getExpenseCategoryLabel(item.category) }}</p>
+                <p class="date">{{ item.date | date:'shortDate' }}</p>
+              </div>
+              <div class="flow-amount" [style.color]="getCashFlowTypeColor(item.type)">
+                {{ formatCurrency(item.amount) }}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      }
+      <!-- Loading State -->
+      @if(loadingCashFlow) {
+      <div class="loading-state">
+        <i class="fas fa-spinner fa-spin"></i>
+        <p>جاري توليد تقرير تدفق النقد...</p>
+      </div>
+      }
+    </div>
+  </div>
+  }
+  <!-- Top Products Tab -->
+  @if(activeTab === 'top-products') {
+  <div class="tab-content" >
+    <div class="report-section">
+      <div class="report-header">
+        <h3><i class="fas fa-star"></i> أفضل المنتجات مبيعاً</h3>
+        <form [formGroup]="topProductsForm" (ngSubmit)="generateTopProductsReport()" class="report-form">
+          <div class="form-row">
+            <div class="form-group">
+              <label>من تاريخ</label>
+              <input type="date" formControlName="startDate" class="form-control">
+            </div>
+            <div class="form-group">
+              <label>إلى تاريخ</label>
+              <input type="date" formControlName="endDate" class="form-control">
+            </div>
+            <div class="form-group">
+              <label>عدد النتائج</label>
+              <select formControlName="limit" class="form-control">
+                <option value="5">5 منتجات</option>
+                <option value="10">10 منتجات</option>
+                <option value="15">15 منتج</option>
+                <option value="20">20 منتج</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <button type="submit" class="btn btn-primary" [disabled]="!topProductsForm.valid || loadingTopProducts">
+                <i class="fas fa-sync-alt" [class.fa-spin]="loadingTopProducts"></i>
+                {{ loadingTopProducts ? 'جاري التحميل...' : 'توليد التقرير' }}
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+
+      @if(topProducts.length > 0) {
+      <div class="report-content" >
+        <div class="top-products-grid">
+          @for(product of topProducts; track product.productId; let i = $index) {
+          <div class="product-card">
+            <div class="product-rank">{{ i + 1 }}</div>
+            <div class="product-header">
+              <h4>{{ product.productName }}</h4>
+            </div>
+            <div class="product-stats">
+              <div class="stat-item">
+                <span class="label">الكمية المباعة:</span>
+                <span class="value">{{ product.quantitySold }}</span>
+              </div>
+              <div class="stat-item">
+                <span class="label">الإيرادات:</span>
+                <span class="value">{{ formatCurrency(product.revenue) }}</span>
+              </div>
+              <div class="stat-item">
+                <span class="label">التكلفة:</span>
+                <span class="value">{{ formatCurrency(product.cost) }}</span>
+              </div>
+              <div class="stat-item">
+                <span class="label">الربح:</span>
+                <span class="value" [style.color]="getProfitColor(product.profit)">
+                  {{ formatCurrency(product.profit) }}
+                </span>
+              </div>
+            </div>
+          </div>
+        }
+        </div>
+      </div>
+      }
+      <!-- Loading State -->
+      @if(loadingTopProducts) {
+      <div class="loading-state">
+        <i class="fas fa-spinner fa-spin"></i>
+        <p>جاري تحميل أفضل المنتجات...</p>
+      </div>
+      }
+    </div>
+  </div>
+  }
+</div> 

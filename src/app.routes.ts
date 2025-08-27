@@ -50,6 +50,30 @@ export const appRoutes: Routes = [
             {
                 path: 'features',
                 loadComponent: () => import('./app/modules/feature/feature-list/feature-list.component').then(m => m.FeatureListComponent)
+            },
+            {
+                path: 'inventory',
+                loadComponent: () => import('./app/modules/inventory/components/inventory-dashboard/inventory-dashboard.component').then(m => m.InventoryDashboardComponent)
+            },
+            {
+                path: 'inventory/stock',
+                loadComponent: () => import('./app/modules/inventory/components/stock-management/stock-management.component').then(m => m.StockManagementComponent)
+            },
+            {
+                path: 'inventory/expenses',
+                loadComponent: () => import('./app/modules/inventory/components/expense-management/expense-management.component').then(m => m.ExpenseManagementComponent)
+            },
+            {
+                path: 'inventory/reports',
+                loadComponent: () => import('./app/modules/inventory/components/financial-reports/financial-reports.component').then(m => m.FinancialReportsComponent)
+            },
+            {
+                path: 'inventory/stock-levels',
+                loadComponent: () => import('./app/modules/inventory/components/stock-levels/stock-levels.component').then(m => m.StockLevelsComponent)
+            },
+            {
+                path: 'inventory/quick-actions',
+                loadComponent: () => import('./app/modules/inventory/components/quick-actions/quick-actions.component').then(m => m.QuickActionsComponent)
             }
         ]
     },

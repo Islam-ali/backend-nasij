@@ -36,6 +36,12 @@ export class AppMenu {
                     { label: 'Categories', icon: 'pi pi-fw pi-box', routerLink: ['/categories'] },
                     { label: 'Brands', icon: 'pi pi-fw pi-box', routerLink: ['/brands'] },
                     { label: 'Orders', icon: 'pi pi-fw pi-box', routerLink: ['/orders'] },
+                    { label: 'Inventory', icon: 'pi pi-fw pi-box', routerLink: ['/inventory'] },
+                    { label: 'Stock', icon: 'pi pi-fw pi-box', routerLink: ['/inventory/stock'] },
+                    { label: 'Expenses', icon: 'pi pi-fw pi-box', routerLink: ['/inventory/expenses'] },
+                    { label: 'Reports', icon: 'pi pi-fw pi-box', routerLink: ['/inventory/reports'] },
+                    { label: 'Stock Levels', icon: 'pi pi-fw pi-box', routerLink: ['/inventory/stock-levels'] },
+                    { label: 'Quick Actions', icon: 'pi pi-fw pi-box', routerLink: ['/inventory/quick-actions'] },
                 ]
             },
             // {
