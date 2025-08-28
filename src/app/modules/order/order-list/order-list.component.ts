@@ -117,6 +117,38 @@ export class OrderListComponent extends ComponentBase implements OnInit {
         { label: 'Egypt', value: 'EG' }
     ];
 
+    stateOptions = [
+        { label: 'Cairo', value: 'Cairo' },
+        { label: 'Giza', value: 'Giza' },
+        { label: 'Alexandria', value: 'Alexandria' },
+        { label: 'Mansoura', value: 'Mansoura' },
+        { label: 'Suez', value: 'Suez' },
+        { label: 'Luxor', value: 'Luxor' },
+        { label: 'Aswan', value: 'Aswan' },
+        { label: 'Asyut', value: 'Asyut' },
+        { label: 'Beheira', value: 'Beheira' },
+        { label: 'Beni Suef', value: 'Beni Suef' },
+        { label: 'Faiyum', value: 'Faiyum' },
+        { label: 'Gharbia', value: 'Gharbia' },
+        { label: 'Ismailia', value: 'Ismailia' },
+        { label: 'Kafr El Sheikh', value: 'Kafr El Sheikh' },
+        { label: 'Minya', value: 'Minya' },
+        { label: 'Monufia', value: 'Monufia' },
+        { label: 'New Valley', value: 'New Valley' },
+        { label: 'North Sinai', value: 'North Sinai' },
+        { label: 'Port Said', value: 'Port Said' },
+        { label: 'Qalyubia', value: 'Qalyubia' },
+        { label: 'Qena', value: 'Qena' },
+        { label: 'Red Sea', value: 'Red Sea' },
+        { label: 'Sharqia', value: 'Sharqia' },
+        { label: 'Sohag', value: 'Sohag' },
+        { label: 'South Sinai', value: 'South Sinai' },
+        { label: 'Suez', value: 'Suez' },
+        { label: 'Tanta', value: 'Tanta' },
+        { label: 'Wadi El Nile', value: 'Wadi El Nile' },
+        { label: 'West Bank', value: 'West Bank' },
+    ];
+
     @ViewChild('dt') dt: Table | undefined;
     exportColumns!: ExportColumn[];
     cols!: Column[];
@@ -496,7 +528,7 @@ export class OrderListComponent extends ComponentBase implements OnInit {
     }
 
     onProductChange(event: any, index: number) {
-        const product: IProduct | undefined = this.products().find(p => p.id === event.value);
+        const product: IProduct | undefined = this.products().find(p => p._id === event.value);
         if (product) {
             console.log(product, index);
             this.items.controls[index].get('price')?.setValue(product.price);

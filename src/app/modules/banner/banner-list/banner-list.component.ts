@@ -187,7 +187,7 @@ export class BannerListComponent extends ComponentBase implements OnInit {
 
   confirmDelete() {
     if (this.banner()) {
-      this.bannerService.deleteBanner(this.banner()!._id!).subscribe({
+      this.bannerService.deleteBanner(this.banner()?._id!).subscribe({
         next: () => {
           this.deleteBannerDialog.set(false);
           this.banner.set(null);
@@ -229,7 +229,7 @@ export class BannerListComponent extends ComponentBase implements OnInit {
         })
       };
 
-      if (this.banner()!._id) {
+      if (this.banner()?._id) {
         // Update existing banner
         this.bannerService.updateBanner(this.banner()!._id!, bannerData).subscribe({
           next: (updatedBanner) => {

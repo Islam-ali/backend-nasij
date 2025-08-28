@@ -41,6 +41,7 @@ export class AppMenu {
                     { label: 'Expenses', icon: 'pi pi-fw pi-box', routerLink: ['/inventory/expenses'] },
                     { label: 'Reports', icon: 'pi pi-fw pi-box', routerLink: ['/inventory/reports'] },
                     { label: 'Stock Levels', icon: 'pi pi-fw pi-box', routerLink: ['/inventory/stock-levels'] },
+                    { label: 'Revenue Management', icon: 'pi pi-fw pi-box', routerLink: ['/inventory/revenue-management'] },
                     { label: 'Quick Actions', icon: 'pi pi-fw pi-box', routerLink: ['/inventory/quick-actions'] },
                 ]
             },

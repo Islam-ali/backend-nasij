@@ -60,29 +60,7 @@ export class QuickActionsComponent implements OnInit {
   // Load recent transactions
   loadRecentTransactions() {
     // Mock data - replace with actual API call
-    this.recentTransactions = [
-      {
-        date: new Date(),
-        type: 'revenue',
-        description: 'طلب #12345',
-        amount: 150.00,
-        status: 'مكتمل'
-      },
-      {
-        date: new Date(Date.now() - 86400000),
-        type: 'expense',
-        description: 'تكلفة البضائع المباعة',
-        amount: -75.00,
-        status: 'مكتمل'
-      },
-      {
-        date: new Date(Date.now() - 172800000),
-        type: 'revenue',
-        description: 'طلب #12344',
-        amount: 200.00,
-        status: 'مكتمل'
-      }
-    ];
+    this.recentTransactions = [];
   }
 
   // Get transaction type class for styling

@@ -1,6 +1,6 @@
-import { Injectable, effect, signal, computed } from '@angular/core';
+import { Injectable, effect, signal, computed, Inject, PLATFORM_ID } from '@angular/core';
 import { Subject } from 'rxjs';
-
+import { isPlatformBrowser } from '@angular/common';
 export interface layoutConfig {
     preset?: string;
     primary?: string;
@@ -78,7 +78,9 @@ export class LayoutService {
 
     private initialized = false;
 
-    constructor() {
+    constructor(
+        @Inject(PLATFORM_ID) private platformId: Object,
+    ) {
         effect(() => {
             const config = this.layoutConfig();
             if (config) {
@@ -156,7 +158,7 @@ export class LayoutService {
     }
 
     isDesktop() {
-        return window.innerWidth > 991;
+        return isPlatformBrowser(this.platformId) && window.innerWidth > 991;
     }
 
     isMobile() {

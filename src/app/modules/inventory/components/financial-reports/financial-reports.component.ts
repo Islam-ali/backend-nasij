@@ -122,8 +122,8 @@ export class FinancialReportsComponent implements OnInit {
       }
       
       this.inventoryService.generateProfitReport(cleanData).subscribe({
-        next: (report) => {
-          this.profitReport = report;
+        next: (response: BaseResponse<ProfitReport>) => {
+          this.profitReport = response.data;
           this.loadingProfit = false;
         },
         error: (error) => {
@@ -182,8 +182,8 @@ export class FinancialReportsComponent implements OnInit {
       }
       
       this.inventoryService.getTopSellingProducts(cleanData).subscribe({
-        next: (products) => {
-          this.topProducts = products;
+        next: (products: BaseResponse<TopSellingProduct[]>) => {
+          this.topProducts = products.data;
           this.loadingTopProducts = false;
         },
         error: (error) => {

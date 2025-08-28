@@ -180,14 +180,15 @@
                     <small class="p-error" *ngIf="submitted && orderForm.get('shippingAddress.city')?.invalid">City
                         is required</small>
                 </div>
-                <!-- <div class="field">
-                    <label for="state">State/Province</label>
-                    <input id="state" pInputText formControlName="state"
-                        [class.p-invalid]="submitted && orderForm.get('shippingAddress.state')?.invalid">
+                 <div class="field">
+                    <label for="state">State</label>
+                    <p-dropdown id="state" [options]="stateOptions" formControlName="state" optionLabel="label"
+                        optionValue="value" [style]="{'width':'100%'}">
+                    </p-dropdown>
                     <small class="p-error" *ngIf="submitted && orderForm.get('shippingAddress.state')?.invalid">State is
                         required</small>
                 </div>
-                <div class="field">
+                <!-- <div class="field">
                     <label for="zipCode">ZIP/Postal Code</label>
                     <input id="zipCode" pInputText formControlName="zipCode"
                         [class.p-invalid]="submitted && orderForm.get('shippingAddress.zipCode')?.invalid">

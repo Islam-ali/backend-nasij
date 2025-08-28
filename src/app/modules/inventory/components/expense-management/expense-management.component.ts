@@ -59,6 +59,13 @@ export class ExpenseManagementComponent implements OnInit {
     { value: 'DIGITAL_PAYMENT', label: 'دفع إلكتروني' }
   ];
 
+  statusOptions = [
+    { value: 'PENDING', label: 'في الانتظار' },
+    { value: 'APPROVED', label: 'معتمد' },
+    { value: 'REJECTED', label: 'مرفوض' },
+    { value: 'PAID', label: 'مدفوع' }
+  ];
+
   constructor(
     private inventoryService: InventoryService,
     private fb: FormBuilder
@@ -83,6 +90,7 @@ export class ExpenseManagementComponent implements OnInit {
       isRecurring: [false],
       recurringPeriod: [''],
       nextDueDate: [''],
+      status: ['PENDING'], // إضافة حقل الحالة
       notes: ['']
     });
   }
@@ -105,9 +113,13 @@ export class ExpenseManagementComponent implements OnInit {
     
     if (this.selectedStatus && this.selectedStatus.trim() !== '') {
       if (this.selectedStatus === 'approved') {
-        query.isApproved = true;
+        query.status = 'APPROVED';
       } else if (this.selectedStatus === 'pending') {
-        query.isApproved = false;
+        query.status = 'PENDING';
+      } else if (this.selectedStatus === 'rejected') {
+        query.status = 'REJECTED';
+      } else if (this.selectedStatus === 'paid') {
+        query.status = 'PAID';
       }
     }
     
@@ -138,11 +150,11 @@ export class ExpenseManagementComponent implements OnInit {
   }
 
   getTotalPendingExpenses(): number {
-    return this.expenses?.filter(exp => !exp.isApproved).reduce((sum, exp) => sum + exp.amount, 0) ?? 0;
+    return this.expenses?.filter(exp => exp.status === 'PENDING').reduce((sum, exp) => sum + exp.amount, 0) ?? 0;
   }
 
   getTotalApprovedExpenses(): number {
-    return this.expenses?.filter(exp => exp.isApproved).reduce((sum, exp) => sum + exp.amount, 0) ?? 0;
+    return this.expenses?.filter(exp => exp.status === 'APPROVED').reduce((sum, exp) => sum + exp.amount, 0) ?? 0;
   }
 
   getTotalRecurringExpenses(): number {
@@ -175,7 +187,8 @@ export class ExpenseManagementComponent implements OnInit {
     this.expenseForm.reset();
     this.expenseForm.patchValue({
       expenseDate: new Date().toISOString().split('T')[0],
-      isRecurring: false
+      isRecurring: false,
+      status: 'PENDING' // تعيين الحالة الافتراضية
     });
   }
 
@@ -195,6 +208,7 @@ export class ExpenseManagementComponent implements OnInit {
       isRecurring: expense.isRecurring,
       recurringPeriod: expense.recurringPeriod,
       nextDueDate: expense.nextDueDate ? new Date(expense.nextDueDate).toISOString().split('T')[0] : '',
+      status: expense.status || 'PENDING', // إضافة الحالة
       notes: expense.notes
     });
   }
@@ -208,8 +222,20 @@ export class ExpenseManagementComponent implements OnInit {
 
   saveExpense(): void {
     if (this.expenseForm.valid) {
-      const formData = this.expenseForm.value;
+      const formData = { ...this.expenseForm.value };
       
+      // تحويل التواريخ من string إلى Date
+      if (formData.expenseDate) {
+        formData.expenseDate = new Date(formData.expenseDate);
+      }
+      
+      if (formData.nextDueDate && formData.nextDueDate.trim() !== '') {
+        formData.nextDueDate = new Date(formData.nextDueDate);
+      } else {
+        delete formData.nextDueDate; // إزالة إذا كان فارغاً
+      }
+      
+      // إرسال status في كل من الإنشاء والتعديل
       if (this.showAddForm) {
         this.inventoryService.createExpense(formData).subscribe({
           next: () => {
@@ -276,12 +302,34 @@ export class ExpenseManagementComponent implements OnInit {
     return colors[category] || '#95a5a6';
   }
 
-  getStatusColor(isApproved: boolean): string {
-    return isApproved ? '#27ae60' : '#f39c12';
+  getStatusColor(status: string): string {
+    switch (status) {
+      case 'APPROVED':
+        return '#27ae60';
+      case 'PENDING':
+        return '#f39c12';
+      case 'REJECTED':
+        return '#e74c3c';
+      case 'PAID':
+        return '#3498db';
+      default:
+        return '#95a5a6';
+    }
   }
 
-  getStatusText(isApproved: boolean): string {
-    return isApproved ? 'معتمد' : 'في الانتظار';
+  getStatusText(status: string): string {
+    switch (status) {
+      case 'APPROVED':
+        return 'معتمد';
+      case 'PENDING':
+        return 'في الانتظار';
+      case 'REJECTED':
+        return 'مرفوض';
+      case 'PAID':
+        return 'مدفوع';
+      default:
+        return status;
+    }
   }
 
   getPageNumbers(): number[] {

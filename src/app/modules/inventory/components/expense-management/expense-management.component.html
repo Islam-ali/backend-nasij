@@ -123,6 +123,17 @@
           </div>
         </div>
 
+        <div class="form-row">
+          <div class="form-group">
+            <label>الحالة</label>
+            <select formControlName="status" class="form-control">
+              <option *ngFor="let status of statusOptions" [value]="status.value">
+                {{ status.label }}
+              </option>
+            </select>
+          </div>
+        </div>
+
         @if(expenseForm.get('isRecurring')?.value) {
         <div class="form-row" >
           <div class="form-group">
@@ -202,8 +213,10 @@
         <label>الحالة</label>
         <select [(ngModel)]="selectedStatus" (change)="onFilterChange()" class="form-control">
           <option value="">جميع الحالات</option>
-          <option value="approved">معتمد</option>
           <option value="pending">في الانتظار</option>
+          <option value="approved">معتمد</option>
+          <option value="rejected">مرفوض</option>
+          <option value="paid">مدفوع</option>
         </select>
       </div>
       <div class="filter-group">
@@ -260,21 +273,21 @@
             <td>{{ getPaymentMethodLabel(expense.paymentMethod) }}</td>
             <td>{{ expense.vendor || '-' }}</td>
             <td>
-              <span class="status-badge" [style.background-color]="getStatusColor(expense.isApproved)">
-                {{ getStatusText(expense.isApproved) }}
-              </span>
+                              <span class="status-badge" [style.background-color]="getStatusColor(expense.status)">
+                  {{ getStatusText(expense.status) }}
+                </span>
             </td>
             <td>
-              <i class="fas" [class.fa-check]="expense.isRecurring" [class.fa-times]="!expense.isRecurring"
+              <i class="pi" [class.pi-check]="expense.isRecurring" [class.pi-times]="!expense.isRecurring"
                  [style.color]="expense.isRecurring ? '#27ae60' : '#e74c3c'"></i>
             </td>
             <td>
               <div class="action-buttons">
                 <button class="btn-icon" (click)="showEditExpenseForm(expense)" title="تعديل">
-                  <i class="fas fa-edit"></i>
+                  <i class="pi pi-pencil"></i>
                 </button>
                 <button class="btn-icon delete" (click)="deleteExpense(expense)" title="حذف">
-                  <i class="fas fa-trash"></i>
+                  <i class="pi pi-trash"></i>
                 </button>
               </div>
             </td>

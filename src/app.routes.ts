@@ -52,6 +52,10 @@ export const appRoutes: Routes = [
                 loadComponent: () => import('./app/modules/inventory/components/inventory-dashboard/inventory-dashboard.component').then(m => m.InventoryDashboardComponent)
             },
             {
+                path: 'inventory/revenue-management',
+                loadComponent: () => import('./app/modules/inventory/components/revenue-management/revenue-management.component').then(m => m.RevenueManagementComponent)
+            },
+            {
                 path: 'inventory/stock',
                 loadComponent: () => import('./app/modules/inventory/components/stock-management/stock-management.component').then(m => m.StockManagementComponent)
             },

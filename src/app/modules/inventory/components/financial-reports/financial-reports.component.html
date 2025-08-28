@@ -67,7 +67,7 @@
             </div>
             <div class="card-content">
               <h4>إجمالي الإيرادات</h4>
-              <p class="amount">{{ formatCurrency(profitReport.totalRevenue ?? 0) }}</p>
+              <p class="amount">{{ formatCurrency(profitReport.totalRevenue) }}</p>
             </div>
           </div>
 
@@ -77,7 +77,7 @@
             </div>
             <div class="card-content">
               <h4>إجمالي المصروفات</h4>
-              <p class="amount">{{ formatCurrency(profitReport.totalExpenses ?? 0) }}</p>
+              <p class="amount">{{ formatCurrency(profitReport.totalExpenses) }}</p>
             </div>
           </div>
 
@@ -87,7 +87,7 @@
             </div>
             <div class="card-content">
               <h4>إجمالي الربح</h4>
-              <p class="amount">{{ formatCurrency(profitReport.grossProfit ?? 0) }}</p>
+              <p class="amount">{{ formatCurrency(profitReport.grossProfit) }}</p>
             </div>
           </div>
 
@@ -98,7 +98,7 @@
             <div class="card-content">
               <h4>صافي الربح</h4>
               <p class="amount" [style.color]="getProfitColor(profitReport.netProfit)">
-                {{ formatCurrency(profitReport.netProfit ?? 0) }}
+                {{ formatCurrency(profitReport.netProfit) }}
               </p>
               <p class="margin">هامش الربح: {{ formatPercentage(profitReport.profitMargin) }}</p>
             </div>
@@ -109,24 +109,24 @@
         <div class="metrics-grid">
           <div class="metric-item">
             <h5>عدد الطلبات</h5>
-            <p>{{ profitReport.totalOrders ?? 0 }}</p>
+            <p>{{ profitReport.totalOrders }}</p>
           </div>
           <div class="metric-item">
             <h5>المنتجات المباعة</h5>
-            <p>{{ profitReport.totalItemsSold ?? 0 }}</p>
+            <p>{{ profitReport.totalItemsSold }}</p>
           </div>
           <div class="metric-item">
             <h5>متوسط قيمة الطلب</h5>
-            <p>{{ formatCurrency(profitReport.averageOrderValue ?? 0) }}</p>
+            <p>{{ formatCurrency(profitReport.averageOrderValue) }}</p>
           </div>
         </div>
 
         <!-- Top Selling Products -->
-        <!-- @if(profitReport && profitReport.topSellingProducts.length > 0) {
+        @if(topProducts && topProducts.length > 0) {
         <div class="top-products-section" >
           <h4>أفضل المنتجات مبيعاً</h4>
           <div class="products-list">
-            @for(product of profitReport.topSellingProducts; track product.productId; let i = $index) {
+            @for(product of topProducts; track product.productId; let i = $index) {
             <div class="product-item">
               <div class="product-rank">{{ i + 1 }}</div>
               <div class="product-info">
@@ -134,16 +134,16 @@
                 <p>الكمية المباعة: {{ product.quantitySold }}</p>
               </div>
               <div class="product-stats">
-                <p class="revenue">الإيرادات: {{ formatCurrency(product.revenue ?? 0) }}</p>
-                <p class="profit" [style.color]="getProfitColor(product.profit ?? 0)">
-                  الربح: {{ formatCurrency(product.profit ?? 0) }}
+                <p class="revenue">الإيرادات: {{ formatCurrency(product.revenue) }}</p>
+                <p class="profit" [style.color]="getProfitColor(product.profit)">
+                  الربح: {{ formatCurrency(product.profit) }}
                 </p>
               </div>
             </div>
             }
           </div>
         </div>
-        } -->
+        }
         <!-- Expenses by Category -->
         <!-- @if(profitReport.expensesByCategory && profitReport.expensesByCategory.length > 0) {
         <div class="expenses-section" >
@@ -156,7 +156,7 @@
                 <span>{{ getExpenseCategoryLabel(expense.category) }}</span>
               </div>
               <div class="expense-amount">
-                <p>{{ formatCurrency(expense.amount ?? 0) }}</p>
+                <p>{{ formatCurrency(expense.amount) }}</p>
                 <p class="percentage">{{ formatPercentage(expense.percentage) }}</p>
               </div>
             </div>
@@ -208,16 +208,16 @@
         <div class="cash-flow-summary">
           <div class="summary-item">
             <h4>إجمالي التدفقات الداخلة</h4>
-            <p class="amount positive">{{ formatCurrency(cashFlowReport.summary.totalInflows ?? 0) }}</p>
+            <p class="amount positive">{{ formatCurrency(cashFlowReport.summary.totalInflows) }}</p>
           </div>
           <div class="summary-item">
             <h4>إجمالي التدفقات الخارجة</h4>
-            <p class="amount negative">{{ formatCurrency(cashFlowReport.summary.totalOutflows ?? 0) }}</p>
+            <p class="amount negative">{{ formatCurrency(cashFlowReport.summary.totalOutflows) }}</p>
           </div>
           <div class="summary-item">
             <h4>صافي التدفق النقدي</h4>
-            <p class="amount" [style.color]="getCashFlowColor(cashFlowReport.summary.netCashFlow ?? 0)">
-              {{ formatCurrency(cashFlowReport.summary.netCashFlow ?? 0) }}
+            <p class="amount" [style.color]="getCashFlowColor(cashFlowReport.summary.netCashFlow)">
+              {{ formatCurrency(cashFlowReport.summary.netCashFlow) }}
             </p>
           </div>
         </div>

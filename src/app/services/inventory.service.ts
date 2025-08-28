@@ -33,7 +33,21 @@ export interface Expense {
   isRecurring: boolean;
   recurringPeriod?: string;
   nextDueDate?: Date;
-  isApproved: boolean;
+  status: string; // PENDING, APPROVED, REJECTED, PAID
+  notes?: string;
+}
+
+export interface Revenue {
+  id: string;
+  _id?: string; // For compatibility
+  title: string;
+  description?: string;
+  amount: number;
+  category: string;
+  paymentMethod: string;
+  revenueDate: Date;
+  orderNumber?: string;
+  orderId?: string;
   notes?: string;
 }
 
@@ -51,6 +65,12 @@ export interface ProfitReport {
   totalOrders: number;
   totalItemsSold: number;
   averageOrderValue: number;
+  topSellingProducts: TopSellingProduct[];
+  expensesByCategory: any[];
+  isCalculated: boolean;
+  calculatedAt: Date;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface CashFlowReport {
@@ -149,9 +169,27 @@ export class InventoryService {
     return this.http.delete<void>(`${this.apiUrl}/expenses/${id}`);
   }
 
+  // Revenues
+  getRevenues(params?: any): Observable<BaseResponse<{ revenues: Revenue[]; pagination: any }>> {
+    const cleanParams = this.cleanQueryParams(params);
+    return this.http.get<BaseResponse<{ revenues: Revenue[]; pagination: any }>>(`${this.apiUrl}/revenues`, { params: cleanParams });
+  }
+
+  recalculateRevenue(): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/recalculate-revenue`, {});
+  }
+
   // Profit Reports
-  generateProfitReport(params: any): Observable<ProfitReport> {
-    return this.http.post<ProfitReport>(`${this.apiUrl}/reports/profit`, params);
+  generateProfitReport(params: any): Observable<BaseResponse<ProfitReport>> {
+    return this.http.post<BaseResponse<ProfitReport>>(`${this.apiUrl}/reports/profit`, params);
+  }
+
+  recalculateProfitReport(params: any): Observable<ProfitReport> {
+    return this.http.post<ProfitReport>(`${this.apiUrl}/recalculate-profit-report`, params);
+  }
+
+  clearProfitReports(): Observable<BaseResponse<{ deletedCount: number }>> {
+    return this.http.delete<BaseResponse<{ deletedCount: number }>>(`${this.apiUrl}/clear-profit-reports`);
   }
 
   getProfitReports(period?: string, limit?: number): Observable<ProfitReport[]> {
@@ -179,14 +217,14 @@ export class InventoryService {
   }
 
   // Top Selling Products
-  getTopSellingProducts(params: any): Observable<TopSellingProduct[]> {
+  getTopSellingProducts(params: any): Observable<BaseResponse<TopSellingProduct[]>> {
     const cleanParams = this.cleanQueryParams(params);
-    return this.http.get<TopSellingProduct[]>(`${this.apiUrl}/reports/top-selling-products`, { params: cleanParams });
+    return this.http.get<BaseResponse<TopSellingProduct[]>>(`${this.apiUrl}/reports/top-selling-products`, { params: cleanParams });
   }
 
   // Dashboard
-  getDashboardSummary(): Observable<DashboardSummary> {
-    return this.http.get<DashboardSummary>(`${this.apiUrl}/dashboard/summary`);
+  getDashboardSummary(): Observable<BaseResponse<DashboardSummary>> {
+    return this.http.get<BaseResponse<DashboardSummary>>(`${this.apiUrl}/dashboard/summary`);
   }
 
   // Quick Actions
