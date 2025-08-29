@@ -104,14 +104,14 @@ export class LayoutService {
         if ((document as any).startViewTransition) {
             this.startViewTransition(config);
         } else {
-            this.toggleDarkMode(config);
+            // this.toggleDarkMode(config);
             this.onTransitionEnd();
         }
     }
 
     private startViewTransition(config: layoutConfig): void {
         const transition = (document as any).startViewTransition(() => {
-            this.toggleDarkMode(config);
+            // this.toggleDarkMode(config);
         });
 
         transition.ready
@@ -121,14 +121,14 @@ export class LayoutService {
             .catch(() => {});
     }
 
-    toggleDarkMode(config?: layoutConfig): void {
-        const _config = config || this.layoutConfig();
-        if (_config.darkTheme) {
-            document.documentElement.classList.add('app-dark');
-        } else {
-            document.documentElement.classList.remove('app-dark');
-        }
-    }
+    // toggleDarkMode(config?: layoutConfig): void {
+    //     const _config = config || this.layoutConfig();
+    //     if (_config.darkTheme) {
+    //         document.documentElement.classList.add('app-dark');
+    //     } else {
+    //         document.documentElement.classList.remove('app-dark');
+    //     }
+    // }
 
     private onTransitionEnd() {
         this.transitionComplete.set(true);

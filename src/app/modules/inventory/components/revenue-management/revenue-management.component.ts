@@ -21,7 +21,7 @@ import {
   DateFormatPipe,
   CurrencyFormatPipe,
   CategoryLabelPipe,
-  PaymentMethodLabelPipe,
+  // PaymentMethodLabelPipe,
   StatusLabelPipe,
   SeverityColorPipe
 } from '../../../../core/pipes';
@@ -71,8 +71,8 @@ interface PaymentMethod {
     DateFormatPipe,
     CurrencyFormatPipe,
     CategoryLabelPipe,
-    PaymentMethodLabelPipe,
-    StatusLabelPipe,
+    // PaymentMethodLabelPipe,
+    // StatusLabelPipe,
     SeverityColorPipe
   ],
   providers: [MessageService],
