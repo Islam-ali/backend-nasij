@@ -24,7 +24,7 @@ import { CardModule } from 'primeng/card';
 import { PanelModule } from 'primeng/panel';
 import { Paginator, PaginatorModule } from 'primeng/paginator';
 
-import { Order, OrderStatus, PaymentMethod, PaymentStatus, OrderItem } from '../../../interfaces/order.interface';
+import { Order, OrderStatus, PaymentMethod, PaymentStatus, OrderItem, OrderItemType } from '../../../interfaces/order.interface';
 import { OrderService } from '../../../services/order.service';
 import { BaseResponse, pagination } from '../../../core/models/baseResponse';
 import { ComponentBase } from '../../../core/directives/component-base.directive';
@@ -33,6 +33,8 @@ import { TextareaModule } from 'primeng/textarea';
 import { ProductsService } from '../../../services/products.service';
 import { IProduct, ProductVariant, ProductVariantAttribute } from '../../../interfaces/product.interface';
 import { EnumProductVariant } from '../../product/product-list/product-list.component';
+import { IPackage } from '../../../interfaces/package.interface';
+import { PackageService } from '../../../services/package.service';
 
 interface Column {
     field: string;
@@ -73,7 +75,7 @@ interface ExportColumn {
         PaginatorModule,
         FormsModule
     ],
-    providers: [MessageService, ConfirmationService, OrderService]
+    providers: [MessageService, ConfirmationService, OrderService, PackageService]
 })
 export class OrderListComponent extends ComponentBase implements OnInit {
     orderForm!: FormGroup;
@@ -93,10 +95,12 @@ export class OrderListComponent extends ComponentBase implements OnInit {
 
     statusOptions = [
         { label: 'Pending', value: OrderStatus.PENDING },
-        { label: 'Processing', value: OrderStatus.PROCESSING },
+        { label: 'Confirmed', value: OrderStatus.CONFIRMED },
         { label: 'Shipped', value: OrderStatus.SHIPPED },
         { label: 'Delivered', value: OrderStatus.DELIVERED },
-        { label: 'Cancelled', value: OrderStatus.CANCELLED }
+        { label: 'Cancelled', value: OrderStatus.CANCELLED },
+        { label: 'Postponed', value: OrderStatus.POSTPONED },
+        { label: 'Returned', value: OrderStatus.RETURNED }
     ];
 
     paymentStatusOptions = [
@@ -153,12 +157,14 @@ export class OrderListComponent extends ComponentBase implements OnInit {
     exportColumns!: ExportColumn[];
     cols!: Column[];
     products = signal<IProduct[]>([]);
+    packages = signal<IPackage[]>([]);
     constructor(
         private fb: FormBuilder,
         private orderService: OrderService,
         private messageService: MessageService,
         private confirmationService: ConfirmationService,
-        private productService: ProductsService
+        private productService: ProductsService,
+        private packageService: PackageService
     ) {
         super();
     }
@@ -167,6 +173,7 @@ export class OrderListComponent extends ComponentBase implements OnInit {
         this.buildForm();
         this.loadOrders();
         this.loadProducts();
+        this.loadPackages();
         this.cols = [
             { field: 'orderNumber', header: 'Order #' },
             { field: 'customer', header: 'Customer' },
@@ -199,7 +206,7 @@ export class OrderListComponent extends ComponentBase implements OnInit {
                 phone: ['', Validators.required],
                 address: ['', Validators.required],
                 city: ['', Validators.required],
-                // state: ['', Validators.required],
+                state: ['', Validators.required],
                 // zipCode: [''],
                 country: ['EG', Validators.required]
             }),
@@ -222,15 +229,19 @@ export class OrderListComponent extends ComponentBase implements OnInit {
 
     addItem(): void {
         const itemGroup = this.fb.group({
-            productId: ['', Validators.required],
+            itemType: [OrderItemType.PRODUCT, Validators.required],
+            itemId: ['', Validators.required],
+            productId: [''], // Legacy field
             quantity: [1, [Validators.required, Validators.min(1)]],
             price: [0, [Validators.required, Validators.min(0)]],
             totalPrice: [0, [Validators.required, Validators.min(0)]],
             discountPrice: [0, [Validators.min(0)]],
-            color: ['', Validators.required],
-            size: ['', Validators.required],
+            color: [''],
+            size: [''],
             listColors: [[]],
-            listSizes: [[]]
+            listSizes: [[]],
+            packageItems: [[]],
+            selectedVariants: [[]]
         });
         this.items.push(itemGroup);
         this.calculateTotal();
@@ -258,6 +269,7 @@ export class OrderListComponent extends ComponentBase implements OnInit {
             item.patchValue({
                 color: event.value,
             });
+            this.updateSelectedVariants(index);
         }
     }
     onSizeChange(event: any, index: number): void {
@@ -266,19 +278,44 @@ export class OrderListComponent extends ComponentBase implements OnInit {
             item.patchValue({
                 size: event.value,
             });
+            this.updateSelectedVariants(index);
+        }
+    }
+
+    private updateSelectedVariants(index: number): void {
+        const item = this.items.at(index);
+        if (item) {
+            const color = item.get('color')?.value;
+            const size = item.get('size')?.value;
+            const selectedVariants = [];
+            
+            if (color) {
+                selectedVariants.push({ variant: 'color', value: color });
+            }
+            if (size) {
+                selectedVariants.push({ variant: 'size', value: size });
+            }
+            
+            item.patchValue({
+                selectedVariants: selectedVariants
+            });
         }
     }
     getSeverity(status: OrderStatus) {
         switch (status) {
             case OrderStatus.DELIVERED:
                 return 'success';
-            case OrderStatus.PROCESSING:
+            case OrderStatus.CONFIRMED:
                 return 'info';
             case OrderStatus.SHIPPED:
                 return 'info';
             case OrderStatus.PENDING:
                 return 'warn';
             case OrderStatus.CANCELLED:
+                return 'danger';
+            case OrderStatus.POSTPONED:
+                return 'warn';
+            case OrderStatus.RETURNED:
                 return 'danger';
             default:
                 return 'info';
@@ -353,6 +390,22 @@ export class OrderListComponent extends ComponentBase implements OnInit {
             })
         });
     }
+
+    loadPackages() {
+        this.packageService.getPackagesList().pipe(
+            takeUntil(this.destroy$)
+        ).subscribe({
+            next: (res: BaseResponse<IPackage[]>) => {
+                this.packages.set(res.data);
+            },
+            error: () => this.messageService.add({
+                severity: 'error',
+                summary: 'Error',
+                detail: 'Failed to load packages',
+                life: 1000
+            })
+        });
+    }
     openNew() {
         this.orderForm.reset({
             orderStatus: OrderStatus.PENDING,
@@ -392,28 +445,70 @@ export class OrderListComponent extends ComponentBase implements OnInit {
         // Add items from order
         if (order.items && order.items.length > 0) {
             order.items.forEach((item: OrderItem) => {
-                // Use variantName or generate a name based on productId
-                // Calculate total based on quantity and price
-                // const itemTotal = (item.quantity || 0) * (item.price || 0);
-                const { colors, sizes } = this.extractColorsAndSizes(item.productId);
-                console.log(item.productId._id, 'item.productId');
+                if (item.itemType === OrderItemType.PACKAGE) {
+                    // Handle package items
+                    this.items.push(this.fb.group({
+                        itemType: [item.itemType],
+                        itemId: [item.itemId],
+                        productId: [''], // Legacy field
+                        quantity: [item.quantity],
+                        price: [item.price],
+                        totalPrice: [item.totalPrice],
+                        discountPrice: [item.discountPrice],
+                        color: [''],
+                        size: [''],
+                        listColors: [[]],
+                        listSizes: [[]],
+                        packageItems: [item.packageItems || []],
+                        selectedVariants: [item.selectedVariants || []]
+                    }));
+                } else {
+                    // Handle product items
+                    const { colors, sizes } = item.productId ? this.extractColorsAndSizes(item.productId) : { colors: [], sizes: [] };
+                    console.log(item.productId?._id, 'item.productId');
 
-                this.items.push(this.fb.group({
-                    productId: [item.productId._id],
-                    quantity: [item.quantity],
-                    price: [item.price],
-                    totalPrice: [item.totalPrice],
-                    discountPrice: [item.discountPrice],
-                    color: [item.color],
-                    size: [item.size],
-                    listColors: [colors],
-                    listSizes: [sizes]
-                }));
+                    // Build selectedVariants from color and size if not present
+                    let selectedVariants = item.selectedVariants || [];
+                    if (!selectedVariants.length && (item.color || item.size)) {
+                        selectedVariants = [];
+                        if (item.color) {
+                            selectedVariants.push({ variant: 'color', value: item.color });
+                        }
+                        if (item.size) {
+                            selectedVariants.push({ variant: 'size', value: item.size });
+                        }
+                    }
+
+                    this.items.push(this.fb.group({
+                        itemType: [item.itemType || OrderItemType.PRODUCT],
+                        itemId: [item.itemId || item.productId?._id],
+                        productId: [item.productId?._id],
+                        quantity: [item.quantity],
+                        price: [item.price],
+                        totalPrice: [item.totalPrice],
+                        discountPrice: [item.discountPrice],
+                        color: [item.color],
+                        size: [item.size],
+                        listColors: [colors],
+                        listSizes: [sizes],
+                        packageItems: [[]],
+                        selectedVariants: [selectedVariants]
+                    }));
+                }
             });
         }
         console.log(this.orderForm.value, 'orderForm', order);
         this.isEditOrder = true;
         this.orderDialog = true;
+    }
+
+    getVariantImage(variant: string, productId: IProduct) {
+        const color:any = productId.variants.find(v => v.attributes?.find(attr => attr.variant === EnumProductVariant.COLOR && attr.value === variant));
+        const attr = color.attributes?.find((x:any) => x.variant === EnumProductVariant.COLOR && x.value === variant);
+        if (attr) {
+            return attr.image?.filePath;
+        }
+        return null;
     }
 
     deleteOrder(order: Order) {
@@ -456,21 +551,21 @@ export class OrderListComponent extends ComponentBase implements OnInit {
         }
 
         const formValue = this.orderForm.value;
-        formValue.items.forEach((item: any) => {
-            delete item.listColors;
-            delete item.listSizes;
-        });
-        const request$ = formValue._id
-            ? this.orderService.updateOrder(formValue._id, formValue)
-            : this.orderService.createOrder(formValue);
+        
+        // Clean the form data before sending
+        const cleanedData = this.cleanOrderData(formValue);
+
+        const request$ = cleanedData._id
+            ? this.orderService.updateOrder(cleanedData._id, cleanedData)
+            : this.orderService.createOrder(cleanedData);
 
         request$.pipe(takeUntil(this.destroy$)).subscribe({
             next: (res: BaseResponse<any>) => {
                 this.loadOrders();
                 this.messageService.add({
                     severity: 'success',
-                    summary: formValue._id ? 'Updated' : 'Created',
-                    detail: `Order ${formValue._id ? 'updated' : 'created'} successfully`
+                    summary: cleanedData._id ? 'Updated' : 'Created',
+                    detail: `Order ${cleanedData._id ? 'updated' : 'created'} successfully`
                 });
                 this.hideDialog();
             },
@@ -484,6 +579,71 @@ export class OrderListComponent extends ComponentBase implements OnInit {
                 });
             }
         });
+    }
+
+    private cleanOrderData(data: any): any {
+        const cleanedData = { ...data };
+        
+        // Clean cashPayment object
+        if (cleanedData.cashPayment && typeof cleanedData.cashPayment === 'object') {
+            const cashPayment = cleanedData.cashPayment;
+            cleanedData.cashPayment = {
+                amountPaid: cashPayment.amountPaid || 0,
+                changeDue: cashPayment.changeDue || 0
+            };
+        }
+        
+        // Clean items array
+        if (cleanedData.items && Array.isArray(cleanedData.items)) {
+            cleanedData.items = cleanedData.items.map((item: any) => {
+                const cleanedItem = { ...item };
+                
+                // Remove form-specific fields
+                delete cleanedItem.listColors;
+                delete cleanedItem.listSizes;
+                
+                // Remove empty productId for packages
+                if (cleanedItem.itemType === 'package' && (!cleanedItem.productId || cleanedItem.productId === '')) {
+                    delete cleanedItem.productId;
+                }
+                
+                // Clean packageItems
+                if (cleanedItem.packageItems && Array.isArray(cleanedItem.packageItems)) {
+                    cleanedItem.packageItems = cleanedItem.packageItems.map((pkgItem: any) => {
+                        const cleanedPkgItem = { ...pkgItem };
+                        
+                        // Handle productId if it's an object
+                        if (cleanedPkgItem.productId && typeof cleanedPkgItem.productId === 'object' && cleanedPkgItem.productId._id) {
+                            cleanedPkgItem.productId = cleanedPkgItem.productId._id;
+                        }
+                        
+                        // Remove _id from selectedVariants
+                        if (cleanedPkgItem.selectedVariants && Array.isArray(cleanedPkgItem.selectedVariants)) {
+                            cleanedPkgItem.selectedVariants = cleanedPkgItem.selectedVariants.map((variant: any) => {
+                                const { _id, ...cleanVariant } = variant;
+                                return cleanVariant;
+                            });
+                        }
+                        
+                        // Remove _id from packageItem itself
+                        const { _id, ...cleanPkgItem } = cleanedPkgItem;
+                        return cleanPkgItem;
+                    });
+                }
+                
+                // Clean selectedVariants for products
+                if (cleanedItem.selectedVariants && Array.isArray(cleanedItem.selectedVariants)) {
+                    cleanedItem.selectedVariants = cleanedItem.selectedVariants.map((variant: any) => {
+                        const { _id, ...cleanVariant } = variant;
+                        return cleanVariant;
+                    });
+                }
+                
+                return cleanedItem;
+            });
+        }
+        
+        return cleanedData;
     }
 
     updateOrderStatus(order: Order, status: OrderStatus) {
@@ -527,17 +687,53 @@ export class OrderListComponent extends ComponentBase implements OnInit {
         });
     }
 
-    onProductChange(event: any, index: number) {
-        const product: IProduct | undefined = this.products().find(p => p._id === event.value);
-        if (product) {
-            console.log(product, index);
-            this.items.controls[index].get('price')?.setValue(product.price);
-            this.calculateTotal();
-            const { colors, sizes } = this.extractColorsAndSizes(product);
-            this.colors(colors, index)
-            this.sizes(sizes, index)
-            console.log(colors, sizes);
+    onItemChange(event: any, index: number) {
+        const itemType = this.items.controls[index].get('itemType')?.value;
+        const itemId = event.value;
+        
+        if (itemType === OrderItemType.PACKAGE) {
+            const packageData: IPackage | undefined = this.packages().find(p => p._id === itemId);
+            if (packageData) {
+                console.log(packageData, index);
+                this.items.controls[index].get('price')?.setValue(packageData.discountPrice || packageData.price);
+                this.items.controls[index].get('itemId')?.setValue(packageData._id);
+                this.calculateTotal();
+            }
+        } else {
+            const product: IProduct | undefined = this.products().find(p => p._id === itemId);
+            if (product) {
+                console.log(product, index);
+                this.items.controls[index].get('price')?.setValue(product.price);
+                this.items.controls[index].get('itemId')?.setValue(product._id);
+                this.calculateTotal();
+                const { colors, sizes } = this.extractColorsAndSizes(product);
+                this.colors(colors, index)
+                this.sizes(sizes, index)
+                
+                // Clear selected variants when product changes
+                this.items.controls[index].get('selectedVariants')?.setValue([]);
+                this.items.controls[index].get('color')?.setValue('');
+                this.items.controls[index].get('size')?.setValue('');
+                
+                console.log(colors, sizes);
+            }
         }
+    }
+
+    onItemTypeChange(event: any, index: number) {
+        const itemType = event.value;
+        this.items.controls[index].get('itemType')?.setValue(itemType);
+        
+        // Clear item selection when type changes
+        this.items.controls[index].get('itemId')?.setValue('');
+        this.items.controls[index].get('productId')?.setValue('');
+        this.items.controls[index].get('price')?.setValue(0);
+        this.items.controls[index].get('color')?.setValue('');
+        this.items.controls[index].get('size')?.setValue('');
+        this.items.controls[index].get('listColors')?.setValue([]);
+        this.items.controls[index].get('listSizes')?.setValue([]);
+        
+        this.calculateTotal();
     }
 
     private extractColorsAndSizes(product: IProduct): { colors: string[], sizes: string[] } {

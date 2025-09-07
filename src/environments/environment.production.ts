@@ -1,7 +1,7 @@
 export const environment = {
   production: true,
   development: false,
-  apiUrl: 'https://nasig-backend-sigma.vercel.app/api/v1', // Replace with your production API URL
+  apiUrl: 'https://pledge-backend-sigma.vercel.app/api/v1', // Replace with your production API URL
   appName: 'Online Store Admin',
   version: '1.0.0',
   // Production specific settings

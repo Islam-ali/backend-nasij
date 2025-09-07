@@ -32,6 +32,7 @@ import { takeUntil } from 'rxjs';
 import { ICategory } from '../../../interfaces/category.interface';
 import { IBrand } from '../../../interfaces/brand.interface';
 import { ComponentBase } from '../../../core/directives/component-base.directive';
+import { TextareaModule } from 'primeng/textarea';
 
 @Component({
   selector: 'app-banner-list',
@@ -50,7 +51,8 @@ import { ComponentBase } from '../../../core/directives/component-base.directive
     ToggleButtonModule,
     CalendarModule,
     DropdownModule,
-    UploadFilesComponent
+    UploadFilesComponent,
+    TextareaModule
   ],
   providers: [MessageService, ConfirmationService],
   templateUrl: './banner-list.component.html',

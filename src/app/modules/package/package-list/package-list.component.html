@@ -1,0 +1,235 @@
+<div class="card">
+    <p-toast></p-toast>
+    <p-confirmDialog></p-confirmDialog>
+
+    <p-toolbar styleClass="mb-4 gap-2">
+        <ng-template pTemplate="left">
+            <button pButton pRipple label="New" icon="pi pi-plus" class="p-button-success" (click)="openNew()"></button>
+            <!-- <button pButton pRipple label="Delete" icon="pi pi-trash" class="p-button-danger"
+                (click)="confirmDeleteSelected()"
+                [disabled]="!selectedPackages() || selectedPackages().length === 0"></button> -->
+        </ng-template>
+    </p-toolbar>
+
+    <p-table #dt [value]="packages()" [(selection)]="selectedPackages" dataKey="_id" [paginator]="true"
+        [rows]="itemsPerPage" [showCurrentPageReport]="true" [rowsPerPageOptions]="[10,25,50]" [loading]="loading()"
+        [globalFilterFields]="['name','description','tags']"
+        currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries" [showPageLinks]="false"
+        [showJumpToPageDropdown]="true" [showJumpToPageInput]="true" (onPageChange)="onPageChange($event)"
+        styleClass="p-datatable-gridlines">
+        <ng-template pTemplate="caption">
+            <div class="flex flex-column md:flex-row md:justify-between md:align-items-center">
+                <h5 class="m-0">Manage Packages</h5>
+                <p-iconField iconPosition="left" class="ml-auto">
+                    <p-inputIcon>
+                        <i class="pi pi-search"></i>
+                    </p-inputIcon>
+                    <input pInputText type="text" (input)="onGlobalFilter(dt, $event)" placeholder="Search..."
+                        class="w-full sm:w-auto" />
+                </p-iconField>
+            </div>
+        </ng-template>
+        <ng-template pTemplate="header">
+            <tr>
+                <!-- <th style="width: 4rem">
+                    <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
+                </th> -->
+                <th pSortableColumn="name" style="min-width:200px">Name <p-sortIcon field="name"></p-sortIcon></th>
+                <th pSortableColumn="price" style="min-width:100px">Price <p-sortIcon field="price"></p-sortIcon></th>
+                <th pSortableColumn="stock" style="min-width:100px">Stock <p-sortIcon field="stock"></p-sortIcon></th>
+                <th style="min-width:100px">Items Count</th>
+                <th style="min-width:200px">Tags</th>
+                <th pSortableColumn="isActive" style="min-width:100px">Status <p-sortIcon field="isActive"></p-sortIcon>
+                </th>
+                <th pSortableColumn="createdAt" style="min-width:200px">Created Date <p-sortIcon
+                        field="createdAt"></p-sortIcon></th>
+                <th style="min-width:10rem">Actions</th>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-package>
+            <tr>
+                <!-- <td>
+                    <p-tableCheckbox [value]="package"></p-tableCheckbox>
+                </td> -->
+                <td>
+                    <div class="flex align-items-center gap-2">
+                        <img *ngIf="package.images && package.images.length > 0" [src]="package.images[0].filePath"
+                            [alt]="package.name" width="32" height="32" class="rounded-circle" appFallbackImg />
+                        <span class="font-bold">{{package.name}}</span>
+                    </div>
+                </td>
+                <td>
+                    <span class="font-bold">{{package.price | currency}}</span>
+                    <span *ngIf="package.discountPrice" class="text-red-500 line-through ml-2">{{package.discountPrice |
+                        currency}}</span>
+                </td>
+                <td>
+                    <span [class]="package.stock > 0 ? 'text-green-600' : 'text-red-600'">
+                        {{package.stock}}
+                    </span>
+                </td>
+                <td>{{getItemsCount(package.items)}}</td>
+                <td>
+                    <div class="flex flex-wrap gap-1">
+                        <p-tag *ngFor="let tag of package.tags" [value]="tag" severity="info"></p-tag>
+                    </div>
+                </td>
+                <td>
+                    <p-tag [value]="getStatusLabel(package.isActive)"
+                        [severity]="getSeverity(package.isActive)"></p-tag>
+                </td>
+                <td>{{package.createdAt | date:'medium'}}</td>
+                <td>
+                    <div class="flex gap-2">
+                        <button pButton pRipple icon="pi pi-pencil" class="p-button-rounded p-button-success"
+                            (click)="editPackage(package)"></button>
+                        <button pButton pRipple icon="pi pi-trash" class="p-button-rounded p-button-warn"
+                            (click)="deletePackage(package)"></button>
+                    </div>
+                </td>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="emptymessage">
+            <tr>
+                <td colspan="8" class="text-center p-4">
+                    <div *ngIf="loading(); else noData">
+                        <p-skeleton height="2rem" class="mb-2"></p-skeleton>
+                        <p-skeleton height="2rem" class="mb-2"></p-skeleton>
+                        <p-skeleton height="2rem"></p-skeleton>
+                    </div>
+                    <ng-template #noData>
+                        <i class="pi pi-inbox" style="font-size: 5rem"></i>
+                        <h3>No packages found</h3>
+                        <p>Start by creating your first package.</p>
+                    </ng-template>
+                </td>
+            </tr>
+        </ng-template>
+    </p-table>
+</div>
+
+<!-- Package Dialog -->
+<p-dialog [(visible)]="packageDialog" [style]="{width: '90vw'}" [maximizable]="true"
+    header="{{isEdit() ? 'Edit Package' : 'New Package'}}" [modal]="true" styleClass="p-fluid">
+    <form [formGroup]="packageForm" (ngSubmit)="savePackage()">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+            <div class="w-full">
+                <label for="name" class="font-bold">Name</label>
+                <input id="name" type="text" pInputText formControlName="name" class="w-full" required autofocus />
+                <small *ngIf="submitted() && packageForm.get('name')?.invalid" class="p-error">Name is required.</small>
+            </div>
+            <div class="w-full">
+                <label for="description" class="font-bold">Description</label>
+                <textarea id="description" class="w-full" pInputTextarea formControlName="description" required rows="3"
+                    cols="20"></textarea>
+                <small *ngIf="submitted() && packageForm.get('description')?.invalid" class="p-error">Description is
+                    required.</small>
+            </div>
+            <div class="w-full">
+                <label for="price" class="font-bold">Price</label>
+                <p-inputNumber id="price" class="w-full" formControlName="price" mode="currency" currency="USD" locale="en-US" />
+                <small *ngIf="submitted() && packageForm.get('price')?.invalid" class="p-error">Price is
+                    required.</small>
+            </div>
+            <div class="w-full">
+                <label for="discountPrice" class="font-bold">Discount Price</label>
+                <p-inputNumber id="discountPrice" class="w-full" formControlName="discountPrice" mode="currency" currency="USD"
+                    locale="en-US" />
+            </div>
+            <div class="w-full">
+                <label for="stock" class="font-bold">Stock</label>
+                <p-inputNumber id="stock" class="w-full" formControlName="stock" />
+                <small *ngIf="submitted() && packageForm.get('stock')?.invalid" class="p-error">Stock is
+                    required.</small>
+            </div>
+            <div class="w-full">
+                <label for="isActive" class="font-bold">Active Status</label>
+                <div class="flex align-items-center">
+                    <p-toggleSwitch formControlName="isActive" class="w-full"></p-toggleSwitch>
+                </div>
+            </div>
+            <div class="w-full">
+                <label for="tags" class="font-bold">Tags</label>
+                <p-chips formControlName="tags" placeholder="Enter tags" class="w-full"></p-chips>
+            </div>
+            <div class="col-span-2">
+                <label class="font-bold">Images</label>
+                <app-upload-files [control]="packageForm.get('images')!"
+                    [filesServer]="packageForm.get('images')?.value" [accept]="'image/*'" [multiple]="true" class="w-full">
+                </app-upload-files>
+            </div>
+
+            <!-- Package Items -->
+            <div class="col-span-2">
+                <div class="flex align-items-center justify-content-between mb-3">
+                    <label class="font-bold">Package Items</label>
+                    <button type="button" pButton pRipple label="Add Item" icon="pi pi-plus" class="p-button-sm"
+                        (click)="addItem()"></button>
+                </div>
+
+                <div formArrayName="items" class="space-y-3">
+                    <div *ngFor="let item of items.controls; let i = index" [formGroupName]="i"
+                        class="p-3 border-round border-1 border-gray-300">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                            <div class="w-full">
+                                <label class="font-bold">Product</label>
+                                <p-dropdown [filter]="true" filterBy="name" styleClass="w-full" [options]="products()" formControlName="productId" optionLabel="name"
+                                    optionValue="_id" placeholder="Select a product"
+                                    [loading]="loadingProducts()"></p-dropdown>
+                            </div>
+                            <div class="w-full">
+                                <label class="font-bold">Quantity</label>
+                                <p-inputNumber styleClass="w-full" formControlName="quantity" [min]="1" class="w-full" />
+                            </div>
+                                <div class="w-full">
+                                <label class="font-bold">SKU</label>
+                                <input pInputText styleClass="w-full" formControlName="sku" placeholder="Optional" class="w-full"/>
+                            </div>
+                            <div class="w-full flex">
+                                <button type="button" pButton pRipple label="Remove" icon="pi pi-trash"
+                                    class="p-button-danger p-button-sm mt-auto" (click)="removeItem(i)"></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <small *ngIf="submitted() && packageForm.get('items')?.invalid" class="p-error">At least one item is
+                    required.</small>
+            </div>
+        </div>
+    </form>
+
+    <ng-template pTemplate="footer">
+        <button pButton pRipple label="Cancel" icon="pi pi-times" class="p-button-text" (click)="hideDialog()"></button>
+        <button pButton pRipple label="Save" icon="pi pi-check" class="p-button-text" (click)="savePackage()"
+            [loading]="loading()"></button>
+    </ng-template>
+</p-dialog>
+
+<!-- Delete Package Dialog -->
+<p-dialog [(visible)]="deletePackageDialog" [style]="{width: '450px'}" header="Confirm" [modal]="true">
+    <div class="confirmation-content">
+        <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem"></i>
+        <span *ngIf="package()">Are you sure you want to delete <b>{{package().name}}</b>?</span>
+    </div>
+    <ng-template pTemplate="footer">
+        <button pButton pRipple label="No" icon="pi pi-times" class="p-button-text"
+            (click)="deletePackageDialog = false"></button>
+        <button pButton pRipple label="Yes" icon="pi pi-check" class="p-button-text" (click)="confirmDelete()"
+            [loading]="loading()"></button>
+    </ng-template>
+</p-dialog>
+
+<!-- Delete Selected Packages Dialog -->
+<p-dialog [(visible)]="deletePackagesDialog" [style]="{width: '450px'}" header="Confirm" [modal]="true">
+    <div class="confirmation-content">
+        <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem"></i>
+        <span>Are you sure you want to delete the selected packages?</span>
+    </div>
+    <ng-template pTemplate="footer">
+        <button pButton pRipple label="No" icon="pi pi-times" class="p-button-text"
+            (click)="deletePackagesDialog = false"></button>
+        <button pButton pRipple label="Yes" icon="pi pi-check" class="p-button-text" (click)="deleteSelectedPackages()"
+            [loading]="loading()"></button>
+    </ng-template>
+</p-dialog>

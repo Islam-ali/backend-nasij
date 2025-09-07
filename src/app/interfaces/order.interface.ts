@@ -2,11 +2,12 @@ import { IProduct } from "./product.interface";
 
 export enum OrderStatus {
     PENDING = 'pending',
-    PROCESSING = 'processing',
+    CONFIRMED = 'confirmed',
     SHIPPED = 'shipped',
     DELIVERED = 'delivered',
     CANCELLED = 'cancelled',
-    RETURNED = 'returned'
+    POSTPONED = 'postponed',
+    RETURNED = 'returned',
   }
   
 
@@ -24,14 +25,34 @@ export enum PaymentMethod {
     STRIPE = 'stripe'
 }
 
-export interface OrderItem {
-    productId: IProduct;
+export enum OrderItemType {
+    PRODUCT = 'product',
+    PACKAGE = 'package'
+}
+
+export interface PackageItem {
+    productId: string;
     quantity: number;
-    price: number;
+    selectedVariants: ProductVariantAttribute[];
+}
+
+export interface ProductVariantAttribute {
+    variant: string;
+    value: string;
+}
+
+export interface OrderItem {
+    itemType: OrderItemType;
+    itemId: string;
+    productId?: IProduct; // Legacy field for backward compatibility
+    quantity: number;
+    price?: number;
     discountPrice?: number;
     color?: string;
     size?: string;
-    totalPrice: number;
+    totalPrice?: number;
+    packageItems?: PackageItem[];
+    selectedVariants?: ProductVariantAttribute[];
 }
 
 export interface ShippingAddress {

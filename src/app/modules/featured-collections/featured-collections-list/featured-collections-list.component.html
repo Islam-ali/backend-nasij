@@ -78,6 +78,7 @@
     <p-dialog [(visible)]="featuredCollectionDialog" [style]="{width: '90vw', maxWidth: '1200px'}" [modal]="true"
         [draggable]="false" [resizable]="false"
         header="{{ selectedFeaturedCollections.length > 0 ? 'Edit' : 'New' }} Featured Collection">
+        @if(featuredCollectionDialog) {
         <form [formGroup]="featuredCollectionForm" class="space-y-6">
             <!-- Basic Information -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -267,7 +268,7 @@
                 </div>
             </div>
         </form>
-
+        }
         <ng-template pTemplate="footer">
             <div class="flex justify-end gap-2">
                 <p-button label="Cancel" icon="pi pi-times" (onClick)="hideDialog()"

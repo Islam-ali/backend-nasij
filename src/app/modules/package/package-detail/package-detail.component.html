@@ -1,0 +1,277 @@
+<div class="package-detail-container">
+    <div *ngIf="loading(); else packageContent" class="loading-container">
+        <div class="grid">
+            <div class="col-12">
+                <p-skeleton height="2rem" class="mb-2"></p-skeleton>
+                <p-skeleton height="2rem" class="mb-2"></p-skeleton>
+                <p-skeleton height="2rem"></p-skeleton>
+            </div>
+        </div>
+    </div>
+
+    <ng-template #packageContent>
+        <div class="grid">
+            <!-- Package Header -->
+            <div class="col-12">
+                <div class="flex align-items-center justify-content-between mb-3">
+                    <div class="flex align-items-center gap-3">
+                        <button pButton pRipple icon="pi pi-arrow-left" class="p-button-text" [routerLink]="['/packages']"></button>
+                        <h1 class="m-0">{{package().name}}</h1>
+                    </div>
+                    <div class="flex gap-2">
+                        <p-tag [value]="getStatusLabel(package().isActive)" [severity]="getStatusSeverity(package().isActive)"></p-tag>
+                        <button pButton pRipple label="Edit" icon="pi pi-pencil" class="p-button-primary" (click)="editPackage()"></button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Package Images -->
+            <div class="col-12 md:col-6">
+                <p-card styleClass="h-full">
+                    <ng-template pTemplate="header">
+                        <div class="main-image-container">
+                            <img [src]="getMainImage()" [alt]="package().name" class="main-image" appFallbackImg />
+                        </div>
+                    </ng-template>
+                    <ng-template pTemplate="content">
+                        <div class="image-gallery" *ngIf="getImages().length > 1">
+                            <div class="grid">
+                                <div *ngFor="let image of getImages(); let i = index" class="col-3">
+                                    <img [src]="image" [alt]="package().name + ' ' + (i + 1)" class="thumbnail-image" appFallbackImg />
+                                </div>
+                            </div>
+                        </div>
+                    </ng-template>
+                </p-card>
+            </div>
+
+            <!-- Package Info -->
+            <div class="col-12 md:col-6">
+                <p-card styleClass="h-full">
+                    <ng-template pTemplate="header">
+                        <h3>Package Information</h3>
+                    </ng-template>
+                    <ng-template pTemplate="content">
+                        <div class="package-info">
+                            <div class="info-row">
+                                <span class="label">Description:</span>
+                                <span class="value">{{package().description}}</span>
+                            </div>
+                            
+                            <div class="info-row">
+                                <span class="label">Price:</span>
+                                <span class="value price">
+                                    <span class="current-price">{{getDiscountedValue() | currency}}</span>
+                                    <span *ngIf="package().discountPrice" class="original-price">{{getTotalValue() | currency}}</span>
+                                    <span *ngIf="package().discountPrice" class="discount-badge">-{{getDiscountPercentage(package().price, package().discountPrice)}}%</span>
+                                </span>
+                            </div>
+
+                            <div class="info-row">
+                                <span class="label">Stock:</span>
+                                <span class="value">
+                                    <p-tag [value]="getStockLabel(package().stock)" [severity]="getStockSeverity(package().stock)"></p-tag>
+                                    <span class="stock-number">({{package().stock}})</span>
+                                </span>
+                            </div>
+
+                            <div class="info-row">
+                                <span class="label">Items Count:</span>
+                                <span class="value">{{getItemsCount()}}</span>
+                            </div>
+
+                            <div class="info-row">
+                                <span class="label">Tags:</span>
+                                <span class="value">
+                                    <div class="flex flex-wrap gap-1">
+                                        <p-tag *ngFor="let tag of getTags()" [value]="tag" severity="info"></p-tag>
+                                    </div>
+                                </span>
+                            </div>
+
+                            <div class="info-row">
+                                <span class="label">Created:</span>
+                                <span class="value">{{package().createdAt | date:'medium'}}</span>
+                            </div>
+
+                            <div class="info-row">
+                                <span class="label">Last Updated:</span>
+                                <span class="value">{{package().updatedAt | date:'medium'}}</span>
+                            </div>
+                        </div>
+                    </ng-template>
+                </p-card>
+            </div>
+
+            <!-- Package Items -->
+            <div class="col-12">
+                <p-card>
+                    <ng-template pTemplate="header">
+                        <h3>Package Items ({{getItemsCount()}})</h3>
+                    </ng-template>
+                    <ng-template pTemplate="content">
+                        <p-table [value]="package().items" [tableStyle]="{'min-width': '50rem'}" styleClass="p-datatable-sm">
+                            <ng-template pTemplate="header">
+                                <tr>
+                                    <th>Product</th>
+                                    <th>Quantity</th>
+                                    <th>Required Variants</th>
+                                    <th>SKU</th>
+                                </tr>
+                            </ng-template>
+                            <ng-template pTemplate="body" let-item>
+                                <tr>
+                                    <td>
+                                        <div class="flex align-items-center gap-2">
+                                            <img *ngIf="item.product?.images && item.product.images.length > 0" 
+                                                 [src]="item.product.images[0]" 
+                                                 [alt]="item.product?.name" 
+                                                 width="32" 
+                                                 height="32" 
+                                                 class="rounded-circle" 
+                                                 appFallbackImg />
+                                            <span>{{item.product?.name || 'Product ID: ' + item.productId}}</span>
+                                        </div>
+                                    </td>
+                                    <td>{{item.quantity}}</td>
+                                    <td>
+                                        <div class="flex flex-wrap gap-1">
+                                            <p-tag *ngFor="let variant of item.requiredVariantAttributes" 
+                                                   [value]="variant.variant + ': ' + variant.value" 
+                                                   severity="warning"></p-tag>
+                                        </div>
+                                    </td>
+                                    <td>{{item.sku || 'N/A'}}</td>
+                                </tr>
+                            </ng-template>
+                        </p-table>
+                    </ng-template>
+                </p-card>
+            </div>
+
+            <!-- Inventory Summary -->
+            <div class="col-12">
+                <p-card>
+                    <ng-template pTemplate="header">
+                        <h3>Inventory Summary</h3>
+                    </ng-template>
+                    <ng-template pTemplate="content">
+                        <div *ngIf="loadingInventory(); else inventoryContent" class="loading-container">
+                            <p-skeleton height="2rem" class="mb-2"></p-skeleton>
+                            <p-skeleton height="2rem"></p-skeleton>
+                        </div>
+                        
+                        <ng-template #inventoryContent>
+                            <div class="inventory-summary">
+                                <div class="summary-header">
+                                    <div class="summary-item">
+                                        <span class="label">Package Stock:</span>
+                                        <span class="value">
+                                            <p-tag [value]="getStockLabel(inventorySummary().packageStock)" 
+                                                   [severity]="getStockSeverity(inventorySummary().packageStock)"></p-tag>
+                                            <span class="stock-number">({{inventorySummary().packageStock}})</span>
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <p-divider></p-divider>
+
+                                <h4>Product Inventory Details</h4>
+                                <p-table [value]="inventorySummary().productInventory" [tableStyle]="{'min-width': '50rem'}" styleClass="p-datatable-sm">
+                                    <ng-template pTemplate="header">
+                                        <tr>
+                                            <th>Product</th>
+                                            <th>Required Quantity</th>
+                                            <th>Available Stock</th>
+                                            <th>Variant Details</th>
+                                        </tr>
+                                    </ng-template>
+                                    <ng-template pTemplate="body" let-product>
+                                        <tr>
+                                            <td>{{product.productName}}</td>
+                                            <td>{{product.requiredQuantity}}</td>
+                                            <td>
+                                                <p-tag [value]="getStockLabel(product.availableStock)" 
+                                                       [severity]="getStockSeverity(product.availableStock)"></p-tag>
+                                                <span class="stock-number">({{product.availableStock}})</span>
+                                            </td>
+                                            <td>
+                                                <div *ngIf="product.variantDetails && product.variantDetails.length > 0" class="flex flex-wrap gap-1">
+                                                    <p-tag *ngFor="let variant of product.variantDetails" 
+                                                           [value]="variant.variant + ': ' + variant.value + ' (' + variant.stock + ')'" 
+                                                           [severity]="getStockSeverity(variant.stock)"></p-tag>
+                                                </div>
+                                                <span *ngIf="!product.variantDetails || product.variantDetails.length === 0">No variants</span>
+                                            </td>
+                                        </tr>
+                                    </ng-template>
+                                </p-table>
+                            </div>
+                        </ng-template>
+                    </ng-template>
+                </p-card>
+            </div>
+
+            <!-- Statistics -->
+            <div class="col-12">
+                <div class="grid">
+                    <div class="col-12 md:col-3">
+                        <p-card styleClass="stat-card">
+                            <ng-template pTemplate="content">
+                                <div class="stat-item">
+                                    <i class="pi pi-shopping-cart stat-icon"></i>
+                                    <div class="stat-content">
+                                        <span class="stat-value">{{package().soldCount || 0}}</span>
+                                        <span class="stat-label">Sold</span>
+                                    </div>
+                                </div>
+                            </ng-template>
+                        </p-card>
+                    </div>
+                    
+                    <div class="col-12 md:col-3">
+                        <p-card styleClass="stat-card">
+                            <ng-template pTemplate="content">
+                                <div class="stat-item">
+                                    <i class="pi pi-star stat-icon"></i>
+                                    <div class="stat-content">
+                                        <span class="stat-value">{{package().averageRating || 0}}</span>
+                                        <span class="stat-label">Rating</span>
+                                    </div>
+                                </div>
+                            </ng-template>
+                        </p-card>
+                    </div>
+                    
+                    <div class="col-12 md:col-3">
+                        <p-card styleClass="stat-card">
+                            <ng-template pTemplate="content">
+                                <div class="stat-item">
+                                    <i class="pi pi-comments stat-icon"></i>
+                                    <div class="stat-content">
+                                        <span class="stat-value">{{package().reviewCount || 0}}</span>
+                                        <span class="stat-label">Reviews</span>
+                                    </div>
+                                </div>
+                            </ng-template>
+                        </p-card>
+                    </div>
+                    
+                    <div class="col-12 md:col-3">
+                        <p-card styleClass="stat-card">
+                            <ng-template pTemplate="content">
+                                <div class="stat-item">
+                                    <i class="pi pi-dollar stat-icon"></i>
+                                    <div class="stat-content">
+                                        <span class="stat-value">{{getSavings() | currency}}</span>
+                                        <span class="stat-label">Savings</span>
+                                    </div>
+                                </div>
+                            </ng-template>
+                        </p-card>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </ng-template>
+</div> 

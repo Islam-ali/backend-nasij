@@ -1,0 +1,279 @@
+<div class="user-detail-container">
+    <div *ngIf="loading(); else userContent" class="loading-container">
+        <div class="grid">
+            <div class="col-12">
+                <p-skeleton height="2rem" class="mb-2"></p-skeleton>
+                <p-skeleton height="2rem" class="mb-2"></p-skeleton>
+                <p-skeleton height="2rem"></p-skeleton>
+            </div>
+        </div>
+    </div>
+
+    <ng-template #userContent>
+        <div class="grid">
+            <!-- User Header -->
+            <div class="col-12">
+                <div class="flex align-items-center justify-content-between mb-3">
+                    <div class="flex align-items-center gap-3">
+                        <button pButton pRipple icon="pi pi-arrow-left" class="p-button-text" [routerLink]="['/users']"></button>
+                        <div class="flex align-items-center gap-3">
+                            <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center">
+                                <span class="text-blue-600 font-bold text-2xl">{{getAvatarInitial(user().name)}}</span>
+                            </div>
+                            <div>
+                                <h1 class="m-0">{{user().name}}</h1>
+                                <p class="text-gray-500 m-0">{{user().email}}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex gap-2">
+                        <p-tag [value]="getStatusLabel(user().isActive)" [severity]="getStatusSeverity(user().isActive)"></p-tag>
+                        <p-tag [value]="getRoleLabel(user().role)" [severity]="getRoleSeverity(user().role)"></p-tag>
+                    </div>
+                </div>
+            </div>
+
+            <!-- User Information Tabs -->
+            <div class="col-12">
+                <p-tabView (activeIndexChange)="onTabChange($event)" [activeIndex]="activeTabIndex">
+                    <!-- Overview Tab -->
+                    <p-tabPanel header="Overview">
+                        <div class="grid">
+                            <div class="col-12 md:col-6">
+                                <p-card styleClass="h-full">
+                                    <ng-template pTemplate="header">
+                                        <h3>Basic Information</h3>
+                                    </ng-template>
+                                    <ng-template pTemplate="content">
+                                        <div class="user-info">
+                                            <div class="info-row">
+                                                <span class="label">Full Name:</span>
+                                                <span class="value">{{user().name}}</span>
+                                            </div>
+                                            
+                                            <div class="info-row">
+                                                <span class="label">Email:</span>
+                                                <span class="value">{{user().email}}</span>
+                                            </div>
+
+                                            <div class="info-row">
+                                                <span class="label">Phone:</span>
+                                                <span class="value">{{user().phone || 'Not provided'}}</span>
+                                            </div>
+
+                                            <div class="info-row">
+                                                <span class="label">Role:</span>
+                                                <span class="value">
+                                                    <p-tag [value]="getRoleLabel(user().role)" [severity]="getRoleSeverity(user().role)"></p-tag>
+                                                </span>
+                                            </div>
+
+                                            <div class="info-row">
+                                                <span class="label">Status:</span>
+                                                <span class="value">
+                                                    <p-tag [value]="getStatusLabel(user().isActive)" [severity]="getStatusSeverity(user().isActive)"></p-tag>
+                                                </span>
+                                            </div>
+
+                                            <div class="info-row">
+                                                <span class="label">Account Created:</span>
+                                                <span class="value">{{user().createdAt | date:'medium'}}</span>
+                                            </div>
+
+                                            <div class="info-row">
+                                                <span class="label">Account Age:</span>
+                                                <span class="value">{{getAccountAge(user().createdAt)}}</span>
+                                            </div>
+
+                                            <div class="info-row">
+                                                <span class="label">Last Updated:</span>
+                                                <span class="value">{{user().updatedAt | date:'medium'}}</span>
+                                            </div>
+
+                                            <div class="info-row">
+                                                <span class="label">Last Login:</span>
+                                                <span class="value">{{getLastLoginFormatted(user().lastLogin)}}</span>
+                                            </div>
+                                        </div>
+                                    </ng-template>
+                                </p-card>
+                            </div>
+
+                            <div class="col-12 md:col-6">
+                                <p-card styleClass="h-full">
+                                    <ng-template pTemplate="header">
+                                        <h3>Preferences</h3>
+                                    </ng-template>
+                                    <ng-template pTemplate="content">
+                                        <div class="user-info">
+                                            <div class="info-row">
+                                                <span class="label">Language:</span>
+                                                <span class="value">{{getLanguageLabel(user().preferences?.language || 'en')}}</span>
+                                            </div>
+                                            
+                                            <div class="info-row">
+                                                <span class="label">Timezone:</span>
+                                                <span class="value">{{getTimezoneLabel(user().preferences?.timezone || 'UTC')}}</span>
+                                            </div>
+
+                                            <div class="info-row">
+                                                <span class="label">Notifications:</span>
+                                                <span class="value">
+                                                    <p-tag [value]="getNotificationStatus(user().preferences?.notifications ?? true)" 
+                                                           [severity]="getNotificationSeverity(user().preferences?.notifications ?? true)"></p-tag>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </ng-template>
+                                </p-card>
+                            </div>
+                        </div>
+                    </p-tabPanel>
+
+                    <!-- Addresses Tab -->
+                    <p-tabPanel header="Addresses">
+                        <div class="col-12">
+                            <p-card>
+                                <ng-template pTemplate="header">
+                                    <div class="flex align-items-center justify-content-between">
+                                        <h3>User Addresses ({{getAddressesCount(user().addresses)}})</h3>
+                                    </div>
+                                </ng-template>
+                                <ng-template pTemplate="content">
+                                    <div *ngIf="getAddressesCount(user().addresses) === 0; else addressesList" class="text-center p-4">
+                                        <i class="pi pi-map-marker" style="font-size: 3rem; color: #6c757d;"></i>
+                                        <h4>No addresses found</h4>
+                                        <p>This user hasn't added any addresses yet.</p>
+                                    </div>
+                                    
+                                    <ng-template #addressesList>
+                                        <div class="grid">
+                                            <div *ngFor="let address of user().addresses; let i = index" class="col-12 md:col-6">
+                                                <div class="address-card" [class.default-address]="address.isDefault">
+                                                    <div class="address-header">
+                                                        <h4>Address {{i + 1}}</h4>
+                                                        <div class="address-badges">
+                                                            <p-tag *ngIf="address.isDefault" value="Default" severity="success"></p-tag>
+                                                        </div>
+                                                    </div>
+                                                    <div class="address-content">
+                                                        <p><strong>Street:</strong> {{address.address}}</p>
+                                                        <p><strong>City:</strong> {{address.city}}</p>
+                                                        <p><strong>State/Province:</strong> {{address.state}}</p>
+                                                        <p><strong>ZIP Code:</strong> {{address.zipCode}}</p>
+                                                        <p><strong>Country:</strong> {{address.country}}</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </ng-template>
+                                </ng-template>
+                            </p-card>
+                        </div>
+                    </p-tabPanel>
+
+                    <!-- Activity Tab -->
+                    <p-tabPanel header="Activity">
+                        <div class="col-12">
+                            <p-card>
+                                <ng-template pTemplate="header">
+                                    <h3>User Activity</h3>
+                                </ng-template>
+                                <ng-template pTemplate="content">
+                                    <div class="activity-timeline">
+                                        <div class="timeline-item">
+                                            <div class="timeline-icon">
+                                                <i class="pi pi-user-plus"></i>
+                                            </div>
+                                            <div class="timeline-content">
+                                                <h4>Account Created</h4>
+                                                <p>User account was created</p>
+                                                <span class="timeline-date">{{user().createdAt | date:'medium'}}</span>
+                                            </div>
+                                        </div>
+
+                                        <div class="timeline-item" *ngIf="user().lastLogin">
+                                            <div class="timeline-icon">
+                                                <i class="pi pi-sign-in"></i>
+                                            </div>
+                                            <div class="timeline-content">
+                                                <h4>Last Login</h4>
+                                                <p>User last logged into the system</p>
+                                                <span class="timeline-date">{{user().lastLogin | date:'medium'}}</span>
+                                            </div>
+                                        </div>
+
+                                        <div class="timeline-item">
+                                            <div class="timeline-icon">
+                                                <i class="pi pi-pencil"></i>
+                                            </div>
+                                            <div class="timeline-content">
+                                                <h4>Profile Updated</h4>
+                                                <p>User profile was last updated</p>
+                                                <span class="timeline-date">{{user().updatedAt | date:'medium'}}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </ng-template>
+                            </p-card>
+                        </div>
+                    </p-tabPanel>
+
+                    <!-- Settings Tab -->
+                    <p-tabPanel header="Settings">
+                        <div class="col-12">
+                            <p-card>
+                                <ng-template pTemplate="header">
+                                    <h3>Account Settings</h3>
+                                </ng-template>
+                                <ng-template pTemplate="content">
+                                    <div class="settings-section">
+                                        <h4>Account Preferences</h4>
+                                        <div class="grid">
+                                            <div class="col-12 md:col-6">
+                                                <div class="setting-item">
+                                                    <label>Language</label>
+                                                    <p>{{getLanguageLabel(user().preferences?.language || 'en')}}</p>
+                                                </div>
+                                            </div>
+                                            <div class="col-12 md:col-6">
+                                                <div class="setting-item">
+                                                    <label>Timezone</label>
+                                                    <p>{{getTimezoneLabel(user().preferences?.timezone || 'UTC')}}</p>
+                                                </div>
+                                            </div>
+                                            <div class="col-12 md:col-6">
+                                                <div class="setting-item">
+                                                    <label>Notifications</label>
+                                                    <p>{{getNotificationStatus(user().preferences?.notifications ?? true)}}</p>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <p-divider></p-divider>
+
+                                        <h4>Security Settings</h4>
+                                        <div class="grid">
+                                            <div class="col-12 md:col-6">
+                                                <div class="setting-item">
+                                                    <label>Password</label>
+                                                    <p>Last changed: Unknown</p>
+                                                </div>
+                                            </div>
+                                            <div class="col-12 md:col-6">
+                                                <div class="setting-item">
+                                                    <label>Two-Factor Authentication</label>
+                                                    <p>Not enabled</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </ng-template>
+                            </p-card>
+                        </div>
+                    </p-tabPanel>
+                </p-tabView>
+            </div>
+        </div>
+    </ng-template>
+</div> 

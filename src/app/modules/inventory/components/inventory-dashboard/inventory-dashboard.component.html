@@ -3,11 +3,11 @@
   <div class="dashboard-header">
     <div class="header-content">
       <h1 class="dashboard-title">
-        <i class="fas fa-chart-line"></i>
+        <i class="pi pi-chart-line"></i>
         لوحة تحكم المخزون والمحاسبة
       </h1>
       <button class="refresh-btn" (click)="refreshData()" [disabled]="loading">
-        <i class="fas fa-sync-alt" [class.fa-spin]="loading"></i>
+        <i class="pi pi-sync" [class.pi-spin]="loading"></i>
         تحديث البيانات
       </button>
     </div>
@@ -16,7 +16,7 @@
   <!-- Loading State -->
   <div *ngIf="loading" class="loading-container">
     <div class="loading-spinner">
-      <i class="fas fa-spinner fa-spin"></i>
+      <i class="pi pi-spinner pi-spin"></i>
       <p>جاري تحميل البيانات...</p>
     </div>
   </div>
@@ -24,7 +24,7 @@
   <!-- Error State -->
   <div *ngIf="error && !loading" class="error-container">
     <div class="error-message">
-      <i class="fas fa-exclamation-triangle"></i>
+      <i class="pi pi-exclamation-triangle"></i>
       <p>{{ error }}</p>
       <button class="retry-btn" (click)="refreshData()">إعادة المحاولة</button>
     </div>
@@ -38,7 +38,7 @@
       <!-- Revenue Card -->
       <div class="metric-card revenue-card">
         <div class="metric-icon">
-          <i class="fas fa-dollar-sign"></i>
+          <i class="pi pi-dollar"></i>
         </div>
         <div class="metric-content">
           <h3 class="metric-title">إجمالي الإيرادات</h3>
@@ -50,7 +50,7 @@
       <!-- Net Profit Card -->
       <div class="metric-card profit-card">
         <div class="metric-icon">
-          <i class="fas fa-chart-pie"></i>
+          <i class="pi pi-chart-pie"></i>
         </div>
         <div class="metric-content">
           <h3 class="metric-title">صافي الربح</h3>
@@ -64,7 +64,7 @@
       <!-- Profit Margin Card -->
       <div class="metric-card margin-card">
         <div class="metric-icon">
-          <i class="fas fa-percentage"></i>
+          <i class="pi pi-percentage"></i>
         </div>
         <div class="metric-content">
           <h3 class="metric-title">هامش الربح</h3>
@@ -77,8 +77,8 @@
 
       <!-- Low Stock Alert Card -->
       <div class="metric-card alert-card">
-        <div class="metric-icon" [style.color]="getStockAlertColor(dashboardData.lowStockProducts)">
-          <i class="fas fa-exclamation-triangle"></i>
+        <div class="metric-icon">
+          <i class="pi pi-exclamation-triangle"></i>
         </div>
         <div class="metric-content">
           <h3 class="metric-title">منتجات منخفضة المخزون</h3>
@@ -158,19 +158,19 @@
       <h3>إجراءات سريعة</h3>
       <div class="actions-grid">
         <button class="action-btn" routerLink="/inventory/stock">
-          <i class="fas fa-boxes"></i>
+          <i class="pi pi-box"></i>
           <span>إدارة المخزون</span>
         </button>
         <button class="action-btn" routerLink="/inventory/expenses">
-          <i class="fas fa-receipt"></i>
+          <i class="pi pi-receipt"></i>
           <span>إدارة المصروفات</span>
         </button>
         <button class="action-btn" routerLink="/inventory/reports">
-          <i class="fas fa-chart-bar"></i>
+          <i class="pi pi-chart-bar"></i>
           <span>التقارير المالية</span>
         </button>
         <button class="action-btn" routerLink="/inventory/quick-actions">
-          <i class="fas fa-bolt"></i>
+          <i class="pi pi-bolt"></i>
           <span>إجراءات سريعة</span>
         </button>
       </div>

@@ -107,6 +107,7 @@
     [maximizable]="true" [closable]="true">
 
     <ng-template pTemplate="content">
+        @if (productDialog) {
         <form [formGroup]="productForm" class="formgrid grid">
 
             <p-accordion [multiple]="true" [activeIndex]="[0, 1]" class="w-full">
@@ -206,7 +207,7 @@
                     <ng-template pTemplate="content">
                         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             <div class="field w-full md:col-6">
-                                <label for="category" class="font-semibold">Category *</label>
+                                <label for="category" class="font-semibold">Category </label>
                                 <p-dropdown appendTo="body" id="category" styleClass="w-full" formControlName="category"
                                     [options]="categoryOptions" placeholder="Select Category"
                                     [class.ng-invalid]="submitted && productForm.get('category')?.invalid">
@@ -218,7 +219,7 @@
                             </div>
 
                             <div class="field w-full md:col-6">
-                                <label for="brand" class="font-semibold">Brand *</label>
+                                <label for="brand" class="font-semibold">Brand </label>
                                 <p-dropdown appendTo="body" id="brand" styleClass="w-full" formControlName="brand"
                                     [options]="brandOptions" placeholder="Select Brand"
                                     [class.ng-invalid]="submitted && productForm.get('brand')?.invalid">
@@ -607,6 +608,7 @@
 
             </p-accordion>
         </form>
+        }
     </ng-template>
 
     <ng-template pTemplate="footer">

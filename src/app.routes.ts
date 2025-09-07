@@ -8,20 +8,28 @@ export const appRoutes: Routes = [
         children: [
             {
                 path: '',
-                redirectTo: 'orders',
+                redirectTo: 'inventory',
                 pathMatch: 'full'
             },
             { 
-                path: 'products', 
-                loadComponent: () => import('./app/modules/product/product-list/product-list.component').then(m => m.ProductListComponent)
+                path: 'brands', 
+                loadComponent: () => import('./app/modules/brand/brand-list/brand-list.component').then(m => m.BrandListComponent)
             },
             { 
                 path: 'categories', 
                 loadComponent: () => import('./app/modules/category/catgory-list/catgory-list.component').then(m => m.CatgoryListComponent)
             },
             { 
-                path: 'brands', 
-                loadComponent: () => import('./app/modules/brand/brand-list/brand-list.component').then(m => m.BrandListComponent)
+                path: 'products', 
+                loadComponent: () => import('./app/modules/product/product-list/product-list.component').then(m => m.ProductListComponent)
+            },
+            {
+                path: 'packages',
+                loadComponent: () => import('./app/modules/package/package-list/package-list.component').then(m => m.PackageListComponent)
+            },
+            {
+                path: 'packages/:id',
+                loadComponent: () => import('./app/modules/package/package-detail/package-detail.component').then(m => m.PackageDetailComponent)
             },
             {
                 path: 'orders',
@@ -74,6 +82,14 @@ export const appRoutes: Routes = [
             {
                 path: 'inventory/quick-actions',
                 loadComponent: () => import('./app/modules/inventory/components/quick-actions/quick-actions.component').then(m => m.QuickActionsComponent)
+            },
+            {
+                path: 'users',
+                loadComponent: () => import('./app/modules/user/user-list/user-list.component').then(m => m.UserListComponent)
+            },
+            {
+                path: 'users/:id',
+                loadComponent: () => import('./app/modules/user/user-detail/user-detail.component').then(m => m.UserDetailComponent)
             }
         ]
     },

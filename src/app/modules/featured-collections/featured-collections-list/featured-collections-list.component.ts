@@ -309,6 +309,7 @@ export class FeaturedCollectionsListComponent extends ComponentBase implements O
   }
 
   openNew() {
+    this.selectedFeaturedCollections = [];
     this.featuredCollectionForm.reset();
     this.submitted = false;
     this.featuredCollectionDialog = true;
@@ -317,6 +318,7 @@ export class FeaturedCollectionsListComponent extends ComponentBase implements O
   }
 
   editFeaturedCollection(featuredCollection: IFeaturedCollection) {
+    this.featuredCollectionForm.reset();
     this.featuredCollectionForm.patchValue({
       sectionSubtitle: featuredCollection.sectionSubtitle,
       sectionTitle: featuredCollection.sectionTitle,

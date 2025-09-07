@@ -10,13 +10,13 @@ import { environment } from '../../../environments/environment';
 })
 export class LoginService {
   private apiUrl = environment.apiUrl + '/auth';
-  private tokenKey = 'token_Nasig';
+  private tokenKey = 'token_pledge';
   user: BehaviorSubject<User | null> = new BehaviorSubject<User | null>(null);
   constructor(
     private http: HttpClient,
     private router: Router
   ) { 
-    // this.user.next(JSON.parse(localStorage.getItem('user_Nasig') || '{}'));
+    // this.user.next(JSON.parse(localStorage.getItem('user_pledge') || '{}'));
   }
 
   login(email: string, password: string): Observable<any> {
@@ -25,7 +25,7 @@ export class LoginService {
 
   logout() {
     localStorage.removeItem(this.tokenKey);
-    localStorage.removeItem('user_Nasig');
+    localStorage.removeItem('user_pledge');
     this.user.next(null);
     this.router.navigate(['/auth/login']);
   }
@@ -43,7 +43,7 @@ export class LoginService {
   }
 
   saveUser(user: User) {
-    localStorage.setItem('user_Nasig', JSON.stringify(user));
+    localStorage.setItem('user_pledge', JSON.stringify(user));
   }
 
   isLoggedIn() {
