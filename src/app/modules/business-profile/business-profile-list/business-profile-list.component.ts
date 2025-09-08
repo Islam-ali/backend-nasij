@@ -60,7 +60,8 @@ export class BusinessProfileListComponent extends ComponentBase implements OnIni
   loading = signal(false);
   saving = signal(false);
   businessProfile: IBusinessProfile | null = null;
-  logoPreview: string | null = null;
+  logoDarkPreview: string | null = null;
+  logoLightPreview: string | null = null;
   isEditMode = signal(false);
   showEditor = signal(false);
 
@@ -77,11 +78,19 @@ export class BusinessProfileListComponent extends ComponentBase implements OnIni
     this.loadBusinessProfile();
     
     // Subscribe to logo changes to update preview
-    this.logoControl.valueChanges.subscribe(value => {
+    this.logoDarkControl.valueChanges.subscribe(value => {
       if (value && value.filePath) {
-        this.logoPreview = value.filePath;
+        this.logoDarkPreview = value.filePath;
       } else {
-        this.logoPreview = null;
+        this.logoDarkPreview = null;
+      }
+    });
+
+    this.logoLightControl.valueChanges.subscribe(value => {
+      if (value && value.filePath) {
+        this.logoLightPreview = value.filePath;
+      } else {
+        this.logoLightPreview = null;
       }
     });
   }
@@ -90,7 +99,8 @@ export class BusinessProfileListComponent extends ComponentBase implements OnIni
     this.businessProfileForm = this.fb.group({
       name: ['', [Validators.required, Validators.minLength(2)]],
       description: ['', [Validators.required, Validators.minLength(10)]],
-      logo: [null],
+      logo_dark: [null],
+      logo_light: [null],
       socialMedia: this.fb.group({
         facebook: [''],
         instagram: [''],
@@ -114,8 +124,12 @@ export class BusinessProfileListComponent extends ComponentBase implements OnIni
     return this.businessProfileForm.get('faq') as FormArray;
   }
 
-  get logoControl(): FormControl {
-    return this.businessProfileForm.get('logo') as FormControl;
+  get logoDarkControl(): FormControl {
+    return this.businessProfileForm.get('logo_dark') as FormControl;
+  }
+
+  get logoLightControl(): FormControl {
+    return this.businessProfileForm.get('logo_light') as FormControl;
   }
 
   addFAQ() {
@@ -160,8 +174,11 @@ export class BusinessProfileListComponent extends ComponentBase implements OnIni
           if (response.data) {
             this.businessProfile = response.data;
             this.populateForm(response.data);
-            if (response.data.logo) {
-              this.logoPreview = response.data.logo.filePath;
+            if (response.data.logo_dark) {
+              this.logoDarkPreview = response.data.logo_dark.filePath;
+            }
+            if (response.data.logo_light) {
+              this.logoLightPreview = response.data.logo_light.filePath;
             }
           }
         },
@@ -180,7 +197,8 @@ export class BusinessProfileListComponent extends ComponentBase implements OnIni
     this.businessProfileForm.patchValue({
       name: profile.name,
       description: profile.description,
-      logo: profile.logo,
+      logo_dark: profile.logo_dark,
+      logo_light: profile.logo_light,
       socialMedia: profile.socialMedia,
       contactInfo: profile.contactInfo,
       privacyPolicy: profile.privacyPolicy,
@@ -188,7 +206,8 @@ export class BusinessProfileListComponent extends ComponentBase implements OnIni
     });
 
     // Update logo control
-    this.logoControl.setValue(profile.logo);
+    this.logoDarkControl.setValue(profile.logo_dark);
+    this.logoLightControl.setValue(profile.logo_light);
 
     // Populate FAQ array
     this.faqArray.clear();
@@ -210,7 +229,8 @@ export class BusinessProfileListComponent extends ComponentBase implements OnIni
       }
     } else {
       // Update logo control when entering edit mode
-      this.logoControl.setValue(this.businessProfileForm.get('logo')?.value);
+      this.logoDarkControl.setValue(this.businessProfileForm.get('logo_dark')?.value);
+      this.logoLightControl.setValue(this.businessProfileForm.get('logo_light')?.value);
     }
   }
 
@@ -235,7 +255,8 @@ export class BusinessProfileListComponent extends ComponentBase implements OnIni
             this.businessProfile = response.data;
             this.isEditMode.set(false);
             // Update logo control with new data
-            this.logoControl.setValue(response.data.logo);
+            this.logoDarkControl.setValue(response.data.logo_dark);
+            this.logoLightControl.setValue(response.data.logo_light);
             this.messageService.add({
               severity: 'success',
               summary: 'Success',
@@ -263,7 +284,8 @@ export class BusinessProfileListComponent extends ComponentBase implements OnIni
             this.businessProfile = response.data;
             this.isEditMode.set(false);
             // Update logo control with new data
-            this.logoControl.setValue(response.data.logo);
+            this.logoDarkControl.setValue(response.data.logo_dark);
+            this.logoLightControl.setValue(response.data.logo_light);
             this.messageService.add({
               severity: 'success',
               summary: 'Success',

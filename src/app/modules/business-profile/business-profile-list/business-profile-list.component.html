@@ -42,21 +42,49 @@
                             <!-- Logo Section -->
                             <div class="lg:col-span-1">
                                 <div class="text-center">
-                                    <div class="mb-4">
-                                        <img *ngIf="logoPreview || businessProfile?.logo"
-                                            [src]="logoPreview || businessProfile?.logo?.filePath"
+                                    @if(!isEditMode()) {
+                                    <div class="flex gap-2 flex-wrap mb-4">
+                                        <img *ngIf="logoDarkPreview || businessProfile?.logo_dark"
+                                            [src]="logoDarkPreview || businessProfile?.logo_dark?.filePath"
                                             [alt]="businessProfile?.name + ' Logo'"
                                             class="w-32 h-32 object-contain rounded-lg shadow-lg mx-auto"
                                             appFallbackImg="/assets/images/default-logo.png">
-                                        <div *ngIf="!logoPreview && !businessProfile?.logo"
+                                        <div *ngIf="!logoDarkPreview && !businessProfile?.logo_dark"
+                                            class="w-32 h-32 bg-gray-200 rounded-lg flex items-center justify-center mx-auto">
+                                            <i class="pi pi-image text-4xl text-gray-400"></i>
+                                        </div>
+                                        <img *ngIf="logoLightPreview || businessProfile?.logo_light"
+                                            [src]="logoLightPreview || businessProfile?.logo_light?.filePath"
+                                            [alt]="businessProfile?.name + ' Logo'"
+                                            class="w-32 h-32 object-contain rounded-lg shadow-lg mx-auto"
+                                            appFallbackImg="/assets/images/default-logo.png">
+                                        <div *ngIf="!logoLightPreview && !businessProfile?.logo_light"
                                             class="w-32 h-32 bg-gray-200 rounded-lg flex items-center justify-center mx-auto">
                                             <i class="pi pi-image text-4xl text-gray-400"></i>
                                         </div>
                                     </div>
+                                    }
                                     <div *ngIf="isEditMode()">
-                                        <app-upload-files [control]="logoControl"
-                                            [filesServer]="businessProfileForm.get('logo')?.value" [multiple]="false"
-                                            [accept]="'image/*'"></app-upload-files>
+                                        <div class="flex gap-2 flex-wrap mb-4">
+                                            <div>
+                                                <label for="logoDark"
+                                                    class="block text-sm font-medium text-gray-700 mb-2">Logo
+                                                    Dark</label>
+                                                <app-upload-files [index]="0" [control]="logoDarkControl"
+                                                    [filesServer]="businessProfileForm.get('logo_dark')?.value"
+                                                    [attr.id]="'logoDark'"
+                                                    [multiple]="false" [accept]="'image/*'"></app-upload-files>
+                                            </div>
+                                            <div>
+                                                <label for="logoLight"
+                                                    class="block text-sm font-medium text-gray-700 mb-2">Logo
+                                                    Light</label>
+                                                <app-upload-files [index]="1" [control]="logoLightControl"
+                                                    [filesServer]="businessProfileForm.get('logo_light')?.value"
+                                                    [attr.id]="'logoLight'"
+                                                    [multiple]="false" [accept]="'image/*'"></app-upload-files>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -186,204 +214,175 @@
                     </ng-template>
                 </p-card>
 
-                                 <!-- FAQ Section -->
-                 <p-card styleClass="shadow-lg border-0 mb-4">
-                     <ng-template pTemplate="header">
-                         <div
-                             class="flex items-center justify-between p-4 bg-gradient-to-r from-orange-600 to-red-600 text-white rounded-t-lg">
-                             <div class="flex items-center gap-3">
-                                 <i class="pi pi-question-circle text-2xl"></i>
-                                 <h2 class="text-xl font-semibold m-0">Frequently Asked Questions</h2>
-                                 <span class="bg-white bg-opacity-20 px-2 py-1 rounded-full text-sm font-medium">
-                                     {{ faqArray.length }} {{ faqArray.length === 1 ? 'Question' : 'Questions' }}
-                                 </span>
-                             </div>
-                             <div class="flex gap-2">
-                                 <p-button *ngIf="isEditMode() && faqArray.length > 0" 
-                                     label="Clear All" 
-                                     icon="pi pi-trash" 
-                                     (onClick)="clearAllFAQ()"
-                                     severity="danger"
-                                     styleClass="p-button-outlined p-button-sm"></p-button>
-                                 <p-button *ngIf="isEditMode()" 
-                                     label="Add FAQ" 
-                                     icon="pi pi-plus" 
-                                     (onClick)="addFAQ()"
-                                     styleClass="p-button-outlined p-button-sm"></p-button>
-                             </div>
-                         </div>
-                     </ng-template>
-                     <ng-template pTemplate="content">
-                         <!-- View Mode - Accordion Style -->
-                         <div *ngIf="!isEditMode()" class="space-y-3">
-                             <p-accordion [multiple]="true" styleClass="custom-accordion">
-                                 <p-accordionTab *ngFor="let faqGroup of faqArray.controls; let i = index" 
-                                     [header]="faqGroup.get('question')?.value || 'Question ' + (i + 1)"
-                                     [disabled]="!faqGroup.get('question')?.value">
-                                     <div class="prose prose-sm max-w-none">
-                                         <p class="text-gray-700 leading-relaxed mb-0">
-                                             {{ faqGroup.get('answer')?.value || 'No answer provided.' }}
-                                         </p>
-                                     </div>
-                                 </p-accordionTab>
-                             </p-accordion>
-                             
-                             <div *ngIf="faqArray.length === 0" class="text-center py-12 text-gray-500">
-                                 <div class="w-20 h-20 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                                     <i class="pi pi-question-circle text-3xl text-orange-500"></i>
-                                 </div>
-                                 <h3 class="text-lg font-semibold text-gray-900 mb-2">No FAQ Items</h3>
-                                 <p class="text-gray-600 mb-4">No frequently asked questions have been added yet.</p>
-                                 <p-button 
-                                     label="Add First FAQ" 
-                                     icon="pi pi-plus" 
-                                     (onClick)="isEditMode.set(true)"
-                                     styleClass="p-button-outlined"
-                                 ></p-button>
-                             </div>
-                         </div>
+                <!-- FAQ Section -->
+                <p-card styleClass="shadow-lg border-0 mb-4">
+                    <ng-template pTemplate="header">
+                        <div
+                            class="flex items-center justify-between p-4 bg-gradient-to-r from-orange-600 to-red-600 text-white rounded-t-lg">
+                            <div class="flex items-center gap-3">
+                                <i class="pi pi-question-circle text-2xl"></i>
+                                <h2 class="text-xl font-semibold m-0">Frequently Asked Questions</h2>
+                                <span class="bg-white bg-opacity-20 px-2 py-1 rounded-full text-sm font-medium">
+                                    {{ faqArray.length }} {{ faqArray.length === 1 ? 'Question' : 'Questions' }}
+                                </span>
+                            </div>
+                            <div class="flex gap-2">
+                                <p-button *ngIf="isEditMode() && faqArray.length > 0" label="Clear All"
+                                    icon="pi pi-trash" (onClick)="clearAllFAQ()" severity="danger"
+                                    styleClass="p-button-outlined p-button-sm"></p-button>
+                                <p-button *ngIf="isEditMode()" label="Add FAQ" icon="pi pi-plus" (onClick)="addFAQ()"
+                                    styleClass="p-button-outlined p-button-sm"></p-button>
+                            </div>
+                        </div>
+                    </ng-template>
+                    <ng-template pTemplate="content">
+                        <!-- View Mode - Accordion Style -->
+                        <div *ngIf="!isEditMode()" class="space-y-3">
+                            <p-accordion [multiple]="true" styleClass="custom-accordion">
+                                <p-accordionTab *ngFor="let faqGroup of faqArray.controls; let i = index"
+                                    [header]="faqGroup.get('question')?.value || 'Question ' + (i + 1)"
+                                    [disabled]="!faqGroup.get('question')?.value">
+                                    <div class="prose prose-sm max-w-none">
+                                        <p class="text-gray-700 leading-relaxed mb-0">
+                                            {{ faqGroup.get('answer')?.value || 'No answer provided.' }}
+                                        </p>
+                                    </div>
+                                </p-accordionTab>
+                            </p-accordion>
 
-                         <!-- Edit Mode - Form Style -->
-                         <div *ngIf="isEditMode()" formArrayName="faq" class="space-y-6">
-                             <div *ngFor="let faqGroup of faqArray.controls; let i = index" [formGroupName]="i"
-                                 class="relative border border-orange-200 rounded-xl p-6 bg-gradient-to-br from-orange-50 to-red-50 hover:shadow-md transition-all duration-300">
-                                 
-                                 <!-- FAQ Number Badge -->
-                                 <div class="absolute -top-3 -left-3 w-8 h-8 bg-gradient-to-r from-orange-600 to-red-600 text-white rounded-full flex items-center justify-center text-sm font-bold shadow-lg">
-                                     {{ i + 1 }}
-                                 </div>
+                            <div *ngIf="faqArray.length === 0" class="text-center py-12 text-gray-500">
+                                <div
+                                    class="w-20 h-20 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <i class="pi pi-question-circle text-3xl text-orange-500"></i>
+                                </div>
+                                <h3 class="text-lg font-semibold text-gray-900 mb-2">No FAQ Items</h3>
+                                <p class="text-gray-600 mb-4">No frequently asked questions have been added yet.</p>
+                                <p-button label="Add First FAQ" icon="pi pi-plus" (onClick)="isEditMode.set(true)"
+                                    styleClass="p-button-outlined"></p-button>
+                            </div>
+                        </div>
 
-                                 <!-- Header -->
-                                 <div class="flex justify-between items-start mb-6">
-                                     <div class="flex items-center gap-3">
-                                         <div class="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">
-                                             <i class="pi pi-question-circle text-orange-600"></i>
-                                         </div>
-                                         <h4 class="text-lg font-semibold text-gray-900">FAQ Item #{{ i + 1 }}</h4>
-                                     </div>
-                                     <div class="flex gap-2">
-                                         <p-button 
-                                             *ngIf="i > 0"
-                                             type="button" 
-                                             icon="pi pi-arrow-up" 
-                                             (onClick)="moveFAQ(i, 'up')"
-                                             styleClass="p-button-text p-button-sm"
-                                             pTooltip="Move Up"
-                                         ></p-button>
-                                         <p-button 
-                                             *ngIf="i < faqArray.length - 1"
-                                             type="button" 
-                                             icon="pi pi-arrow-down" 
-                                             (onClick)="moveFAQ(i, 'down')"
-                                             styleClass="p-button-text p-button-sm"
-                                             pTooltip="Move Down"
-                                         ></p-button>
-                                         <p-button 
-                                             type="button" 
-                                             icon="pi pi-trash" 
-                                             severity="danger"
-                                             (onClick)="removeFAQ(i)"
-                                             styleClass="p-button-text p-button-sm"
-                                             pTooltip="Delete FAQ"
-                                         ></p-button>
-                                     </div>
-                                 </div>
+                        <!-- Edit Mode - Form Style -->
+                        <div *ngIf="isEditMode()" formArrayName="faq" class="space-y-6">
+                            <div *ngFor="let faqGroup of faqArray.controls; let i = index" [formGroupName]="i"
+                                class="relative border border-orange-200 rounded-xl p-6 bg-gradient-to-br from-orange-50 to-red-50 hover:shadow-md transition-all duration-300">
 
-                                 <!-- Form Fields -->
-                                 <div class="grid grid-cols-1 gap-6">
-                                     <div>
-                                         <label [for]="'question' + i" class="block text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
-                                             <i class="pi pi-question text-orange-600"></i>
-                                             Question *
-                                         </label>
-                                         <input 
-                                             [id]="'question' + i" 
-                                             type="text" 
-                                             pInputText 
-                                             formControlName="question"
-                                             class="w-full p-3 border-2 transition-colors duration-200"
-                                             [class.border-orange-300]="faqGroup.get('question')?.valid && faqGroup.get('question')?.touched"
-                                             [class.border-red-300]="faqGroup.get('question')?.invalid && faqGroup.get('question')?.touched"
-                                             [class.border-gray-300]="!faqGroup.get('question')?.touched"
-                                             placeholder="Enter your question here..."
-                                         />
-                                         <div class="mt-2 flex items-center gap-2">
-                                             <small *ngIf="faqGroup.get('question')?.invalid && faqGroup.get('question')?.touched" class="text-red-500 flex items-center gap-1">
-                                                 <i class="pi pi-exclamation-triangle text-xs"></i>
-                                                 Question is required
-                                             </small>
-                                             <small *ngIf="faqGroup.get('question')?.valid && faqGroup.get('question')?.touched" class="text-green-600 flex items-center gap-1">
-                                                 <i class="pi pi-check text-xs"></i>
-                                                 Question looks good
-                                             </small>
-                                         </div>
-                                     </div>
+                                <!-- FAQ Number Badge -->
+                                <div
+                                    class="absolute -top-3 -left-3 w-8 h-8 bg-gradient-to-r from-orange-600 to-red-600 text-white rounded-full flex items-center justify-center text-sm font-bold shadow-lg">
+                                    {{ i + 1 }}
+                                </div>
 
-                                     <div>
-                                         <label [for]="'answer' + i" class="block text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
-                                             <i class="pi pi-comment text-orange-600"></i>
-                                             Answer *
-                                         </label>
-                                         <textarea 
-                                             [id]="'answer' + i" 
-                                             pInputTextarea 
-                                             formControlName="answer" 
-                                             rows="4"
-                                             class="w-full p-3 border-2 transition-colors duration-200 resize-none"
-                                             [class.border-orange-300]="faqGroup.get('answer')?.valid && faqGroup.get('answer')?.touched"
-                                             [class.border-red-300]="faqGroup.get('answer')?.invalid && faqGroup.get('answer')?.touched"
-                                             [class.border-gray-300]="!faqGroup.get('answer')?.touched"
-                                             placeholder="Provide a detailed answer to the question..."
-                                         ></textarea>
-                                         <div class="mt-2 flex items-center justify-between">
-                                             <div class="flex items-center gap-2">
-                                                 <small *ngIf="faqGroup.get('answer')?.invalid && faqGroup.get('answer')?.touched" class="text-red-500 flex items-center gap-1">
-                                                     <i class="pi pi-exclamation-triangle text-xs"></i>
-                                                     Answer is required
-                                                 </small>
-                                                 <small *ngIf="faqGroup.get('answer')?.valid && faqGroup.get('answer')?.touched" class="text-green-600 flex items-center gap-1">
-                                                     <i class="pi pi-check text-xs"></i>
-                                                     Answer looks good
-                                                 </small>
-                                             </div>
-                                             <small class="text-gray-500">
-                                                 {{ faqGroup.get('answer')?.value?.length || 0 }} characters
-                                             </small>
-                                         </div>
-                                     </div>
-                                 </div>
-                             </div>
+                                <!-- Header -->
+                                <div class="flex justify-between items-start mb-6">
+                                    <div class="flex items-center gap-3">
+                                        <div
+                                            class="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">
+                                            <i class="pi pi-question-circle text-orange-600"></i>
+                                        </div>
+                                        <h4 class="text-lg font-semibold text-gray-900">FAQ Item #{{ i + 1 }}</h4>
+                                    </div>
+                                    <div class="flex gap-2">
+                                        <p-button *ngIf="i > 0" type="button" icon="pi pi-arrow-up"
+                                            (onClick)="moveFAQ(i, 'up')" styleClass="p-button-text p-button-sm"
+                                            pTooltip="Move Up"></p-button>
+                                        <p-button *ngIf="i < faqArray.length - 1" type="button" icon="pi pi-arrow-down"
+                                            (onClick)="moveFAQ(i, 'down')" styleClass="p-button-text p-button-sm"
+                                            pTooltip="Move Down"></p-button>
+                                        <p-button type="button" icon="pi pi-trash" severity="danger"
+                                            (onClick)="removeFAQ(i)" styleClass="p-button-text p-button-sm"
+                                            pTooltip="Delete FAQ"></p-button>
+                                    </div>
+                                </div>
 
-                             <!-- Empty State -->
-                             <div *ngIf="faqArray.length === 0" class="text-center py-16">
-                                 <div class="w-24 h-24 bg-gradient-to-br from-orange-100 to-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                                     <i class="pi pi-question-circle text-4xl text-orange-500"></i>
-                                 </div>
-                                 <h3 class="text-xl font-semibold text-gray-900 mb-3">No FAQ Items Yet</h3>
-                                 <p class="text-gray-600 mb-6 max-w-md mx-auto">
-                                     Start building your FAQ section by adding common questions and their answers. 
-                                     This will help your customers find information quickly.
-                                 </p>
-                                 <p-button 
-                                     label="Add Your First FAQ" 
-                                     icon="pi pi-plus" 
-                                     (onClick)="addFAQ()"
-                                     styleClass="p-button-success"
-                                 ></p-button>
-                             </div>
+                                <!-- Form Fields -->
+                                <div class="grid grid-cols-1 gap-6">
+                                    <div>
+                                        <label [for]="'question' + i"
+                                            class="block text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                                            <i class="pi pi-question text-orange-600"></i>
+                                            Question *
+                                        </label>
+                                        <input [id]="'question' + i" type="text" pInputText formControlName="question"
+                                            class="w-full p-3 border-2 transition-colors duration-200"
+                                            [class.border-orange-300]="faqGroup.get('question')?.valid && faqGroup.get('question')?.touched"
+                                            [class.border-red-300]="faqGroup.get('question')?.invalid && faqGroup.get('question')?.touched"
+                                            [class.border-gray-300]="!faqGroup.get('question')?.touched"
+                                            placeholder="Enter your question here..." />
+                                        <div class="mt-2 flex items-center gap-2">
+                                            <small
+                                                *ngIf="faqGroup.get('question')?.invalid && faqGroup.get('question')?.touched"
+                                                class="text-red-500 flex items-center gap-1">
+                                                <i class="pi pi-exclamation-triangle text-xs"></i>
+                                                Question is required
+                                            </small>
+                                            <small
+                                                *ngIf="faqGroup.get('question')?.valid && faqGroup.get('question')?.touched"
+                                                class="text-green-600 flex items-center gap-1">
+                                                <i class="pi pi-check text-xs"></i>
+                                                Question looks good
+                                            </small>
+                                        </div>
+                                    </div>
 
-                             <!-- Add More Button -->
-                             <div *ngIf="faqArray.length > 0" class="text-center pt-4">
-                                 <p-button 
-                                     label="Add Another FAQ" 
-                                     icon="pi pi-plus" 
-                                     (onClick)="addFAQ()"
-                                     styleClass="p-button-outlined"
-                                 ></p-button>
-                             </div>
-                         </div>
-                     </ng-template>
-                 </p-card>
+                                    <div>
+                                        <label [for]="'answer' + i"
+                                            class="block text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                                            <i class="pi pi-comment text-orange-600"></i>
+                                            Answer *
+                                        </label>
+                                        <textarea [id]="'answer' + i" pInputTextarea formControlName="answer" rows="4"
+                                            class="w-full p-3 border-2 transition-colors duration-200 resize-none"
+                                            [class.border-orange-300]="faqGroup.get('answer')?.valid && faqGroup.get('answer')?.touched"
+                                            [class.border-red-300]="faqGroup.get('answer')?.invalid && faqGroup.get('answer')?.touched"
+                                            [class.border-gray-300]="!faqGroup.get('answer')?.touched"
+                                            placeholder="Provide a detailed answer to the question..."></textarea>
+                                        <div class="mt-2 flex items-center justify-between">
+                                            <div class="flex items-center gap-2">
+                                                <small
+                                                    *ngIf="faqGroup.get('answer')?.invalid && faqGroup.get('answer')?.touched"
+                                                    class="text-red-500 flex items-center gap-1">
+                                                    <i class="pi pi-exclamation-triangle text-xs"></i>
+                                                    Answer is required
+                                                </small>
+                                                <small
+                                                    *ngIf="faqGroup.get('answer')?.valid && faqGroup.get('answer')?.touched"
+                                                    class="text-green-600 flex items-center gap-1">
+                                                    <i class="pi pi-check text-xs"></i>
+                                                    Answer looks good
+                                                </small>
+                                            </div>
+                                            <small class="text-gray-500">
+                                                {{ faqGroup.get('answer')?.value?.length || 0 }} characters
+                                            </small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Empty State -->
+                            <div *ngIf="faqArray.length === 0" class="text-center py-16">
+                                <div
+                                    class="w-24 h-24 bg-gradient-to-br from-orange-100 to-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                                    <i class="pi pi-question-circle text-4xl text-orange-500"></i>
+                                </div>
+                                <h3 class="text-xl font-semibold text-gray-900 mb-3">No FAQ Items Yet</h3>
+                                <p class="text-gray-600 mb-6 max-w-md mx-auto">
+                                    Start building your FAQ section by adding common questions and their answers.
+                                    This will help your customers find information quickly.
+                                </p>
+                                <p-button label="Add Your First FAQ" icon="pi pi-plus" (onClick)="addFAQ()"
+                                    styleClass="p-button-success"></p-button>
+                            </div>
+
+                            <!-- Add More Button -->
+                            <div *ngIf="faqArray.length > 0" class="text-center pt-4">
+                                <p-button label="Add Another FAQ" icon="pi pi-plus" (onClick)="addFAQ()"
+                                    styleClass="p-button-outlined"></p-button>
+                            </div>
+                        </div>
+                    </ng-template>
+                </p-card>
 
                 <!-- Legal Documents -->
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">

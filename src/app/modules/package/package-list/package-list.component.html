@@ -143,13 +143,19 @@
                     required.</small>
             </div>
             <div class="w-full">
+                <label for="category" class="font-bold">Category</label>
+                <p-dropdown [filter]="true" filterBy="name" styleClass="w-full" [options]="categories()" formControlName="category" optionLabel="name"
+                    optionValue="_id" placeholder="Select a category"
+                    ></p-dropdown>
+            </div>
+            <div class="w-full">
                 <label for="isActive" class="font-bold">Active Status</label>
                 <div class="flex align-items-center">
                     <p-toggleSwitch formControlName="isActive" class="w-full"></p-toggleSwitch>
                 </div>
             </div>
-            <div class="w-full">
-                <label for="tags" class="font-bold">Tags</label>
+            <div class="w-full flex flex-col gap-2">
+                <label for="tags" class="font-bold w-full">Tags</label>
                 <p-chips formControlName="tags" placeholder="Enter tags" class="w-full"></p-chips>
             </div>
             <div class="col-span-2">
@@ -161,7 +167,7 @@
 
             <!-- Package Items -->
             <div class="col-span-2">
-                <div class="flex align-items-center justify-content-between mb-3">
+                <div class="flex items-center justify-between mb-3">
                     <label class="font-bold">Package Items</label>
                     <button type="button" pButton pRipple label="Add Item" icon="pi pi-plus" class="p-button-sm"
                         (click)="addItem()"></button>

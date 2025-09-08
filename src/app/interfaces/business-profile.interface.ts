@@ -22,7 +22,8 @@ export interface IFAQ {
 
 export interface IBusinessProfile {
   _id: string;
-  logo?: Archived;
+  logo_dark?: Archived;
+  logo_light?: Archived;
   name: string;
   description: string;
   socialMedia: ISocialMedia;

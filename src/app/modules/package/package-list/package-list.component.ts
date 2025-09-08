@@ -36,6 +36,8 @@ import { BaseResponse, pagination } from '../../../core/models/baseResponse';
 import { UploadFilesComponent } from '../../../shared/components/fields/upload-files/upload-files.component';
 import { ComponentBase } from '../../../core/directives/component-base.directive';
 import { finalize, takeUntil } from 'rxjs';
+import { ICategory } from '../../../interfaces/category.interface';
+import { CategoryService } from '../../../services/category.service';
 
 interface Column {
     field: string;
@@ -93,7 +95,7 @@ export class PackageListComponent extends ComponentBase implements OnInit {
     cols!: Column[];
     exportColumns!: Column[];
     statuses!: any[];
-    categories!: any[];
+    categories = signal<ICategory[]>([]);
     brands!: any[];
 
     packageForm!: FormGroup;
@@ -106,7 +108,8 @@ export class PackageListComponent extends ComponentBase implements OnInit {
         private productsService: ProductsService,
         private messageService: MessageService,
         private confirmationService: ConfirmationService,
-        private fb: FormBuilder
+        private fb: FormBuilder,
+        private categoryService: CategoryService
     ) {
         super();
     }
@@ -116,7 +119,8 @@ export class PackageListComponent extends ComponentBase implements OnInit {
         this.initializeForm();
         this.loadPackages();
         this.loadProducts();
-    }
+        this.loadCategories();
+        }
 
     initializeColumns() {
         this.cols = [
@@ -142,14 +146,23 @@ export class PackageListComponent extends ComponentBase implements OnInit {
             items: this.fb.array([]),
             images: [[]],
             tags: [[]],
-            isActive: [true]
+            isActive: [true],
+            category: [null]
         });
     }
 
     get items() {
         return this.packageForm.get('items') as FormArray;
     }
-
+    loadCategories() {
+        this.categoryService.listCategories()
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+                next: (response: BaseResponse<ICategory[]>) => {
+                    this.categories.set(response.data);
+                },
+            });
+    }
     loadPackages() {
         this.loading.set(true);
         const queryParams = {

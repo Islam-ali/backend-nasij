@@ -166,8 +166,7 @@
                             <label [for]="'image' + i" class="block text-sm font-medium text-gray-700 mb-2">Image
                                 * </label>
                             @if(collectionGroup.get('image')) {
-                            <app-upload-files [control]="collectionsArray.at(i).get('image')!"
-                                [index]="i"
+                            <app-upload-files [control]="collectionsArray.at(i).get('image')!" [index]="i"
                                 [filesServer]="collectionGroup.get('image')?.value" [accept]="'image/*'"
                                 [multiple]="false" [attr.data-collection-index]="i"
                                 [attr.id]="'upload-' + i"></app-upload-files>
@@ -187,13 +186,13 @@
                                     getCollectionFieldError(i, 'buttonText') }}</small>
                             </div>
 
-                            <div>
+                            <div class="w-full flex flex-col gap-2">
                                 <label [for]="'buttonLink' + i"
                                     class="block text-sm font-medium text-gray-700 mb-2">Button Link *</label>
-                                <input [id]="'buttonLink' + i" type="url" pInputText formControlName="buttonLink"
-                                    class="w-full"
-                                    [class.ng-invalid]="collectionGroup.get('buttonLink')?.invalid && collectionGroup.get('buttonLink')?.touched"
-                                    placeholder="/shop" />
+                                <p-dropdown [options]="listOfRoutes()" formControlName="buttonLink" 
+                                    [showClear]="true"
+                                    [placeholder]="'Select route'" [appendTo]="'body'">
+                                </p-dropdown>
                                 <small *ngIf="getCollectionFieldError(i, 'buttonLink')" class="text-red-500">{{
                                     getCollectionFieldError(i, 'buttonLink') }}</small>
                             </div>

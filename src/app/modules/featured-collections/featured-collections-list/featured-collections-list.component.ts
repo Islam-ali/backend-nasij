@@ -34,6 +34,10 @@ import { UploadFilesComponent } from '../../../shared/components/fields/upload-f
 import { DropdownModule } from 'primeng/dropdown';
 import { ICategory } from '../../../interfaces/category.interface';
 import { IBrand } from '../../../interfaces/brand.interface';
+import { IPackage } from '../../../interfaces/package.interface';
+import { PackageService } from '../../../services/package.service';
+import { IProduct } from '../../../interfaces/product.interface';
+import { ProductsService } from '../../../services/products.service';
 
 interface Column {
   field: string;
@@ -81,7 +85,13 @@ export class FeaturedCollectionsListComponent extends ComponentBase implements O
   selectedQueryParams = signal<any>(null);
   categories = signal<ICategory[]>([]);
   brands = signal<IBrand[]>([]);
+  packages = signal<IPackage[]>([]);
   selectedQueryParamValues = signal<{ [key: number]: any[] }>({});
+  products = signal<IProduct[]>([]);
+  listOfRoutes = signal<string[]>([
+    '/shop',
+    '/packages'
+  ]);
   @ViewChild('dt') dt: Table | undefined;
   
   cols: Column[] = [
@@ -99,7 +109,9 @@ export class FeaturedCollectionsListComponent extends ComponentBase implements O
     private categoryService: CategoryService,
     private brandService: BrandService,
     private messageService: MessageService,
-    private confirmationService: ConfirmationService
+    private confirmationService: ConfirmationService,
+    private packageService: PackageService,
+    private productService: ProductsService
   ) {
     super();
   }
@@ -109,8 +121,10 @@ export class FeaturedCollectionsListComponent extends ComponentBase implements O
     this.loadFeaturedCollections();
     this.loadQueryParams();
     this.loadCategories();
+    this.loadProducts();
     this.loadBrands();
-  }
+    this.loadPackages();
+  } 
 
   initForm() {
     this.featuredCollectionForm = this.fb.group({
@@ -194,10 +208,19 @@ export class FeaturedCollectionsListComponent extends ComponentBase implements O
     this.queryParams.set([
       { name: 'category', value: 'category' },
       { name: 'brand', value: 'brand' },
-      { name: 'product', value: 'product' }
+      { name: 'product', value: 'product' },
+      { name: 'package', value: 'package' }
     ]);
   }
-
+  loadProducts() {
+    this.productService.getProductsList()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response: BaseResponse<IProduct[]>) => {
+          this.products.set(response.data);
+        },
+      });
+  }
   loadCategories() {
     this.categoryService.listCategories()
       .pipe(takeUntil(this.destroy$))
@@ -224,6 +247,17 @@ export class FeaturedCollectionsListComponent extends ComponentBase implements O
       });
   }
 
+  loadPackages() {
+
+    this.packageService.getPackagesList()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response: BaseResponse<IPackage[]>) => {
+          this.packages.set(response.data);
+        },
+      });
+  }
+
   onQueryParamsChange(event: any, collectionIndex: number) {
     const selectedParam = event.value;
     if (selectedParam) {
@@ -246,8 +280,10 @@ export class FeaturedCollectionsListComponent extends ComponentBase implements O
         values = this.brands().map(brand => ({ name: brand.name, value: brand._id }));
         break;
       case 'product':
-        // يمكن إضافة منتجات هنا إذا كان مطلوباً
-        values = [];
+        values = this.products().map(product => ({ name: product.name, value: product._id }));
+        break;
+      case 'package':
+        values = this.packages().map(pkg => ({ name: pkg.name, value: pkg._id }));
         break;
       default:
         values = [];
