@@ -179,7 +179,7 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
                             <div class="w-full">
                                 <label class="font-bold">Product</label>
-                                <p-dropdown [filter]="true" filterBy="name" styleClass="w-full" [options]="products()" formControlName="productId" optionLabel="name"
+                                <p-dropdown [filter]="true" appendTo="body" filterBy="name" styleClass="w-full" [options]="products()" formControlName="productId" optionLabel="name"
                                     optionValue="_id" placeholder="Select a product"
                                     [loading]="loadingProducts()"></p-dropdown>
                             </div>
