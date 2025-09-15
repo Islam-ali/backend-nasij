@@ -504,7 +504,8 @@ export class OrderListComponent extends ComponentBase implements OnInit {
 
     getVariantImage(variant: string, productId: IProduct) {
         const color:any = productId.variants.find(v => v.attributes?.find(attr => attr.variant === EnumProductVariant.COLOR && attr.value === variant));
-        const attr = color.attributes?.find((x:any) => x.variant === EnumProductVariant.COLOR && x.value === variant);
+
+        const attr = color ? color.attributes?.find((x:any) => x.variant === EnumProductVariant.COLOR && x.value === variant) : null;
         if (attr) {
             return attr.image?.filePath;
         }
