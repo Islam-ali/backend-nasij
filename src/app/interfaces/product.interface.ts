@@ -1,5 +1,6 @@
 import { IBrand } from "./brand.interface";
 import { ICategory } from "./category.interface";
+import { MultilingualText } from "../core/models/multi-language";
 
 export interface ProductVariant {
 
@@ -11,7 +12,7 @@ export interface ProductVariant {
 
 export interface ProductVariantAttribute {
   variant: string;
-  value: string;
+  value: MultilingualText;
 }
 
 export enum ProductStatus {
@@ -23,8 +24,8 @@ export enum ProductStatus {
 export interface IProduct {
   _id: string | null;
   id: string;
-  name: string;
-  description: string;
+  name: MultilingualText;
+  description: MultilingualText;
   price: number;
   discountPrice?: number;
   category: ICategory;
@@ -41,9 +42,9 @@ export interface IProduct {
   gender?: string;
   season?: string;
   material?: string;
-  details: { name: string; value: string }[];
-  seoTitle?: string;
-  seoDescription?: string;
+  details: { name: MultilingualText; value: MultilingualText }[];
+  seoTitle?: MultilingualText;
+  seoDescription?: MultilingualText;
   seoKeywords?: string;
   dimensions: {
     length: number;

@@ -503,9 +503,9 @@ export class OrderListComponent extends ComponentBase implements OnInit {
     }
 
     getVariantImage(variant: string, productId: IProduct) {
-        const color:any = productId.variants.find(v => v.attributes?.find(attr => attr.variant === EnumProductVariant.COLOR && attr.value === variant));
+        const color:any = productId.variants.find(v => v.attributes?.find(attr => attr.variant === EnumProductVariant.COLOR && (attr.value.en === variant || attr.value.ar === variant)));
 
-        const attr = color ? color.attributes?.find((x:any) => x.variant === EnumProductVariant.COLOR && x.value === variant) : null;
+        const attr = color ? color.attributes?.find((x:any) => x.variant === EnumProductVariant.COLOR && (x.value.en === variant || x.value.ar === variant)) : null;
         if (attr) {
             return attr.image?.filePath;
         }
@@ -746,9 +746,9 @@ export class OrderListComponent extends ComponentBase implements OnInit {
             if (variant.attributes) {
                 variant.attributes.forEach((attr: ProductVariantAttribute) => {
                     if (attr.variant === EnumProductVariant.COLOR) {
-                        colors.add(attr.value);
+                        colors.add(attr.value.en || attr.value.ar);
                     } else if (attr.variant === EnumProductVariant.SIZE) {
-                        sizes.add(attr.value);
+                        sizes.add(attr.value.en || attr.value.ar);
                     }
                 });
             }

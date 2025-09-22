@@ -1,16 +1,17 @@
+import { MultilingualText } from "../core/models/multi-language";
 import { Archived } from "../shared/components/fields/models/Archived";
 
 export interface BannerButton {
-  label: string;             // "Shop Sale"
+  label: MultilingualText;   // { en: "Shop Sale", ar: "تسوق الآن" }
   url: string;               // "/shop/sale"
   params?: Record<string, string>; // { category: "men", sort: "new" }
 }
 
 export interface Banner {
   _id?: string;
-  tag: string;               // "Limited Time Offer"
-  title: string;             // "Get 50% Off On New Arrivals"
-  description: string;       // "Don't miss out..."
+  tag: MultilingualText;     // { en: "Limited Time Offer", ar: "عرض لفترة محدودة" }
+  title: MultilingualText;   // { en: "Get 50% Off On New Arrivals", ar: "احصل على خصم 50%" }
+  description: MultilingualText; // { en: "Don't miss out...", ar: "لا تفوت..." }
   image: Archived;          // الصورة الجانبية
   buttons: BannerButton[];
   isActive?: boolean;
@@ -18,4 +19,6 @@ export interface Banner {
   endDate?: Date;
   createdAt?: Date;
   updatedAt?: Date;
-} 
+}
+
+export type SupportedLanguage = 'en' | 'ar'; 

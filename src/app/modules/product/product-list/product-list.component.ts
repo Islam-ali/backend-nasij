@@ -42,6 +42,8 @@ import { finalize, takeUntil } from 'rxjs';
 import { Skeleton } from "primeng/skeleton";
 import { ToggleSwitchModule } from "primeng/toggleswitch";
 import { EditorModule } from 'primeng/editor';
+import { MultiLanguagePipe } from '../../../core/pipes/multi-language.pipe';
+import { SupportedLanguage } from '../../../interfaces/banner.interface';
 
 export enum EnumProductVariant {
     SIZE = 'size',
@@ -94,7 +96,8 @@ interface ExportColumn {
         PanelModule,
         Paginator,
         ToggleSwitchModule,
-        EditorModule
+        EditorModule,
+        MultiLanguagePipe
     ],
     providers: [MessageService, ConfirmationService, ProductsService]
 })
@@ -142,6 +145,11 @@ export class ProductListComponent extends ComponentBase implements OnInit {
     @ViewChild('dt') dt: Table | undefined;
     exportColumns!: ExportColumn[];
     cols!: Column[];
+    currentLanguage = signal<SupportedLanguage>('en');
+    languages = signal<{label: string, value: SupportedLanguage}[]>([
+        { label: 'English', value: 'en' },
+        { label: 'العربية', value: 'ar' }
+    ]);
 
     constructor(
         private fb: FormBuilder,
@@ -225,8 +233,14 @@ export class ProductListComponent extends ComponentBase implements OnInit {
     buildForm() {
         this.productForm = this.fb.group({
             _id: [null],
-            name: ['', Validators.required],
-            description: ['', Validators.required],
+            name: this.fb.group({
+                en: ['', Validators.required],
+                ar: ['', Validators.required]
+            }),
+            description: this.fb.group({
+                en: ['', Validators.required],
+                ar: ['', Validators.required]
+            }),
             price: [0, [Validators.required, Validators.min(0)]],
             discountPrice: [0, [Validators.min(0)]],
             factoryPrice: [0, [Validators.min(0)]],
@@ -240,8 +254,14 @@ export class ProductListComponent extends ComponentBase implements OnInit {
             gender: [''],
             season: [''],
             details: this.fb.array([]),
-            seoTitle: ['', Validators.required],
-            seoDescription: ['', Validators.required],
+            seoTitle: this.fb.group({
+                en: ['', Validators.required],
+                ar: ['', Validators.required]
+            }),
+            seoDescription: this.fb.group({
+                en: ['', Validators.required],
+                ar: ['', Validators.required]
+            }),
             seoKeywords: [[]],
             useVariantPrice: [false],
         });
@@ -262,7 +282,10 @@ export class ProductListComponent extends ComponentBase implements OnInit {
     addAttribute(variantIndex: number): void {
         const attributeGroup = this.fb.group({
             variant: [EnumProductVariant.SIZE, [Validators.required]],
-            value: ['', [Validators.required, Validators.minLength(1)]],
+            value: this.fb.group({
+                en: ['', [Validators.required, Validators.minLength(1)]],
+                ar: ['', [Validators.required, Validators.minLength(1)]]
+            }),
             image: [null]
         });
         this.getAttributes(variantIndex).push(attributeGroup);
@@ -274,8 +297,14 @@ export class ProductListComponent extends ComponentBase implements OnInit {
 
     addDetail(): void {
         const detailGroup = this.fb.group({
-            name: ['', [Validators.required, Validators.minLength(2)]],
-            value: ['', [Validators.required, Validators.minLength(2)]],
+            name: this.fb.group({
+                en: ['', [Validators.required, Validators.minLength(2)]],
+                ar: ['', [Validators.required, Validators.minLength(2)]]
+            }),
+            value: this.fb.group({
+                en: ['', [Validators.required, Validators.minLength(2)]],
+                ar: ['', [Validators.required, Validators.minLength(2)]]
+            }),
         });
         this.details.push(detailGroup);
     }
@@ -290,7 +319,10 @@ export class ProductListComponent extends ComponentBase implements OnInit {
             attributes: this.fb.array([
                 this.fb.group({
                     variant: [EnumProductVariant.SIZE, [Validators.required]],
-                    value: ['', [Validators.required, Validators.minLength(1)]],
+                    value: this.fb.group({
+                        en: ['', [Validators.required, Validators.minLength(1)]],
+                        ar: ['', [Validators.required, Validators.minLength(1)]]
+                    }),
                     image: [null]
                 })
             ]),
@@ -366,16 +398,49 @@ export class ProductListComponent extends ComponentBase implements OnInit {
     openNew() {
         this.productForm.reset();
         this.productForm.patchValue({
+            name: { en: '', ar: '' },
+            description: { en: '', ar: '' },
             status: ProductStatus.ACTIVE,
             price: 0,
             stock: 0,
+            seoTitle: { en: '', ar: '' },
+            seoDescription: { en: '', ar: '' },
             dimensions: { length: 0, width: 0, height: 0 }
         });
         this.productDialog = true;
     }
 
     editProduct(product: IProduct) {
-        this.productForm.patchValue(product);
+        // Handle multilingual fields
+        this.productForm.patchValue({
+            _id: product._id,
+            name: {
+                en: product.name?.en || product.name || '',
+                ar: product.name?.ar || product.name || ''
+            },
+            description: {
+                en: product.description?.en || product.description || '',
+                ar: product.description?.ar || product.description || ''
+            },
+            price: product.price,
+            discountPrice: product.discountPrice,
+            factoryPrice: (product as any).factoryPrice || 0,
+            stock: product.stock,
+            status: product.status,
+            tags: product.tags,
+            gender: product.gender,
+            season: product.season,
+            useVariantPrice: product.useVariantPrice,
+            seoTitle: {
+                en: product.seoTitle?.en || product.seoTitle || '',
+                ar: product.seoTitle?.ar || product.seoTitle || ''
+            },
+            seoDescription: {
+                en: product.seoDescription?.en || product.seoDescription || '',
+                ar: product.seoDescription?.ar || product.seoDescription || ''
+            },
+            seoKeywords: product.seoKeywords
+        });
 
         this.productForm.get('category')?.setValue(product?.category?._id || null);
         this.productForm.get('brand')?.setValue(product?.brand?._id || null);
@@ -396,7 +461,10 @@ export class ProductListComponent extends ComponentBase implements OnInit {
                 variant.attributes.forEach((attr: any) => {
                     const attributeGroup = this.fb.group({
                         variant: attr.variant,
-                        value: attr.value,
+                        value: this.fb.group({
+                            en: attr.value?.en || attr.value || '',
+                            ar: attr.value?.ar || attr.value || ''
+                        }),
                         image: attr.image
                     });
                     (variantGroup.get('attributes') as FormArray).push(attributeGroup);
@@ -405,7 +473,10 @@ export class ProductListComponent extends ComponentBase implements OnInit {
                 // Handle legacy variant structure (single variant/value)
                 const attributeGroup = this.fb.group({
                     variant: variant.variant || 'size',
-                    value: variant.value || '',
+                    value: this.fb.group({
+                        en: variant.value?.en || variant.value || '',
+                        ar: variant.value?.ar || variant.value || ''
+                    }),
                     image: variant.image
                 });
                 (variantGroup.get('attributes') as FormArray).push(attributeGroup);
@@ -419,8 +490,14 @@ export class ProductListComponent extends ComponentBase implements OnInit {
         if (product.details) {
             product.details.forEach((detail: any) => {
                 this.details.push(this.fb.group({
-                    name: detail.name,
-                    value: detail.value
+                    name: {
+                        en: detail.name?.en || detail.name || '',
+                        ar: detail.name?.ar || detail.name || ''
+                    },
+                    value: {
+                        en: detail.value?.en || detail.value || '',
+                        ar: detail.value?.ar || detail.value || ''
+                    }
                 }));
             });
         }
@@ -461,11 +538,23 @@ export class ProductListComponent extends ComponentBase implements OnInit {
 
         const formValue = this.productForm.value;
         console.log('Frontend - Sending data to backend:', JSON.stringify(formValue, null, 2));
-        formValue.variants.forEach((variant: any) => {
-            if (variant.image && variant.image.length > 0) {
-                variant.image = variant.image[0];
-            }
-        });
+        
+        // Process variants to handle image arrays
+        if (formValue.variants) {
+            formValue.variants.forEach((variant: any) => {
+                if (variant.image && variant.image.length > 0) {
+                    variant.image = variant.image[0];
+                }
+                // Process variant attributes
+                if (variant.attributes) {
+                    variant.attributes.forEach((attr: any) => {
+                        if (attr.image && attr.image.length > 0) {
+                            attr.image = attr.image[0];
+                        }
+                    });
+                }
+            });
+        }
         const request$ = formValue._id
             ? this.productsService.updateProduct(formValue._id, formValue)
             : this.productsService.createProduct(formValue);
@@ -494,6 +583,17 @@ export class ProductListComponent extends ComponentBase implements OnInit {
         this.productDialog = false;
         this.submitted = false;
         this.productForm.reset();
+        // Reset form with multilingual structure
+        this.productForm.patchValue({
+            name: { en: '', ar: '' },
+            description: { en: '', ar: '' },
+            seoTitle: { en: '', ar: '' },
+            seoDescription: { en: '', ar: '' }
+        });
+    }
+
+    onLanguageChange(event: any): void {
+        this.currentLanguage.set(event.value);
     }
 
     getVariantIcon(variantType: EnumProductVariant): string {

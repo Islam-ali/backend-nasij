@@ -7,6 +7,15 @@
             </p-button>
         </div>
     </ng-template>
+    <ng-template pTemplate="right">
+        <div class="flex items-center gap-2">
+            <label class="font-semibold">Language:</label>
+            <p-dropdown [options]="languages()" [ngModel]="currentLanguage()" 
+                (onChange)="onLanguageChange($event)" optionLabel="label" optionValue="value" 
+                styleClass="w-32">
+            </p-dropdown>
+        </div>
+    </ng-template>
 </p-toolbar>
 
 <p-table #dt [value]="products()" [columns]="cols" responsiveLayout="scroll" [lazy]="true" [loading]="loading()"
@@ -40,7 +49,7 @@
     <ng-template pTemplate="body" let-product>
         <tr>
             <td style="width:14%; min-width:10rem;">
-                <span class="font-medium">{{ product.name }}</span>
+                <span class="font-medium">{{ product.name | multiLanguage:currentLanguage() }}</span>
             </td>
             <td style="width:14%; min-width: 10rem;">
                 <img [src]="product.images?.[0].filePath" [alt]="product.name" width="64" height="64"
@@ -50,7 +59,7 @@
                 <span class="font-semibold">${{ product.price }}</span>
             </td>
             <td style="width:14%; min-width:10rem;">
-                {{ product.category.name }}
+                        {{ product.category.name | multiLanguage:currentLanguage() }}
             </td>
             <!-- <td style="width:14%; min-width: 10rem;">
                 <p-rating [ngModel]="product.rating" [readonly]="true"></p-rating>
@@ -115,29 +124,65 @@
                 <!-- Basic Information Panel -->
                 <p-accordionTab header="Basic Information" [selected]="true">
                     <ng-template pTemplate="content">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div class="field w-full">
-                                <label for="name" class="font-semibold">Product Name *</label>
-                                <input pInputText id="name" class="w-full" formControlName="name"
-                                    placeholder="Enter product name"
-                                    [class.ng-invalid]="submitted && productForm.get('name')?.invalid" />
-                                <small class="ng-dirty ng-invalid text-red-500"
-                                    *ngIf="submitted && productForm.get('name')?.invalid">
-                                    Name is required
-                                </small>
-                            </div>
 
-                            <div class="field w-full">
-                                <label for="description" class="font-semibold">Description *</label>
-                                <textarea pTextarea id="description" class="w-full" formControlName="description"
-                                    rows="4" placeholder="Enter product description"
-                                    [class.ng-invalid]="submitted && productForm.get('description')?.invalid">
-                        </textarea>
-                                <small class="ng-dirty ng-invalid text-red-500"
-                                    *ngIf="submitted && productForm.get('description')?.invalid">
-                                    Description is required
-                                </small>
-                            </div>
+                        <!-- Product Name -->
+                        <div class="field w-full mb-4">
+                            <label class="font-semibold">Product Name *</label>
+                            <ng-container formGroupName="name">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Name (English) *</label>
+                                        <input pInputText formControlName="en" class="w-full"
+                                            placeholder="Enter product name in English"
+                                            [class.ng-invalid]="submitted && productForm.get('name.en')?.invalid" />
+                                        <small class="text-red-500"
+                                            *ngIf="submitted && productForm.get('name.en')?.invalid">
+                                            English name is required
+                                        </small>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Name (Arabic) *</label>
+                                        <input pInputText formControlName="ar" class="w-full"
+                                            placeholder="أدخل اسم المنتج بالعربية"
+                                            [class.ng-invalid]="submitted && productForm.get('name.ar')?.invalid" />
+                                        <small class="text-red-500"
+                                            *ngIf="submitted && productForm.get('name.ar')?.invalid">
+                                            Arabic name is required
+                                        </small>
+                                    </div>
+                                </div>
+                            </ng-container>
+                        </div>
+
+                        <!-- Product Description -->
+                        <div class="field w-full mb-4">
+                            <label class="font-semibold">Description *</label>
+                            <ng-container formGroupName="description">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Description (English) *</label>
+                                        <textarea pTextarea formControlName="en" rows="4" class="w-full"
+                                            placeholder="Enter product description in English"
+                                            [class.ng-invalid]="submitted && productForm.get('description.en')?.invalid">
+                                        </textarea>
+                                        <small class="text-red-500"
+                                            *ngIf="submitted && productForm.get('description.en')?.invalid">
+                                            English description is required
+                                        </small>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Description (Arabic) *</label>
+                                        <textarea pTextarea formControlName="ar" rows="4" class="w-full"
+                                            placeholder="أدخل وصف المنتج بالعربية"
+                                            [class.ng-invalid]="submitted && productForm.get('description.ar')?.invalid">
+                                        </textarea>
+                                        <small class="text-red-500"
+                                            *ngIf="submitted && productForm.get('description.ar')?.invalid">
+                                            Arabic description is required
+                                        </small>
+                                    </div>
+                                </div>
+                            </ng-container>
                         </div>
                     </ng-template>
                 </p-accordionTab>
@@ -364,16 +409,30 @@
                                                             <i class="pi pi-pencil text-primary mr-1"></i>
                                                             Value
                                                         </label>
-                                                        <input 
-                                                            pInputText 
-                                                            formControlName="value" 
-                                                            placeholder="Enter value"
-                                                            class="w-full"
-                                                            [class.ng-invalid]="submitted && attribute.get('value')?.invalid" />
-                                                        <small class="text-red-500 text-xs" 
-                                                            *ngIf="submitted && attribute.get('value')?.invalid">
-                                                            Value is required.
-                                                        </small>
+                                                        <ng-container formGroupName="value">
+                                                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                                <div>
+                                                                    <label class="block text-sm font-medium text-gray-700 mb-2">Value (English) *</label>
+                                                                    <input pInputText formControlName="en" class="w-full"
+                                                                        placeholder="Enter value in English"
+                                                                        [class.ng-invalid]="submitted && attribute.get('value.en')?.invalid" />
+                                                                    <small class="text-red-500"
+                                                                        *ngIf="submitted && attribute.get('value.en')?.invalid">
+                                                                        English value is required
+                                                                    </small>
+                                                                </div>
+                                                                <div>
+                                                                    <label class="block text-sm font-medium text-gray-700 mb-2">Value (Arabic) *</label>
+                                                                    <input pInputText formControlName="ar" class="w-full"
+                                                                        placeholder="أدخل القيمة بالعربية"
+                                                                        [class.ng-invalid]="submitted && attribute.get('value.ar')?.invalid" />
+                                                                    <small class="text-red-500"
+                                                                        *ngIf="submitted && attribute.get('value.ar')?.invalid">
+                                                                        Arabic value is required
+                                                                    </small>
+                                                                </div>
+                                                            </div>
+                                                        </ng-container>
                                                     </div>
                                                     
                                                     <!-- Image Selection -->
@@ -534,30 +593,58 @@
                                         </p-button>
                                     </div>
                                 </ng-template>
-                                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                    <div class="field w-full mb-0">
-                                        <label class="font-semibold">Name *</label>
-                                        <input pInputText formControlName="name" placeholder="Detail name"
-                                            class="w-full"
-                                            [class.ng-invalid]="submitted && detail.get('name')?.invalid" />
-                                        <small class="ng-dirty ng-invalid text-red-500"
-                                            *ngIf="submitted && detail.get('name')?.invalid">
-                                            Name is required and must be at least 2 characters.
-                                        </small>
-                                    </div>
+                                <!-- Detail Name -->
+                                <div class="field w-full mb-4">
+                                    <label class="font-semibold">Detail Name *</label>
+                                    <ng-container formGroupName="name">
+                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div>
+                                                <label class="block text-sm font-medium text-gray-700 mb-2">Name (English) *</label>
+                                                <input pInputText formControlName="en" class="w-full"
+                                                    placeholder="Enter detail name in English"
+                                                    [class.ng-invalid]="submitted && detail.get('name.en')?.invalid" />
+                                                <small class="text-red-500"
+                                                    *ngIf="submitted && detail.get('name.en')?.invalid">
+                                                    English name is required
+                                                </small>
+                                            </div>
+                                            <div>
+                                                <label class="block text-sm font-medium text-gray-700 mb-2">Name (Arabic) *</label>
+                                                <input pInputText formControlName="ar" class="w-full"
+                                                    placeholder="أدخل اسم التفصيل بالعربية"
+                                                    [class.ng-invalid]="submitted && detail.get('name.ar')?.invalid" />
+                                                <small class="text-red-500"
+                                                    *ngIf="submitted && detail.get('name.ar')?.invalid">
+                                                    Arabic name is required
+                                                </small>
+                                            </div>
+                                        </div>
+                                    </ng-container>
+                                </div>
 
-                                    <div class="field w-full mb-0 col-span-2">
-                                        <label class="font-semibold">Value *</label>
-                                        <p-editor formControlName="value" [style]="{ height: '320px' }" />
-
-                                        <!-- <input pInputText formControlName="value" placeholder="Detail value"
-                                            class="w-full"
-                                            [class.ng-invalid]="submitted && detail.get('value')?.invalid" /> -->
-                                        <small class="ng-dirty ng-invalid text-red-500"
-                                            *ngIf="submitted && detail.get('value')?.invalid">
-                                            Value is required and must be at least 2 characters.
-                                        </small>
-                                    </div>
+                                <!-- Detail Value -->
+                                <div class="field w-full mb-4">
+                                    <label class="font-semibold">Detail Value *</label>
+                                    <ng-container formGroupName="value">
+                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div>
+                                                <label class="block text-sm font-medium text-gray-700 mb-2">Value (English) *</label>
+                                                <p-editor formControlName="en" [style]="{ height: '200px' }" />
+                                                <small class="text-red-500"
+                                                    *ngIf="submitted && detail.get('value.en')?.invalid">
+                                                    English value is required
+                                                </small>
+                                            </div>
+                                            <div>
+                                                <label class="block text-sm font-medium text-gray-700 mb-2">Value (Arabic) *</label>
+                                                <p-editor formControlName="ar" [style]="{ height: '200px' }" />
+                                                <small class="text-red-500"
+                                                    *ngIf="submitted && detail.get('value.ar')?.invalid">
+                                                    Arabic value is required
+                                                </small>
+                                            </div>
+                                        </div>
+                                    </ng-container>
                                 </div>
                                 <!--   
                         <div class="field w-full md:col-2 mb-0">
@@ -582,26 +669,71 @@
                 <!-- SEO Panel -->
                 <p-accordionTab header="SEO Settings">
                     <ng-template pTemplate="content">
-                        <div class="grid grid-cols-1 gap-4">
-                            <div class="field w-full">
-                                <label for="seoTitle" class="font-semibold">SEO Title *</label>
-                                <input pInputText id="seoTitle" formControlName="seoTitle" placeholder="Enter SEO title"
-                                    class="w-full">
-                            </div>
+                        <!-- SEO Title -->
+                        <div class="field w-full mb-4">
+                            <label class="font-semibold">SEO Title *</label>
+                            <ng-container formGroupName="seoTitle">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">SEO Title (English) *</label>
+                                        <input pInputText formControlName="en" class="w-full"
+                                            placeholder="Enter SEO title in English"
+                                            [class.ng-invalid]="submitted && productForm.get('seoTitle.en')?.invalid" />
+                                        <small class="text-red-500"
+                                            *ngIf="submitted && productForm.get('seoTitle.en')?.invalid">
+                                            English SEO title is required
+                                        </small>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">SEO Title (Arabic) *</label>
+                                        <input pInputText formControlName="ar" class="w-full"
+                                            placeholder="أدخل عنوان SEO بالعربية"
+                                            [class.ng-invalid]="submitted && productForm.get('seoTitle.ar')?.invalid" />
+                                        <small class="text-red-500"
+                                            *ngIf="submitted && productForm.get('seoTitle.ar')?.invalid">
+                                            Arabic SEO title is required
+                                        </small>
+                                    </div>
+                                </div>
+                            </ng-container>
+                        </div>
 
-                            <div class="field w-full">
-                                <label for="seoDescription" class="font-semibold">SEO Description *</label>
-                                <textarea pTextarea id="seoDescription" formControlName="seoDescription" rows="3"
-                                    placeholder="Enter SEO description" class="w-full">
-                        </textarea>
-                            </div>
+                        <!-- SEO Description -->
+                        <div class="field w-full mb-4">
+                            <label class="font-semibold">SEO Description *</label>
+                            <ng-container formGroupName="seoDescription">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">SEO Description (English) *</label>
+                                        <textarea pTextarea formControlName="en" rows="3" class="w-full"
+                                            placeholder="Enter SEO description in English"
+                                            [class.ng-invalid]="submitted && productForm.get('seoDescription.en')?.invalid">
+                                        </textarea>
+                                        <small class="text-red-500"
+                                            *ngIf="submitted && productForm.get('seoDescription.en')?.invalid">
+                                            English SEO description is required
+                                        </small>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">SEO Description (Arabic) *</label>
+                                        <textarea pTextarea formControlName="ar" rows="3" class="w-full"
+                                            placeholder="أدخل وصف SEO بالعربية"
+                                            [class.ng-invalid]="submitted && productForm.get('seoDescription.ar')?.invalid">
+                                        </textarea>
+                                        <small class="text-red-500"
+                                            *ngIf="submitted && productForm.get('seoDescription.ar')?.invalid">
+                                            Arabic SEO description is required
+                                        </small>
+                                    </div>
+                                </div>
+                            </ng-container>
+                        </div>
 
-                            <div class="field w-full">
-                                <label for="seoKeywords" class="font-semibold">SEO Keywords</label>
-                                <p-chips id="seoKeywords" styleClass="w-full" formControlName="seoKeywords"
-                                    placeholder="Add keywords">
-                                </p-chips>
-                            </div>
+                        <div class="field w-full">
+                            <label for="seoKeywords" class="font-semibold">SEO Keywords</label>
+                            <p-chips id="seoKeywords" styleClass="w-full" formControlName="seoKeywords"
+                                placeholder="Add keywords">
+                            </p-chips>
                         </div>
                     </ng-template>
                 </p-accordionTab>

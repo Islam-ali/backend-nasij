@@ -1,8 +1,9 @@
 import { IProduct } from './product.interface';
+import { MultilingualText } from "../core/models/multi-language";
 
 export interface IRequiredVariantAttribute {
   variant: string;
-  value: string;
+  value: MultilingualText;
 }
 
 export interface IPackageItem {
@@ -16,8 +17,8 @@ export interface IPackageItem {
 export interface IPackage {
   _id?: string;
   id?: string;
-  name: string;
-  description: string;
+  name: MultilingualText;
+  description: MultilingualText;
   price: number;
   discountPrice?: number;
   stock: number;
@@ -60,8 +61,8 @@ export interface IPackageOrderResult {
 }
 
 export interface CreatePackageDto {
-  name: string;
-  description: string;
+  name: MultilingualText;
+  description: MultilingualText;
   price: number;
   discountPrice?: number;
   stock: number;

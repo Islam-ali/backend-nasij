@@ -31,6 +31,8 @@ import { finalize, takeUntil } from 'rxjs';
 import { BaseResponse, pagination } from '../../../core/models/baseResponse';
 import { ToggleSwitchModule } from 'primeng/toggleswitch';
 import { FallbackImgDirective } from '../../../core/directives/fallback-img.directive';
+import { MultiLanguagePipe } from '../../../core/pipes/multi-language.pipe';
+import { SupportedLanguage } from '../../../../app/interfaces/banner.interface';
 
 interface Column {
   field: string;
@@ -62,7 +64,8 @@ interface Column {
     ProgressSpinnerModule,
     UploadFilesComponent,
     Paginator,
-    FallbackImgDirective
+    FallbackImgDirective,
+    MultiLanguagePipe
 ],
   templateUrl: './catgory-list.component.html',
   styleUrls: ['./catgory-list.component.scss'],
@@ -81,6 +84,13 @@ export class CatgoryListComponent extends ComponentBase implements OnInit {
     total: 0
   });
   parentCategories: ICategory[] = [];
+  
+  // Language support
+  currentLanguage = signal<SupportedLanguage>('en');
+  languages = signal<{label: string, value: SupportedLanguage}[]>([
+    { label: 'English', value: 'en' },
+    { label: 'العربية', value: 'ar' }
+  ]);
   
   @ViewChild('dt') dt: Table | undefined;
   
@@ -111,9 +121,18 @@ export class CatgoryListComponent extends ComponentBase implements OnInit {
   buildForm() {
     this.categoryForm = this.fb.group({
       _id: [null],
-      name: ['', Validators.required],
-      slug: ['', Validators.required],
-      description: [''],
+      name: this.fb.group({
+        en: ['', Validators.required],
+        ar: ['', Validators.required]
+      }),
+      slug: this.fb.group({
+        en: ['', Validators.required],
+        ar: ['', Validators.required]
+      }),
+      description: this.fb.group({
+        en: [''],
+        ar: ['']
+      }),
       parentId: [null],
       image: [null],
       sortOrder: [0, [Validators.required, Validators.min(0)]],
@@ -174,9 +193,18 @@ export class CatgoryListComponent extends ComponentBase implements OnInit {
   editCategory(category: ICategory) {
     this.categoryForm.patchValue({
       _id: category._id,
-      name: category.name,
-      slug: category.slug,
-      description: category.description,
+      name: {
+        en: category.name.en,
+        ar: category.name.ar
+      },
+      slug: {
+        en: category.slug.en,
+        ar: category.slug.ar
+      },
+      description: {
+        en: category.description?.en || '',
+        ar: category.description?.ar || ''
+      },
       parentId: category.parentId,
       image: category.image,
       sortOrder: category.sortOrder,
@@ -187,7 +215,7 @@ export class CatgoryListComponent extends ComponentBase implements OnInit {
 
   deleteCategory(category: ICategory) {
     this.confirmationService.confirm({
-      message: `Are you sure you want to delete ${category.name}?`,
+      message: `Are you sure you want to delete ${category.name[this.currentLanguage()] || category.name.en || category.name.ar || ''}?`,
       header: 'Confirm',
       icon: 'pi pi-exclamation-triangle',
       accept: () => {
@@ -261,5 +289,15 @@ export class CatgoryListComponent extends ComponentBase implements OnInit {
 
   get formControlImage() {
     return this.categoryForm.get('image') as FormControl;
+  }
+
+  // Language helper methods
+  onLanguageChange(event: any) {
+    this.currentLanguage.set(event.value);
+  }
+
+  // Helper for dropdown display
+  getParentCategoryLabel(category: ICategory): string {
+    return category.name[this.currentLanguage()] || category.name.en || '';
   }
 }

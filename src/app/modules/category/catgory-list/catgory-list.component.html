@@ -4,7 +4,12 @@
             <p-toast></p-toast>
             <p-toolbar styleClass="mb-4 gap-2">
                 <ng-template pTemplate="left">
-                    <div class="my-2">
+                    <div class="my-2 flex items-center gap-4">
+                        <div class="flex items-center gap-2">
+                            <p-dropdown [options]="languages()" [ngModel]="currentLanguage()" (onChange)="onLanguageChange($event)"
+                                optionLabel="label" optionValue="value" styleClass="w-32">
+                            </p-dropdown>
+                        </div>
                         <p-button label="New Category" icon="pi pi-plus" class="mr-2" (click)="openNew()"
                             [style]="{'margin-right': '.5em'}">
                         </p-button>
@@ -43,10 +48,10 @@
                 <ng-template pTemplate="body" let-category>
                     <tr>
                         <td>
-                            <img [src]="category?.image?.filePath" [fallback]="'/images/picture.png'" [alt]="category.name" class="w-10 h-10 object-cover">
+                            <img [src]="category?.image?.filePath" [fallback]="'/images/picture.png'" [alt]="category.name | multiLanguage:currentLanguage()" class="w-10 h-10 object-cover">
                         </td>
                         <td>
-                            <span class="font-medium">{{category.name}}</span>
+                            <span class="font-medium">{{category.name | multiLanguage:currentLanguage()}}</span>
                         </td>
                         <td>{{category.sortOrder}}</td>
                         <td>
@@ -102,23 +107,45 @@
                                     for="isActive">Active</label>
                                 <p-toggleswitch id="isActive" formControlName="isActive" />
                             </div>
-                            <div class="w-full">
-                                <label class="block text-sm font-medium text-gray-700 mb-2" for="name">Name *</label>
-                                <input id="name" type="text" pInputText formControlName="name" class="w-full"
-                                    [class.ng-invalid]="submitted && categoryForm.get('name')?.invalid" />
-                                <small class="p-error" *ngIf="submitted && categoryForm.get('name')?.invalid">
-                                    Name is required
-                                </small>
-                            </div>
+                            <ng-container formGroupName="name">
+                                <div class="w-full">
+                                    <label class="block text-sm font-medium text-gray-700 mb-2" for="nameEn">Name (English) *</label>
+                                    <input id="nameEn" type="text" pInputText formControlName="en" class="w-full"
+                                        [class.ng-invalid]="submitted && categoryForm.get('name.en')?.invalid" />
+                                    <small class="p-error" *ngIf="submitted && categoryForm.get('name.en')?.invalid">
+                                        English name is required
+                                    </small>
+                                </div>
 
-                            <div class="w-full">
-                                <label class="block text-sm font-medium text-gray-700 mb-2" for="slug">Slug *</label>
-                                <input id="slug" type="text" pInputText formControlName="slug" class="w-full"
-                                    [class.ng-invalid]="submitted && categoryForm.get('slug')?.invalid" />
-                                <small class="p-error" *ngIf="submitted && categoryForm.get('slug')?.invalid">
-                                    Slug is required
-                                </small>
-                            </div>
+                                <div class="w-full">
+                                    <label class="block text-sm font-medium text-gray-700 mb-2" for="nameAr">Name (Arabic) *</label>
+                                    <input id="nameAr" type="text" pInputText formControlName="ar" class="w-full"
+                                        [class.ng-invalid]="submitted && categoryForm.get('name.ar')?.invalid" />
+                                    <small class="p-error" *ngIf="submitted && categoryForm.get('name.ar')?.invalid">
+                                        Arabic name is required
+                                    </small>
+                                </div>
+                            </ng-container>
+
+                            <ng-container formGroupName="slug">
+                                <div class="w-full">
+                                    <label class="block text-sm font-medium text-gray-700 mb-2" for="slugEn">Slug (English) *</label>
+                                    <input id="slugEn" type="text" pInputText formControlName="en" class="w-full"
+                                        [class.ng-invalid]="submitted && categoryForm.get('slug.en')?.invalid" />
+                                    <small class="p-error" *ngIf="submitted && categoryForm.get('slug.en')?.invalid">
+                                        English slug is required
+                                    </small>
+                                </div>
+
+                                <div class="w-full">
+                                    <label class="block text-sm font-medium text-gray-700 mb-2" for="slugAr">Slug (Arabic) *</label>
+                                    <input id="slugAr" type="text" pInputText formControlName="ar" class="w-full"
+                                        [class.ng-invalid]="submitted && categoryForm.get('slug.ar')?.invalid" />
+                                    <small class="p-error" *ngIf="submitted && categoryForm.get('slug.ar')?.invalid">
+                                        Arabic slug is required
+                                    </small>
+                                </div>
+                            </ng-container>
 
                             <div class="w-full">
                                 <label class="block text-sm font-medium text-gray-700 mb-2" for="parent">Parent
@@ -126,6 +153,9 @@
                                 <p-dropdown [options]="parentCategories" styleClass="w-full" formControlName="parentId"
                                     optionLabel="name" optionValue="_id" [showClear]="true"
                                     placeholder="Select a parent category">
+                                    <ng-template let-category pTemplate="item">
+                                        {{ category.name | multiLanguage:currentLanguage() }}
+                                    </ng-template>
                                 </p-dropdown>
                             </div>
 
@@ -137,12 +167,21 @@
                                 </p-inputNumber>
                             </div>
 
-                            <div class="w-full col-span-2">
-                                <label class="block text-sm font-medium text-gray-700 mb-2"
-                                    for="description">Description</label>
-                                <textarea id="description" class="w-full" pTextarea formControlName="description"
-                                    rows="3"></textarea>
-                            </div>
+                            <ng-container formGroupName="description">
+                                <div class="w-full">
+                                    <label class="block text-sm font-medium text-gray-700 mb-2"
+                                        for="descriptionEn">Description (English)</label>
+                                    <textarea id="descriptionEn" class="w-full" pTextarea formControlName="en"
+                                        rows="3" placeholder="Enter English description"></textarea>
+                                </div>
+
+                                <div class="w-full">
+                                    <label class="block text-sm font-medium text-gray-700 mb-2"
+                                        for="descriptionAr">Description (Arabic)</label>
+                                    <textarea id="descriptionAr" class="w-full" pTextarea formControlName="ar"
+                                        rows="3" placeholder="أدخل الوصف بالعربية"></textarea>
+                                </div>
+                            </ng-container>
 
                             <div class="w-full col-span-2">
                                 <label class="block text-sm font-medium text-gray-700 mb-2" for="image">Image</label>

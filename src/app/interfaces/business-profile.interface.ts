@@ -1,4 +1,5 @@
 import { Archived } from "../shared/components/fields/models/Archived";
+import { MultilingualText } from "../core/models/multi-language";
 
 export interface ISocialMedia {
   facebook?: string;
@@ -11,25 +12,25 @@ export interface ISocialMedia {
 export interface IContactInfo {
   email: string;
   phone: string;
-  address: string;
+  address: MultilingualText;
   mapLocation?: string;
 }
 
 export interface IFAQ {
-  question: string;
-  answer: string;
+  question: MultilingualText;
+  answer: MultilingualText;
 }
 
 export interface IBusinessProfile {
   _id: string;
   logo_dark?: Archived;
   logo_light?: Archived;
-  name: string;
-  description: string;
+  name: MultilingualText;
+  description: MultilingualText;
   socialMedia: ISocialMedia;
   contactInfo: IContactInfo;
-  privacyPolicy: string;
-  termsOfService: string;
+  privacyPolicy: MultilingualText;
+  termsOfService: MultilingualText;
   faq: IFAQ[];
   createdAt: Date;
   updatedAt: Date;

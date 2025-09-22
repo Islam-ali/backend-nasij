@@ -4,13 +4,20 @@
 
     <div class="flex justify-between items-center mb-4">
         <h2 class="text-2xl font-bold text-gray-900">Banner Management</h2>
-        <p-button label="New Banner" icon="pi pi-plus" (onClick)="openNew()"></p-button>
+        <div class="flex items-center gap-4">
+            <div class="flex items-center gap-2">
+                <p-dropdown [options]="languages()" [ngModel]="currentLanguage()" (onChange)="onLanguageChange($event)"
+                    optionLabel="label" optionValue="value" styleClass="w-32">
+                </p-dropdown>
+            </div>
+            <p-button label="New Banner" icon="pi pi-plus" (onClick)="openNew()"></p-button>
+        </div>
     </div>
 
-    <p-table [value]="banners()" [loading]="loading()" [paginator]="true" [rows]="10" 
-             [showCurrentPageReport]="true" currentPageReportTemplate="Showing {first} to {last} of {totalRecords} banners"
-             [rowsPerPageOptions]="[10, 25, 50]" styleClass="p-datatable-sm">
-        
+    <p-table [value]="banners()" [loading]="loading()" [paginator]="true" [rows]="10" [showCurrentPageReport]="true"
+        currentPageReportTemplate="Showing {first} to {last} of {totalRecords} banners"
+        [rowsPerPageOptions]="[10, 25, 50]" styleClass="p-datatable-sm">
+
         <ng-template pTemplate="header">
             <tr>
                 <th>Image</th>
@@ -21,150 +28,165 @@
                 <th>Actions</th>
             </tr>
         </ng-template>
-        
+
         <ng-template pTemplate="body" let-banner>
             <tr>
                 <td>
-                    <img [src]="banner.image.filePath" [alt]="banner.title" 
-                         class="w-16 h-16 object-cover rounded-lg">
+                    <img [src]="banner.image.filePath" [alt]="banner.title | multiLanguage:currentLanguage()"
+                        class="w-16 h-16 object-cover rounded-lg">
                 </td>
                 <td>
                     <span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
-                        {{ banner.tag }}
+                        {{ banner.tag | multiLanguage:currentLanguage() }}
                     </span>
                 </td>
                 <td>
                     <div>
-                        <div class="font-semibold">{{ banner.title }}</div>
-                        <div class="text-sm text-gray-500">{{ banner.description }}</div>
+                        <div class="font-semibold">{{ banner.title | multiLanguage:currentLanguage() }}</div>
+                        <div class="text-sm text-gray-500">{{ banner.description | multiLanguage:currentLanguage() }}</div>
                     </div>
                 </td>
                 <td>
-                    <p-toggleButton 
-                        [ngModel]="banner.isActive" 
-                        (onChange)="toggleActive(banner)"
-                        onLabel="Active" 
-                        offLabel="Inactive"
-                        [onIcon]="'pi pi-check'" 
-                        [offIcon]="'pi pi-times'"
+                    <p-toggleButton [ngModel]="banner.isActive" (onChange)="toggleActive(banner)" onLabel="Active"
+                        offLabel="Inactive" [onIcon]="'pi pi-check'" [offIcon]="'pi pi-times'"
                         [styleClass]="banner.isActive ? 'p-button-success' : 'p-button-danger'">
                     </p-toggleButton>
                 </td>
                 <td>
                     <div class="flex flex-wrap gap-1">
-                        <span *ngFor="let button of banner.buttons" 
-                              class="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded">
-                            {{ button.label }}
+                        <span *ngFor="let button of banner.buttons"
+                            class="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded">
+                            {{ button.label | multiLanguage:currentLanguage() }}
                         </span>
                     </div>
                 </td>
                 <td>
                     <div class="flex gap-2">
-                        <p-button icon="pi pi-pencil" 
-                                  styleClass="p-button-text p-button-sm"
-                                  (onClick)="editBanner(banner)">
+                        <p-button icon="pi pi-pencil" styleClass="p-button-text p-button-sm"
+                            (onClick)="editBanner(banner)">
                         </p-button>
-                        <p-button icon="pi pi-trash" 
-                                  styleClass="p-button-text p-button-danger p-button-sm"
-                                  (onClick)="deleteBanner(banner)">
+                        <p-button icon="pi pi-trash" styleClass="p-button-text p-button-danger p-button-sm"
+                            (onClick)="deleteBanner(banner)">
                         </p-button>
                     </div>
                 </td>
             </tr>
         </ng-template>
-        
+
         <ng-template pTemplate="emptymessage">
             <tr>
-                <td colspan="6" class="text-center py-8 text-gray-500 flex flex-col items-center justify-center">
-                    <i class="pi pi-image text-4xl mb-4 block"></i>
-                    <p>No banners found.</p>
+                <td colspan="6">
+                    <div class="text-center py-8 text-gray-500 flex flex-col items-center justify-center">
+                        <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem"></i>
+                        <span>No banners found</span>
+                    </div>
                 </td>
             </tr>
         </ng-template>
     </p-table>
 
     <!-- Banner Dialog -->
-    <p-dialog [(visible)]="bannerDialog" 
-              [style]="{width: '50rem'}" 
-              [modal]="true" 
-              [draggable]="false" 
-              [resizable]="false"
-              [header]="banner() ? 'Edit Banner' : 'New Banner'"
-              [closable]="true"
-              [closeOnEscape]="true"
-              >
+    <p-dialog [(visible)]="bannerDialog" [style]="{width: '50rem'}" [modal]="true" [draggable]="false"
+        [resizable]="false" [header]="banner() ? 'Edit Banner' : 'New Banner'" [closable]="true" [closeOnEscape]="true">
         @if(bannerDialog) {
         <form [formGroup]="bannerForm" class="space-y-6">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <ng-container formGroupName="tag">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Tag *</label>
-                    <input pInputText formControlName="tag" 
-                           class="w-full"
-                           [class.ng-invalid]="bannerForm.get('tag')?.invalid && bannerForm.get('tag')?.touched"
-                           placeholder="e.g., Limited Time Offer" />
-                    <small *ngIf="bannerForm.get('tag')?.invalid && bannerForm.get('tag')?.touched" 
-                           class="text-red-500">Tag is required</small>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Tag (English) *</label>
+                    <input pInputText formControlName="en" class="w-full"
+                        [class.ng-invalid]="bannerForm.get('tag.en')?.invalid && bannerForm.get('tag.en')?.touched"
+                        placeholder="e.g., Limited Time Offer" />
+                    <small *ngIf="bannerForm.get('tag.en')?.invalid && bannerForm.get('tag.en')?.touched"
+                        class="text-red-500">English tag is required</small>
                 </div>
 
                 <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Tag (Arabic) *</label>
+                    <input pInputText formControlName="ar" class="w-full"
+                        [class.ng-invalid]="bannerForm.get('tag.ar')?.invalid && bannerForm.get('tag.ar')?.touched"
+                        placeholder="e.g., عرض لفترة محدودة" />
+                    <small *ngIf="bannerForm.get('tag.ar')?.invalid && bannerForm.get('tag.ar')?.touched"
+                        class="text-red-500">Arabic tag is required</small>
+                </div>
+            </ng-container>
+            </div>
+
+            <ng-container formGroupName="title">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Title (English) *</label>
+                    <input pInputText formControlName="en" class="w-full"
+                        [class.ng-invalid]="bannerForm.get('title.en')?.invalid && bannerForm.get('title.en')?.touched"
+                        placeholder="e.g., Get 50% Off On New Arrivals" />
+                    <small *ngIf="bannerForm.get('title.en')?.invalid && bannerForm.get('title.en')?.touched"
+                        class="text-red-500">English title is required</small>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Title (Arabic) *</label>
+                    <input pInputText formControlName="ar" class="w-full"
+                        [class.ng-invalid]="bannerForm.get('title.ar')?.invalid && bannerForm.get('title.ar')?.touched"
+                        placeholder="e.g., احصل على خصم 50% على الوافدين الجدد" />
+                    <small *ngIf="bannerForm.get('title.ar')?.invalid && bannerForm.get('title.ar')?.touched"
+                        class="text-red-500">Arabic title is required</small>
+                </div>
+            </div>
+            </ng-container>
+
+            <ng-container formGroupName="description">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Description (English) *</label>
+                    <textarea pInputTextarea formControlName="en" [rows]="3" class="w-full"
+                        [class.ng-invalid]="bannerForm.get('description.en')?.invalid && bannerForm.get('description.en')?.touched"
+                        placeholder="e.g., Don't miss out on our amazing deals!"></textarea>
+                    <small
+                        *ngIf="bannerForm.get('description.en')?.invalid && bannerForm.get('description.en')?.touched"
+                        class="text-red-500">English description is required</small>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Description (Arabic) *</label>
+                    <textarea pInputTextarea formControlName="ar" [rows]="3" class="w-full"
+                        [class.ng-invalid]="bannerForm.get('description.ar')?.invalid && bannerForm.get('description.ar')?.touched"
+                        placeholder="e.g., لا تفوت صفقاتنا المذهلة!"></textarea>
+                    <small
+                        *ngIf="bannerForm.get('description.ar')?.invalid && bannerForm.get('description.ar')?.touched"
+                        class="text-red-500">Arabic description is required</small>
+                </div>
+            </div>
+            </ng-container>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
-                    <p-toggleButton formControlName="isActive"
-                                   onLabel="Active" 
-                                   offLabel="Inactive"
-                                   [onIcon]="'pi pi-check'" 
-                                   offIcon="pi pi-times">
+                    <p-toggleButton formControlName="isActive" onLabel="Active" offLabel="Inactive"
+                        [onIcon]="'pi pi-check'" offIcon="pi pi-times">
                     </p-toggleButton>
                 </div>
             </div>
 
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Title *</label>
-                <input pInputText formControlName="title" 
-                       class="w-full"
-                       [class.ng-invalid]="bannerForm.get('title')?.invalid && bannerForm.get('title')?.touched"
-                       placeholder="e.g., Get 50% Off On New Arrivals" />
-                <small *ngIf="bannerForm.get('title')?.invalid && bannerForm.get('title')?.touched" 
-                       class="text-red-500">Title is required</small>
-            </div>
-
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Description *</label>
-                <textarea pInputTextarea formControlName="description" 
-                          [rows]="3"
-                          class="w-full"
-                          [class.ng-invalid]="bannerForm.get('description')?.invalid && bannerForm.get('description')?.touched"
-                          placeholder="e.g., Don't miss out on our amazing deals!"></textarea>
-                <small *ngIf="bannerForm.get('description')?.invalid && bannerForm.get('description')?.touched" 
-                       class="text-red-500">Description is required</small>
-            </div>
-
-            <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Image *</label>
-                <app-upload-files [control]="bannerForm.get('image')!"
-                                 [filesServer]="bannerForm.get('image')?.value" 
-                                 [accept]="'image/*'"
-                                 [multiple]="false">
+                <app-upload-files [control]="bannerForm.get('image')!" [filesServer]="bannerForm.get('image')?.value"
+                    [accept]="'image/*'" [multiple]="false">
                 </app-upload-files>
-                <small *ngIf="bannerForm.get('image')?.invalid && bannerForm.get('image')?.touched" 
-                       class="text-red-500">Image is required</small>
+                <small *ngIf="bannerForm.get('image')?.invalid && bannerForm.get('image')?.touched"
+                    class="text-red-500">Image is required</small>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Start Date</label>
-                    <p-calendar formControlName="startDate"
-                               [showIcon]="true"
-                               dateFormat="dd/mm/yy"
-                               placeholder="Select start date">
+                    <p-calendar formControlName="startDate" [showIcon]="true" dateFormat="dd/mm/yy"
+                        placeholder="Select start date">
                     </p-calendar>
                 </div>
 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">End Date</label>
-                    <p-calendar formControlName="endDate"
-                               [showIcon]="true"
-                               dateFormat="dd/mm/yy"
-                               placeholder="Select end date">
+                    <p-calendar formControlName="endDate" [showIcon]="true" dateFormat="dd/mm/yy"
+                        placeholder="Select end date">
                     </p-calendar>
                 </div>
             </div>
@@ -173,48 +195,53 @@
             <div>
                 <div class="flex justify-between items-center mb-4">
                     <label class="block text-sm font-medium text-gray-700">Buttons</label>
-                    <p-button label="Add Button" 
-                              icon="pi pi-plus" 
-                              size="small"
-                              styleClass="p-button-outlined"
-                              (onClick)="addButton()">
+                    <p-button label="Add Button" icon="pi pi-plus" size="small" styleClass="p-button-outlined"
+                        (onClick)="addButton()">
                     </p-button>
                 </div>
 
                 <div formArrayName="buttons" class="space-y-4">
-                    <div *ngFor="let buttonGroup of buttonsArray.controls; let i = index" 
-                         [formGroupName]="i"
-                         class="border border-gray-200 rounded-lg p-4 bg-gray-50">
-                        
+                    <div *ngFor="let buttonGroup of buttonsArray.controls; let i = index" [formGroupName]="i"
+                        class="border border-gray-200 rounded-lg p-4 bg-gray-50">
+
                         <div class="flex justify-between items-start mb-4">
                             <h4 class="text-md font-semibold text-gray-900">Button #{{ i + 1 }}</h4>
-                            <p-button icon="pi pi-trash" 
-                                      size="small"
-                                      styleClass="p-button-text p-button-danger"
-                                      (onClick)="removeButton(i)"
-                                      [disabled]="buttonsArray.length === 1">
+                            <p-button icon="pi pi-trash" size="small" styleClass="p-button-text p-button-danger"
+                                (onClick)="removeButton(i)" [disabled]="buttonsArray.length === 1">
                             </p-button>
                         </div>
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <ng-container formGroupName="label">
                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Label *</label>
-                                <input pInputText formControlName="label" 
-                                       class="w-full"
-                                       [class.ng-invalid]="buttonGroup.get('label')?.invalid && buttonGroup.get('label')?.touched"
-                                       placeholder="e.g., Shop Sale" />
-                                <small *ngIf="buttonGroup.get('label')?.invalid && buttonGroup.get('label')?.touched" 
-                                       class="text-red-500">Label is required</small>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Label (English) *</label>
+                                <input pInputText formControlName="en" class="w-full"
+                                    [class.ng-invalid]="buttonGroup.get('label.en')?.invalid && buttonGroup.get('label.en')?.touched"
+                                    placeholder="e.g., Shop Sale" />
+                                <small
+                                    *ngIf="buttonGroup.get('label.en')?.invalid && buttonGroup.get('label.en')?.touched"
+                                    class="text-red-500">English label is required</small>
                             </div>
 
                             <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Label (Arabic) *</label>
+                                <input pInputText formControlName="ar" class="w-full"
+                                    [class.ng-invalid]="buttonGroup.get('label.ar')?.invalid && buttonGroup.get('label.ar')?.touched"
+                                    placeholder="e.g., تسوق الآن" />
+                                <small
+                                    *ngIf="buttonGroup.get('label.ar')?.invalid && buttonGroup.get('label.ar')?.touched"
+                                    class="text-red-500">Arabic label is required</small>
+                            </div>
+                        </ng-container>
+                        </div>
+                        <div class="grid grid-cols-1 gap-4">
+                            <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">URL *</label>
-                                <input pInputText formControlName="url" 
-                                       class="w-full"
-                                       [class.ng-invalid]="buttonGroup.get('url')?.invalid && buttonGroup.get('url')?.touched"
-                                       placeholder="e.g., /shop/sale" />
-                                <small *ngIf="buttonGroup.get('url')?.invalid && buttonGroup.get('url')?.touched" 
-                                       class="text-red-500">URL is required</small>
+                                <input pInputText formControlName="url" class="w-full"
+                                    [class.ng-invalid]="buttonGroup.get('url')?.invalid && buttonGroup.get('url')?.touched"
+                                    placeholder="e.g., /shop/sale" />
+                                <small *ngIf="buttonGroup.get('url')?.invalid && buttonGroup.get('url')?.touched"
+                                    class="text-red-500">URL is required</small>
                             </div>
                         </div>
 
@@ -227,10 +254,11 @@
                                 <div class="mb-3">
                                     <label class="block text-xs font-medium text-gray-600 mb-1">Parameter
                                         Name</label>
-                                    <p-dropdown [options]="params()" formControlName="queryParamName"
-                                        optionLabel="name" optionValue="value" [filter]="true" [filterBy]="'name'"
-                                        [filterPlaceholder]="'Search parameter name'" [showClear]="true"
-                                        [placeholder]="'Select parameter name'" [appendTo]="'body'"
+                                    <p-dropdown [options]="params()" formControlName="queryParamName" optionLabel="name"
+                                        optionValue="value" 
+                                        class="w-full"
+                                         [showClear]="true"
+                                        [placeholder]="'Select parameter name'" appendTo="body"
                                         (onChange)="onparamsChange($event, i)">
                                     </p-dropdown>
                                 </div>
@@ -283,44 +311,30 @@
         }
         <ng-template pTemplate="footer">
             <div class="flex justify-end gap-2">
-                <p-button label="Cancel" 
-                          styleClass="p-button-text"
-                          (onClick)="hideDialog()">
+                <p-button label="Cancel" styleClass="p-button-text" (onClick)="hideDialog()">
                 </p-button>
-                <p-button label="Save" 
-                          icon="pi pi-check"
-                          (onClick)="saveBanner()"
-                          [disabled]="bannerForm.invalid">
+                <p-button label="Save" icon="pi pi-check" (onClick)="saveBanner()" [disabled]="bannerForm.invalid">
                 </p-button>
             </div>
         </ng-template>
     </p-dialog>
 
     <!-- Delete Confirmation Dialog -->
-    <p-dialog [visible]="deleteBannerDialog()" 
-              [style]="{width: '450px'}" 
-              [modal]="true" 
-              [draggable]="false" 
-              [resizable]="false"
-              header="Confirm">
-        
+    <p-dialog [visible]="deleteBannerDialog()" [style]="{width: '450px'}" [modal]="true" [draggable]="false"
+        [resizable]="false" header="Confirm">
+
         <div class="confirmation-content">
             <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem"></i>
-            <span *ngIf="banner()">Are you sure you want to delete <b>{{ banner()?.title }}</b>?</span>
+            <span *ngIf="banner()">Are you sure you want to delete <b>{{ banner()?.title | multiLanguage:currentLanguage() }}</b>?</span>
         </div>
-        
+
         <ng-template pTemplate="footer">
             <div class="flex justify-end gap-2">
-                <p-button label="No" 
-                          styleClass="p-button-text"
-                          (onClick)="deleteBannerDialog.set(false)">
+                <p-button label="No" styleClass="p-button-text" (onClick)="deleteBannerDialog.set(false)">
                 </p-button>
-                <p-button label="Yes" 
-                          icon="pi pi-check"
-                          styleClass="p-button-danger"
-                          (onClick)="confirmDelete()">
+                <p-button label="Yes" icon="pi pi-check" styleClass="p-button-danger" (onClick)="confirmDelete()">
                 </p-button>
             </div>
         </ng-template>
     </p-dialog>
-</div> 
+</div>

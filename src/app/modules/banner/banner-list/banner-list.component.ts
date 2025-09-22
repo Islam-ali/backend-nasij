@@ -21,7 +21,7 @@ import { DropdownModule } from 'primeng/dropdown';
 import { BannerService } from '../../../services/banner.service';
 
 // Interfaces
-import { Banner, BannerButton } from '../../../interfaces/banner.interface';
+import { Banner, SupportedLanguage } from '../../../interfaces/banner.interface';
 
 // Components
 import { UploadFilesComponent } from '../../../shared/components/fields/upload-files/upload-files.component';
@@ -33,6 +33,11 @@ import { ICategory } from '../../../interfaces/category.interface';
 import { IBrand } from '../../../interfaces/brand.interface';
 import { ComponentBase } from '../../../core/directives/component-base.directive';
 import { TextareaModule } from 'primeng/textarea';
+import { ProductsService } from '../../../services/products.service';
+import { IProduct } from '../../../interfaces/product.interface';
+import { IPackage } from '../../../interfaces/package.interface';
+import { PackageService } from '../../../services/package.service';
+import { MultiLanguagePipe } from '../../../core/pipes/multi-language.pipe';
 
 @Component({
   selector: 'app-banner-list',
@@ -52,7 +57,8 @@ import { TextareaModule } from 'primeng/textarea';
     CalendarModule,
     DropdownModule,
     UploadFilesComponent,
-    TextareaModule
+    TextareaModule,
+    MultiLanguagePipe
   ],
   providers: [MessageService, ConfirmationService],
   templateUrl: './banner-list.component.html',
@@ -60,6 +66,8 @@ import { TextareaModule } from 'primeng/textarea';
 })
 export class BannerListComponent extends ComponentBase implements OnInit {
   banners = signal<Banner[]>([]);
+  products = signal<IProduct[]>([]);
+  packages = signal<IPackage[]>([]);
   bannerDialog:boolean=false;
   deleteBannerDialog = signal(false);
   banner = signal<Banner | null>(null);
@@ -71,11 +79,19 @@ export class BannerListComponent extends ComponentBase implements OnInit {
   brands = signal<IBrand[]>([]);
   selectedQueryParamValues = signal<{ [key: number]: any[] }>({});
   bannerForm!: FormGroup;
+  
+  // Language support
+  currentLanguage = signal<SupportedLanguage>('en');
+  languages = signal<{label: string, value: SupportedLanguage}[]>([
+    { label: 'English', value: 'en' },
+    { label: 'العربية', value: 'ar' }
+  ]);
 
   constructor(
     private bannerService: BannerService,
     private messageService: MessageService,
-    private confirmationService: ConfirmationService,
+    private productService: ProductsService, 
+    private packageService: PackageService,
     private fb: FormBuilder,
     private categoryService: CategoryService,
     private brandService: BrandService
@@ -89,13 +105,24 @@ export class BannerListComponent extends ComponentBase implements OnInit {
     this.loadparams();
     this.loadCategories();
     this.loadBrands();
+    this.loadProducts();
+    this.loadPackages();
     }
 
   initForm() {
     this.bannerForm = this.fb.group({
-      tag: ['', [Validators.required]],
-      title: ['', [Validators.required]],
-      description: ['', [Validators.required]],
+      tag: this.fb.group({
+        en: ['', [Validators.required]],
+        ar: ['', [Validators.required]]
+      }),
+      title: this.fb.group({
+        en: ['', [Validators.required]],
+        ar: ['', [Validators.required]]
+      }),
+      description: this.fb.group({
+        en: ['', [Validators.required]],
+        ar: ['', [Validators.required]]
+      }),
       image: [null, [Validators.required]],
       isActive: [true],
       startDate: [null],
@@ -110,7 +137,10 @@ export class BannerListComponent extends ComponentBase implements OnInit {
 
   addButton() {
     const buttonGroup = this.fb.group({
-      label: ['', [Validators.required]],
+      label: this.fb.group({
+        en: ['', [Validators.required]],
+        ar: ['', [Validators.required]]
+      }),
       url: ['', [Validators.required]],
       params: [{}],
       queryParamName: [null],
@@ -121,6 +151,17 @@ export class BannerListComponent extends ComponentBase implements OnInit {
 
   removeButton(index: number) {
     this.buttonsArray.removeAt(index);
+  }
+
+  loadProducts() {
+    this.productService.getProductsList().pipe(takeUntil(this.destroy$)).subscribe({
+      next: (response: BaseResponse<IProduct[]>) => {
+        this.products.set(response.data);
+      },
+      error: (error) => {
+        console.error('Error loading products:', error);
+      }
+    });
   }
 
   loadBanners() {
@@ -162,7 +203,10 @@ export class BannerListComponent extends ComponentBase implements OnInit {
     // Add existing buttons
     banner.buttons.forEach(button => {
       const buttonGroup = this.fb.group({
-        label: [button.label, [Validators.required]],
+        label: this.fb.group({
+          en: [button.label.en, [Validators.required]],
+          ar: [button.label.ar, [Validators.required]]
+        }),
         url: [button.url, [Validators.required]],
         params: [button.params || {}],
         queryParamName: [null],
@@ -172,9 +216,18 @@ export class BannerListComponent extends ComponentBase implements OnInit {
     });
 
     this.bannerForm.patchValue({
-      tag: banner.tag,
-      title: banner.title,
-      description: banner.description,
+      tag: {
+        en: banner.tag.en,
+        ar: banner.tag.ar
+      },
+      title: {
+        en: banner.title.en,
+        ar: banner.title.ar
+      },
+      description: {
+        en: banner.description.en,
+        ar: banner.description.ar
+      },
       image: banner.image,
       isActive: banner.isActive,
       startDate: banner.startDate ? new Date(banner.startDate) : null,
@@ -312,7 +365,8 @@ export class BannerListComponent extends ComponentBase implements OnInit {
     this.params.set([
       { name: 'category', value: 'category' },
       { name: 'brand', value: 'brand' },
-      { name: 'product', value: 'product' }
+      { name: 'product', value: 'product' },
+      { name: 'package', value: 'package' }
     ]);
   }
 
@@ -341,6 +395,16 @@ export class BannerListComponent extends ComponentBase implements OnInit {
         }
       });
   }
+  loadPackages() {
+    this.packageService.getPackagesList().pipe(takeUntil(this.destroy$)).subscribe({
+      next: (response: BaseResponse<IPackage[]>) => {
+        this.packages.set(response.data); 
+      },
+      error: (error) => {
+        console.error('Error loading packages:', error);
+      }
+    });
+  }
 
   onparamsChange(event: any, buttonIndex: number) {
     const selectedParam = event.value;
@@ -364,8 +428,10 @@ export class BannerListComponent extends ComponentBase implements OnInit {
         values = this.brands().map(brand => ({ name: brand.name, value: brand._id }));
         break;
       case 'product':
-        // يمكن إضافة منتجات هنا إذا كان مطلوباً
-        values = [];
+        values = this.products().map(product => ({ name: product.name, value: product._id }));
+        break;
+       case 'package':
+        values = this.packages().map(pkg => ({ name: pkg.name, value: pkg._id }));
         break;
       default:
         values = [];
@@ -402,5 +468,16 @@ export class BannerListComponent extends ComponentBase implements OnInit {
       return [];
     }
     return Object.keys(params);
+  }
+
+  // Language helper methods
+  onLanguageChange(event: any) {
+    this.currentLanguage.set(event.value);
+  }
+
+  // Helper to get current language display text
+  getLanguageLabel(lang: SupportedLanguage): string {
+    const language = this.languages().find(l => l.value === lang);
+    return language ? language.label : lang;
   }
 } 
