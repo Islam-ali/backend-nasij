@@ -97,8 +97,14 @@ export class BusinessProfileListComponent extends ComponentBase implements OnIni
 
   initForm() {
     this.businessProfileForm = this.fb.group({
-      name: ['', [Validators.required, Validators.minLength(2)]],
-      description: ['', [Validators.required, Validators.minLength(10)]],
+      name: this.fb.group({
+        en: ['', [Validators.required, Validators.minLength(2)]],
+        ar: ['', [Validators.required, Validators.minLength(2)]]
+      }),
+      description: this.fb.group({
+        en: ['', [Validators.required, Validators.minLength(10)]],
+        ar: ['', [Validators.required, Validators.minLength(10)]]
+      }),
       logo_dark: [null],
       logo_light: [null],
       socialMedia: this.fb.group({
@@ -111,11 +117,20 @@ export class BusinessProfileListComponent extends ComponentBase implements OnIni
       contactInfo: this.fb.group({
         email: ['', [Validators.required, Validators.email]],
         phone: ['', [Validators.required]],
-        address: ['', [Validators.required]],
+        address: this.fb.group({
+          en: ['', [Validators.required]],
+          ar: ['', [Validators.required]]
+        }),
         mapLocation: ['']
       }),
-      privacyPolicy: ['', [Validators.required, Validators.minLength(50)]],
-      termsOfService: ['', [Validators.required, Validators.minLength(50)]],
+      privacyPolicy: this.fb.group({
+        en: ['', [Validators.required, Validators.minLength(50)]],
+        ar: ['', [Validators.required, Validators.minLength(50)]]
+      }),
+      termsOfService: this.fb.group({
+        en: ['', [Validators.required, Validators.minLength(50)]],
+        ar: ['', [Validators.required, Validators.minLength(50)]]
+      }),
       faq: this.fb.array([])
     });
   }
@@ -134,8 +149,14 @@ export class BusinessProfileListComponent extends ComponentBase implements OnIni
 
   addFAQ() {
     const faqGroup = this.fb.group({
-      question: ['', [Validators.required]],
-      answer: ['', [Validators.required]]
+      question: this.fb.group({
+        en: ['', [Validators.required]],
+        ar: ['', [Validators.required]]
+      }),
+      answer: this.fb.group({
+        en: ['', [Validators.required]],
+        ar: ['', [Validators.required]]
+      })
     });
     this.faqArray.push(faqGroup);
   }
@@ -200,9 +221,20 @@ export class BusinessProfileListComponent extends ComponentBase implements OnIni
       logo_dark: profile.logo_dark,
       logo_light: profile.logo_light,
       socialMedia: profile.socialMedia,
-      contactInfo: profile.contactInfo,
-      privacyPolicy: profile.privacyPolicy,
-      termsOfService: profile.termsOfService
+      contactInfo: {
+        email: profile.contactInfo.email,
+        phone: profile.contactInfo.phone,
+        address: profile.contactInfo.address,
+        mapLocation: profile.contactInfo.mapLocation
+      },
+      privacyPolicy: {
+        en: profile.privacyPolicy.en,
+        ar: profile.privacyPolicy.ar
+      },
+      termsOfService: {
+        en: profile.termsOfService.en,
+        ar: profile.termsOfService.ar
+      }
     });
 
     // Update logo control
@@ -213,8 +245,14 @@ export class BusinessProfileListComponent extends ComponentBase implements OnIni
     this.faqArray.clear();
     profile.faq.forEach(faq => {
       const faqGroup = this.fb.group({
-        question: [faq.question, [Validators.required]],
-        answer: [faq.answer, [Validators.required]]
+        question: this.fb.group({
+          en: [faq.question.en, [Validators.required]],
+          ar: [faq.question.ar, [Validators.required]]
+        }),
+        answer: this.fb.group({
+          en: [faq.answer.en, [Validators.required]],
+          ar: [faq.answer.ar, [Validators.required]]
+        })
       });
       this.faqArray.push(faqGroup);
     });
@@ -306,17 +344,18 @@ export class BusinessProfileListComponent extends ComponentBase implements OnIni
 
 
 
-  getFieldError(fieldName: string): string {
-    const field = this.businessProfileForm.get(fieldName);
+  getFieldError(fieldName: string, language?: string): string {
+    const fieldPath = language ? `${fieldName}.${language}` : fieldName;
+    const field = this.businessProfileForm.get(fieldPath);
     if (field?.invalid && field?.touched) {
       if (field.errors?.['required']) {
-        return `${fieldName} is required`;
+        return `${fieldName}${language ? ` (${language.toUpperCase()})` : ''} is required`;
       }
       if (field.errors?.['email']) {
         return 'Please enter a valid email address';
       }
       if (field.errors?.['minlength']) {
-        return `${fieldName} must be at least ${field.errors['minlength'].requiredLength} characters`;
+        return `${fieldName}${language ? ` (${language.toUpperCase()})` : ''} must be at least ${field.errors['minlength'].requiredLength} characters`;
       }
     }
     return '';

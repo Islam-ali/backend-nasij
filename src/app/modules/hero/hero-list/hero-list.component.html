@@ -43,8 +43,18 @@
         </ng-template>
         <ng-template pTemplate="body" let-hero>
             <tr>
-                <td>{{hero.title}}</td>
-                <td>{{hero.subTitle || '-'}}</td>
+                <td>
+                    <div class="space-y-1">
+                        <div class="font-semibold text-gray-900" dir="ltr">{{hero.title?.en || '-'}}</div>
+                        <div class="text-sm text-gray-600" dir="rtl">{{hero.title?.ar || '-'}}</div>
+                    </div>
+                </td>
+                <td>
+                    <div class="space-y-1">
+                        <div class="text-sm" dir="ltr">{{hero.subTitle?.en || '-'}}</div>
+                        <div class="text-sm text-gray-600" dir="rtl">{{hero.subTitle?.ar || '-'}}</div>
+                    </div>
+                </td>
                 <td>
                     <div class="flex items-center justify-center">
                         <img *ngIf="hero.image" [src]="hero.image.filePath" [alt]="hero.title"
@@ -98,19 +108,40 @@
                     <i class="pi pi-info-circle mr-2 text-blue-600"></i>
                     Basic Information
                 </h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="field">
-                        <label for="title" class="font-bold text-gray-700">Title *</label>
-                        <input id="title" pInputText type="text" formControlName="title" required autofocus
-                            placeholder="Enter hero title" class="w-full" />
-                        <small *ngIf="submitted && heroForm.get('title')?.invalid" class="p-error">Title is
-                            required.</small>
+                
+                <!-- Title -->
+                <div class="field mb-4">
+                    <label class="font-bold text-gray-700 mb-3 block">Title *</label>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4" formGroupName="title"    >
+                        <div>
+                            <label for="titleEn" class="block text-sm text-gray-600 mb-1">English</label>
+                            <input id="titleEn" pInputText type="text" formControlName="en" required autofocus
+                                placeholder="Enter hero title in English" class="w-full" dir="ltr" />
+                            <small *ngIf="submitted && heroForm.get('title.en')?.invalid" class="p-error">English title is required.</small>
+                        </div>
+                        <div>
+                            <label for="titleAr" class="block text-sm text-gray-600 mb-1">العربية</label>
+                            <input id="titleAr" pInputText type="text" formControlName="ar" required
+                                placeholder="أدخل عنوان البطل بالعربية" class="w-full" dir="rtl" />
+                            <small *ngIf="submitted && heroForm.get('title.ar')?.invalid" class="p-error">العنوان العربي مطلوب.</small>
+                        </div>
                     </div>
+                </div>
 
-                    <div class="field">
-                        <label for="subTitle" class="font-bold text-gray-700">Subtitle</label>
-                        <input id="subTitle" pInputText type="text" formControlName="subTitle"
-                            placeholder="Enter subtitle (optional)" class="w-full" />
+                <!-- Subtitle -->
+                <div class="field mb-4">
+                    <label class="font-bold text-gray-700 mb-3 block">Subtitle</label>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4" formGroupName="subTitle">
+                        <div>
+                            <label for="subTitleEn" class="block text-sm text-gray-600 mb-1">English</label>
+                            <input id="subTitleEn" pInputText type="text" formControlName="en"
+                                placeholder="Enter subtitle in English (optional)" class="w-full" dir="ltr" />
+                        </div>
+                        <div>
+                            <label for="subTitleAr" class="block text-sm text-gray-600 mb-1">العربية</label>
+                            <input id="subTitleAr" pInputText type="text" formControlName="ar"
+                                placeholder="أدخل العنوان الفرعي بالعربية (اختياري)" class="w-full" dir="rtl" />
+                        </div>
                     </div>
                 </div>
             </div>
@@ -121,18 +152,29 @@
                     <i class="pi pi-link mr-2 text-blue-600"></i>
                     Call to Action
                 </h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="field">
-                        <label for="buttonName" class="font-bold text-gray-700">Button Text</label>
-                        <input id="buttonName" pInputText type="text" formControlName="buttonName"
-                            placeholder="e.g., Shop Now, Learn More" class="w-full" />
+                
+                <!-- Button Text -->
+                <div class="field mb-4">
+                    <label class="font-bold text-gray-700 mb-3 block">Button Text</label>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4" formGroupName="buttonName">
+                        <div>
+                            <label for="buttonNameEn" class="block text-sm text-gray-600 mb-1">English</label>
+                            <input id="buttonNameEn" pInputText type="text" formControlName="en"
+                                placeholder="e.g., Shop Now, Learn More" class="w-full" dir="ltr" />
+                        </div>
+                        <div>
+                            <label for="buttonNameAr" class="block text-sm text-gray-600 mb-1">العربية</label>
+                            <input id="buttonNameAr" pInputText type="text" formControlName="ar"
+                                placeholder="مثل: تسوق الآن، تعلم المزيد" class="w-full" dir="rtl" />
+                        </div>
                     </div>
+                </div>
 
-                    <div class="field">
-                        <label for="buttonLink" class="font-bold text-gray-700">Button Link</label>
-                        <input id="buttonLink" pInputText type="text" formControlName="buttonLink"
-                            placeholder="e.g., /products, https://example.com" class="w-full" />
-                    </div>
+                <!-- Button Link -->
+                <div class="field">
+                    <label for="buttonLink" class="font-bold text-gray-700">Button Link</label>
+                    <input id="buttonLink" pInputText type="text" formControlName="buttonLink"
+                        placeholder="e.g., /products, https://example.com" class="w-full" />
                 </div>
             </div>
 

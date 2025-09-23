@@ -124,9 +124,18 @@ export class HeroListComponent extends ComponentBase implements OnInit {
     buildForm() {
         this.heroForm = this.fb.group({
             _id: [null],
-            title: ['', Validators.required],
-            subTitle: [''],
-            buttonName: [''],
+            title: this.fb.group({
+                en: ['', Validators.required],
+                ar: ['', Validators.required]
+            }),
+            subTitle: this.fb.group({
+                en: [''],
+                ar: ['']
+            }),
+            buttonName: this.fb.group({
+                en: [''],
+                ar: ['']
+            }),
             buttonLink: [''],
             image: [null],
             startDate: [null],
