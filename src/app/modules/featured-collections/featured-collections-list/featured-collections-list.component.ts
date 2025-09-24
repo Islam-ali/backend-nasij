@@ -128,9 +128,18 @@ export class FeaturedCollectionsListComponent extends ComponentBase implements O
 
   initForm() {
     this.featuredCollectionForm = this.fb.group({
-      sectionSubtitle: ['', [Validators.required, Validators.minLength(2)]],
-      sectionTitle: ['', [Validators.required, Validators.minLength(2)]],
-      description: ['', [Validators.required, Validators.minLength(10)]],
+      sectionSubtitle: this.fb.group({
+        en: ['', [Validators.required, Validators.minLength(2)]],
+        ar: ['', [Validators.required, Validators.minLength(2)]]
+      }),
+      sectionTitle: this.fb.group({
+        en: ['', [Validators.required, Validators.minLength(2)]],
+        ar: ['', [Validators.required, Validators.minLength(2)]]
+      }),
+      description: this.fb.group({
+        en: ['', [Validators.required, Validators.minLength(10)]],
+        ar: ['', [Validators.required, Validators.minLength(10)]]
+      }),
       isActive: [true],
       collections: this.fb.array([])
     });
@@ -142,10 +151,19 @@ export class FeaturedCollectionsListComponent extends ComponentBase implements O
 
   addCollection() {
     const collectionGroup = this.fb.group({
-      title: ['', [Validators.required, Validators.minLength(2)]],
-      description: ['', [Validators.required, Validators.minLength(10)]],
+      title: this.fb.group({
+        en: [''],
+        ar: ['']
+      }),
+      description: this.fb.group({
+        en: [''],
+        ar: ['']
+      }),
       image: [null, [Validators.required]],
-      buttonText: ['', [Validators.required, Validators.minLength(2)]],
+      buttonText: this.fb.group({
+        en: ['', [Validators.required, Validators.minLength(2)]],
+        ar: ['', [Validators.required, Validators.minLength(2)]]
+      }),
       buttonLink: ['', [Validators.required]],
       queryParamName: [null],
       queryParamValue: [null],
@@ -274,16 +292,16 @@ export class FeaturedCollectionsListComponent extends ComponentBase implements O
     
     switch (selectedParam) {
       case 'category':
-        values = this.categories().map(cat => ({ name: cat.name, value: cat._id }));
+        values = this.categories().map(cat => ({ name: cat.name.en + ' - ' + cat.name.ar, value: cat._id }));
         break;
       case 'brand':
         values = this.brands().map(brand => ({ name: brand.name, value: brand._id }));
         break;
       case 'product':
-        values = this.products().map(product => ({ name: product.name, value: product._id }));
+        values = this.products().map(product => ({ name: product.name.en + ' - ' + product.name.ar, value: product._id }));
         break;
       case 'package':
-        values = this.packages().map(pkg => ({ name: pkg.name, value: pkg._id }));
+        values = this.packages().map(pkg => ({ name: pkg.name.en + ' - ' + pkg.name.ar, value: pkg._id }));
         break;
       default:
         values = [];
@@ -355,22 +373,24 @@ export class FeaturedCollectionsListComponent extends ComponentBase implements O
 
   editFeaturedCollection(featuredCollection: IFeaturedCollection) {
     this.featuredCollectionForm.reset();
-    this.featuredCollectionForm.patchValue({
-      sectionSubtitle: featuredCollection.sectionSubtitle,
-      sectionTitle: featuredCollection.sectionTitle,
-      description: featuredCollection.description,
-      isActive: featuredCollection.isActive
-    });
-
     // Clear and populate collections array
     this.collectionsArray.clear();
     featuredCollection.collections.forEach((collection, index) => {
       const collectionGroup = this.fb.group({
-        title: [collection.title, [Validators.required, Validators.minLength(2)]],
-        description: [collection.description, [Validators.required, Validators.minLength(10)]],
-        image: [collection.image, [Validators.required]],
-        buttonText: [collection.buttonText, [Validators.required, Validators.minLength(2)]],
-        buttonLink: [collection.buttonLink, [Validators.required]],
+        title: this.fb.group({
+          en: [collection.title?.en || ''],
+          ar: [collection.title?.ar || '']
+        }),
+        description: this.fb.group({
+          en: [collection.description?.en || ''],
+          ar: [collection.description?.ar || '']
+        }),
+        image: [collection.image],
+        buttonText: this.fb.group({
+          en: [collection.buttonText?.en || ''],
+          ar: [collection.buttonText?.ar || '']
+        }),
+        buttonLink: [collection.buttonLink],
         queryParamName: [null],
         queryParamValue: [null],
         queryParams: [collection.queryParams || {}]
@@ -395,6 +415,18 @@ export class FeaturedCollectionsListComponent extends ComponentBase implements O
       }
     });
 
+    this.featuredCollectionForm.patchValue({
+      sectionSubtitle: featuredCollection.sectionSubtitle,
+      sectionTitle: featuredCollection.sectionTitle,
+      description: featuredCollection.description,
+      isActive: featuredCollection.isActive
+    });
+    
+    this.collectionsArray.controls.forEach((control, i) => {
+      (control as any).collectionIndex = i;
+    });
+    console.log(this.featuredCollectionForm.value);
+    debugger;
     this.selectedFeaturedCollections = [featuredCollection];
     this.featuredCollectionDialog = true;
   }

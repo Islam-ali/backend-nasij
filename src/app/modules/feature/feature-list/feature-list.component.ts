@@ -77,8 +77,14 @@ export class FeatureListComponent extends ComponentBase implements OnInit {
 
   initForm() {
     this.featureForm = this.fb.group({
-      title: ['', [Validators.required]],
-      description: ['', [Validators.required]],
+      title: this.fb.group({
+        en: ['', [Validators.required]],
+        ar: ['', [Validators.required]]
+      }),
+      description: this.fb.group({
+        en: ['', [Validators.required]],
+        ar: ['', [Validators.required]]
+      }),
       icon: [null, [Validators.required]],
       isActive: [true],
       sortOrder: [0]

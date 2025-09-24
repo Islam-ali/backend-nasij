@@ -422,6 +422,7 @@ export class ProductListComponent extends ComponentBase implements OnInit {
                 en: product.description?.en || product.description || '',
                 ar: product.description?.ar || product.description || ''
             },
+            images: product.images,
             price: product.price,
             discountPrice: product.discountPrice,
             factoryPrice: (product as any).factoryPrice || 0,

@@ -1,0 +1,225 @@
+<div class="card">
+  <div class="flex justify-between items-center mb-4">
+    <h2 class="text-2xl font-bold">States Management</h2>
+    <p-button 
+      label="Add State" 
+      icon="pi pi-plus" 
+      (onClick)="openDialog()"
+      styleClass="p-button-success">
+    </p-button>
+  </div>
+
+  <!-- States Table -->
+  <p-table 
+    [value]="states()" 
+    [loading]="loading()"
+    [paginator]="true" 
+    [rows]="10"
+    [showCurrentPageReport]="true"
+    currentPageReportTemplate="Showing {first} to {last} of {totalRecords} states"
+    styleClass="p-datatable-sm">
+    
+    <ng-template pTemplate="header">
+      <tr>
+        <th>Name</th>
+        <th>Code</th>
+        <th>Country</th>
+        <th>Shipping Cost</th>
+        <th>Status</th>
+        <th>Actions</th>
+      </tr>
+    </ng-template>
+    
+    <ng-template pTemplate="body" let-state>
+      <tr>
+        <td>
+          <div class="flex flex-column">
+            <span class="font-semibold">{{ state.name | multiLanguage }}</span>
+          </div>
+        </td>
+        <td>
+          <span class="font-mono bg-gray-100 px-2 py-1 rounded">{{ state.code }}</span>
+        </td>
+        <td>
+          <span class="font-medium">{{ getCountryName(state.countryId) }}</span>
+        </td>
+        <td>
+          <span class="font-semibold text-green-600">${{ state.shippingCost }}</span>
+        </td>
+        <td>
+          <span [class]="state.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'" 
+                class="px-2 py-1 rounded-full text-sm">
+            {{ state.isActive ? 'Active' : 'Inactive' }}
+          </span>
+        </td>
+        <td>
+          <div class="flex gap-2">
+            <p-button 
+              icon="pi pi-eye" 
+              size="small"
+              styleClass="p-button-info p-button-text"
+              (onClick)="viewState(state)"
+              pTooltip="View Details">
+            </p-button>
+            <p-button 
+              icon="pi pi-pencil" 
+              size="small"
+              styleClass="p-button-warning p-button-text"
+              (onClick)="editState(state)"
+              pTooltip="Edit">
+            </p-button>
+            <p-button 
+              icon="pi pi-trash" 
+              size="small"
+              styleClass="p-button-danger p-button-text"
+              (onClick)="deleteState(state)"
+              pTooltip="Delete">
+            </p-button>
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+    
+    <ng-template pTemplate="emptymessage">
+      <tr>
+        <td colspan="6">
+          <div class="flex justify-center items-center">
+            <div class="text-gray-500 text-center">
+              <i class="pi pi-inbox text-4xl mb-2 block"></i>
+              <p>No states found</p>
+            </div>
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+</div>
+
+<!-- State Dialog -->
+<p-dialog 
+  [header]="isEdit() ? 'Edit State' : 'Add State'"
+  [visible]="dialogVisible()"
+  (visibleChange)="dialogVisible.set($event)"
+  [modal]="true"
+  [style]="{ width: '600px' }"
+  [closable]="true">
+  
+  <form [formGroup]="stateForm" (ngSubmit)="saveState()">
+    <div class="grid grid-cols-1 gap-4">
+      <!-- Country Selection -->
+      <div>
+        <label class="block text-sm font-medium mb-2">Country *</label>
+        <p-dropdown 
+          formControlName="countryId"
+          [options]="countries()"
+          optionLabel="name.en"
+          optionValue="_id"
+          placeholder="Select Country"
+          class="w-full"
+          [class.p-invalid]="submitted() && stateForm.get('countryId')?.invalid">
+          <ng-template let-country pTemplate="item">
+            <div class="flex items-center gap-2">
+              <span class="font-semibold">{{ country.code }}</span>
+              <span>{{ country.name | multiLanguage }}</span>
+            </div>
+          </ng-template>
+        </p-dropdown>
+        <small *ngIf="submitted() && stateForm.get('countryId')?.invalid" class="p-error">
+          Country is required
+        </small>
+      </div>
+
+      <!-- State Name -->
+      <div>
+        <label class="block text-sm font-medium mb-2">State Name *</label>
+        <div class="grid grid-cols-2 gap-2" formGroupName="name">
+          <div>
+            <label class="block text-xs text-gray-600 mb-1">English</label>
+            <input 
+              pInputText 
+              formControlName="en"
+              placeholder="e.g., California"
+              class="w-full"
+              [class.p-invalid]="submitted() && stateForm.get('name.en')?.invalid && stateForm.get('name.en')?.errors?.['required']">
+            <small *ngIf="submitted() && stateForm.get('nameEn')?.invalid" class="p-error">
+              English name is required
+            </small>
+          </div>
+          <div>
+            <label class="block text-xs text-gray-600 mb-1">Arabic</label>
+            <input 
+              pInputText 
+              formControlName="ar"
+              placeholder="مثل: كاليفورنيا"
+              class="w-full"
+              [class.p-invalid]="submitted() && stateForm.get('nameAr')?.invalid">
+            <small *ngIf="submitted() && stateForm.get('nameAr')?.invalid" class="p-error">
+              Arabic name is required
+            </small>
+          </div>
+        </div>
+      </div>
+
+      <!-- State Code -->
+      <div>
+        <label class="block text-sm font-medium mb-2">State Code *</label>
+        <input 
+          pInputText 
+          formControlName="code"
+          placeholder="e.g., CA"
+          class="w-full"
+          styleClass="uppercase"
+          [class.p-invalid]="submitted() && stateForm.get('code')?.invalid">
+        <small *ngIf="submitted() && stateForm.get('code')?.invalid" class="p-error">
+          State code is required
+        </small>
+      </div>
+
+      <!-- Shipping Cost -->
+      <div>
+        <label class="block text-sm font-medium mb-2">Shipping Cost *</label>
+        <p-inputNumber 
+          formControlName="shippingCost"
+          mode="currency"
+          currency="USD"
+          locale="en-US"
+          class="w-full"
+          [class.p-invalid]="submitted() && stateForm.get('shippingCost')?.invalid">
+        </p-inputNumber>
+        <small *ngIf="submitted() && stateForm.get('shippingCost')?.invalid" class="p-error">
+          Shipping cost is required
+        </small>
+      </div>
+
+      <!-- Active Status -->
+      <div class="flex align-items-center">
+        <p-checkbox 
+          formControlName="isActive"
+          [binary]="true"
+          inputId="isActive">
+        </p-checkbox>
+        <label for="isActive" class="ml-2">Active</label>
+      </div>
+    </div>
+
+    <div class="flex justify-content-end gap-2 mt-4">
+      <p-button 
+        label="Cancel" 
+        icon="pi pi-times"
+        styleClass="p-button-text"
+        (onClick)="closeDialog()">
+      </p-button>
+      <p-button 
+        type="submit"
+        [label]="isEdit() ? 'Update' : 'Create'"
+        icon="pi pi-check"
+        [loading]="saving()"
+        styleClass="p-button-success">
+      </p-button>
+    </div>
+  </form>
+</p-dialog>
+
+<!-- Toast and Confirm Dialog -->
+<p-toast></p-toast>
+<p-confirmDialog></p-confirmDialog>

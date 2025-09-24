@@ -31,6 +31,7 @@ export interface IPackage {
   reviewCount: number;
   createdAt?: Date;
   updatedAt?: Date;
+  category?: string;
 }
 
 export interface IPackageInventorySummary {

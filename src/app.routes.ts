@@ -90,6 +90,10 @@ export const appRoutes: Routes = [
             {
                 path: 'users/:id',
                 loadComponent: () => import('./app/modules/user/user-detail/user-detail.component').then(m => m.UserDetailComponent)
+            },
+            {
+                path: 'locations',
+                loadChildren: () => import('./app/modules/location/location.module').then(m => m.LocationModule)
             }
         ]
     },

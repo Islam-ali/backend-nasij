@@ -25,13 +25,19 @@
         <ng-template pTemplate="body" let-feature>
             <tr>
                 <td>
-                    <img [src]="feature.icon?.filePath" [alt]="feature.title" class="w-12 h-12 object-cover rounded-lg">
+                    <img [src]="feature.icon?.filePath" [alt]="feature.title?.en || feature.title?.ar" class="w-12 h-12 object-cover rounded-lg">
                 </td>
                 <td>
-                    <div class="font-semibold">{{ feature.title }}</div>
+                    <div class="space-y-1">
+                        <div class="font-semibold text-gray-900" dir="ltr">{{ feature.title?.en || '-' }}</div>
+                        <div class="text-sm text-gray-600" dir="rtl">{{ feature.title?.ar || '-' }}</div>
+                    </div>
                 </td>
                 <td>
-                    <div class="text-sm text-gray-600 max-w-xs truncate">{{ feature.description }}</div>
+                    <div class="space-y-1 max-w-xs">
+                        <div class="text-sm text-gray-600 truncate" dir="ltr">{{ feature.description?.en || '-' }}</div>
+                        <div class="text-sm text-gray-500 truncate" dir="rtl">{{ feature.description?.ar || '-' }}</div>
+                    </div>
                 </td>
                 <td>
                     {{feature.sortOrder}}
@@ -71,31 +77,51 @@
 
         <form [formGroup]="featureForm" class="space-y-6">
             @if(featureDialog) {
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Title *</label>
-                    <input pInputText formControlName="title" class="w-full"
-                        [class.ng-invalid]="featureForm.get('title')?.invalid && featureForm.get('title')?.touched"
-                        placeholder="e.g., Free Shipping" />
-                    <small *ngIf="featureForm.get('title')?.invalid && featureForm.get('title')?.touched"
-                        class="text-red-500">Title is required</small>
+            <!-- Title Section -->
+            <div class="field mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-3">Title *</label>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4" formGroupName="title">
+                    <div>
+                        <label for="titleEn" class="block text-sm text-gray-600 mb-1">English</label>
+                        <input id="titleEn" pInputText type="text" formControlName="en" required
+                            placeholder="e.g., Free Shipping" class="w-full" dir="ltr" />
+                        <small *ngIf="featureForm.get('title.en')?.invalid && featureForm.get('title.en')?.touched" class="text-red-500">English title is required</small>
+                    </div>
+                    <div>
+                        <label for="titleAr" class="block text-sm text-gray-600 mb-1">العربية</label>
+                        <input id="titleAr" pInputText type="text" formControlName="ar" required
+                            placeholder="مثل: شحن مجاني" class="w-full" dir="rtl" />
+                        <small *ngIf="featureForm.get('title.ar')?.invalid && featureForm.get('title.ar')?.touched" class="text-red-500">العنوان العربي مطلوب</small>
+                    </div>
                 </div>
+            </div>
 
+            <!-- Description Section -->
+            <div class="field mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-3">Description *</label>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4" formGroupName="description">
+                    <div>
+                        <label for="descEn" class="block text-sm text-gray-600 mb-1">English</label>
+                        <textarea id="descEn" pInputTextarea formControlName="en" [rows]="3" class="w-full" dir="ltr"
+                            placeholder="e.g., Free shipping on all orders over $50"></textarea>
+                        <small *ngIf="featureForm.get('description.en')?.invalid && featureForm.get('description.en')?.touched" class="text-red-500">English description is required</small>
+                    </div>
+                    <div>
+                        <label for="descAr" class="block text-sm text-gray-600 mb-1">العربية</label>
+                        <textarea id="descAr" pInputTextarea formControlName="ar" [rows]="3" class="w-full" dir="rtl"
+                            placeholder="مثل: شحن مجاني على جميع الطلبات أكثر من 50 دولار"></textarea>
+                        <small *ngIf="featureForm.get('description.ar')?.invalid && featureForm.get('description.ar')?.touched" class="text-red-500">الوصف العربي مطلوب</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Sort Order</label>
                     <p-inputNumber formControlName="sortOrder" [min]="0" [max]="999" [showButtons]="true"
                         buttonLayout="horizontal" spinnerMode="horizontal" [step]="1" class="w-full">
                     </p-inputNumber>
                 </div>
-            </div>
-
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Description *</label>
-                <textarea pInputTextarea formControlName="description" [rows]="3" class="w-full"
-                    [class.ng-invalid]="featureForm.get('description')?.invalid && featureForm.get('description')?.touched"
-                    placeholder="e.g., Free shipping on all orders over $50"></textarea>
-                <small *ngIf="featureForm.get('description')?.invalid && featureForm.get('description')?.touched"
-                    class="text-red-500">Description is required</small>
             </div>
 
             <div>

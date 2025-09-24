@@ -35,6 +35,10 @@ import { IProduct, ProductVariant, ProductVariantAttribute } from '../../../inte
 import { EnumProductVariant } from '../../product/product-list/product-list.component';
 import { IPackage } from '../../../interfaces/package.interface';
 import { PackageService } from '../../../services/package.service';
+import { ICountry } from '../../../interfaces/country.interface';
+import { IState } from '../../../interfaces/state.interface';
+import { CountryService } from '../../../services/country.service';
+import { StateService } from '../../../services/state.service';
 
 interface Column {
     field: string;
@@ -117,42 +121,8 @@ export class OrderListComponent extends ComponentBase implements OnInit {
         { label: 'Stripe', value: PaymentMethod.STRIPE }
     ];
 
-    countryOptions = [
-        { label: 'Egypt', value: 'EG' }
-    ];
-
-    stateOptions = [
-        { label: 'Cairo', value: 'Cairo' },
-        { label: 'Giza', value: 'Giza' },
-        { label: 'Alexandria', value: 'Alexandria' },
-        { label: 'Mansoura', value: 'Mansoura' },
-        { label: 'Suez', value: 'Suez' },
-        { label: 'Luxor', value: 'Luxor' },
-        { label: 'Aswan', value: 'Aswan' },
-        { label: 'Asyut', value: 'Asyut' },
-        { label: 'Beheira', value: 'Beheira' },
-        { label: 'Beni Suef', value: 'Beni Suef' },
-        { label: 'Faiyum', value: 'Faiyum' },
-        { label: 'Gharbia', value: 'Gharbia' },
-        { label: 'Ismailia', value: 'Ismailia' },
-        { label: 'Kafr El Sheikh', value: 'Kafr El Sheikh' },
-        { label: 'Minya', value: 'Minya' },
-        { label: 'Monufia', value: 'Monufia' },
-        { label: 'New Valley', value: 'New Valley' },
-        { label: 'North Sinai', value: 'North Sinai' },
-        { label: 'Port Said', value: 'Port Said' },
-        { label: 'Qalyubia', value: 'Qalyubia' },
-        { label: 'Qena', value: 'Qena' },
-        { label: 'Red Sea', value: 'Red Sea' },
-        { label: 'Sharqia', value: 'Sharqia' },
-        { label: 'Sohag', value: 'Sohag' },
-        { label: 'South Sinai', value: 'South Sinai' },
-        { label: 'Suez', value: 'Suez' },
-        { label: 'Tanta', value: 'Tanta' },
-        { label: 'Wadi El Nile', value: 'Wadi El Nile' },
-        { label: 'West Bank', value: 'West Bank' },
-    ];
-
+    countryOptions = signal<ICountry[]>([]);
+    stateOptions = signal<IState[]>([]);
     @ViewChild('dt') dt: Table | undefined;
     exportColumns!: ExportColumn[];
     cols!: Column[];
@@ -164,7 +134,9 @@ export class OrderListComponent extends ComponentBase implements OnInit {
         private messageService: MessageService,
         private confirmationService: ConfirmationService,
         private productService: ProductsService,
-        private packageService: PackageService
+        private packageService: PackageService,
+        private countryService: CountryService,
+        private stateService: StateService
     ) {
         super();
     }
@@ -174,6 +146,7 @@ export class OrderListComponent extends ComponentBase implements OnInit {
         this.loadOrders();
         this.loadProducts();
         this.loadPackages();
+        this.loadCountries();
         this.cols = [
             { field: 'orderNumber', header: 'Order #' },
             { field: 'customer', header: 'Customer' },
@@ -183,6 +156,16 @@ export class OrderListComponent extends ComponentBase implements OnInit {
             { field: 'createdAt', header: 'Date' }
         ];
         this.exportColumns = this.cols.map(col => ({ title: col.header, dataKey: col.field }));
+    }
+    loadCountries() {
+        this.countryService.getCountries().subscribe((countries: any) => {
+            this.countryOptions.set(countries.data);
+        });
+    }
+    loadStates() {
+        this.stateService.getStatesByCountry(this.orderForm.get('shippingAddress')?.value.country).subscribe((states: any) => {
+            this.stateOptions.set(states.data);
+        });
     }
 
     // add cashPayment to orderForm if editOrder , else remove cashPayment
@@ -431,12 +414,12 @@ export class OrderListComponent extends ComponentBase implements OnInit {
             amountPaid: [0, [Validators.required, Validators.min(0)]],
             changeDue: [0]
         }));
-
         this.orderForm.patchValue({
             ...order,
             deliveredAt: order.deliveredAt ? new Date(order.deliveredAt) : null
         });
-
+        
+        this.loadStates();
         // Clear existing items
         while (this.items.length) {
             this.items.removeAt(0);

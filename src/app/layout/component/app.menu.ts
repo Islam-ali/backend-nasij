@@ -44,6 +44,14 @@ export class AppMenu {
                     { label: 'Revenue Management', icon: 'pi pi-fw pi-box', routerLink: ['/inventory/revenue-management'] },
                     { label: 'Quick Actions', icon: 'pi pi-fw pi-box', routerLink: ['/inventory/quick-actions'] },
                     { label: 'Users', icon: 'pi pi-fw pi-box', routerLink: ['/users'] },
+                    { 
+                        label: 'Locations', 
+                        icon: 'pi pi-fw pi-globe', 
+                        items: [
+                            { label: 'Countries', icon: 'pi pi-fw pi-globe', routerLink: ['/locations/countries'] },
+                            { label: 'States', icon: 'pi pi-fw pi-map', routerLink: ['/locations/states'] }
+                        ]
+                    },
                 ]
             },
             // {

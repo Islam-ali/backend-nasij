@@ -38,6 +38,7 @@ import { ComponentBase } from '../../../core/directives/component-base.directive
 import { finalize, takeUntil } from 'rxjs';
 import { ICategory } from '../../../interfaces/category.interface';
 import { CategoryService } from '../../../services/category.service';
+import { MultiLanguagePipe } from '../../../core/pipes/multi-language.pipe';
 
 interface Column {
     field: string;
@@ -73,7 +74,8 @@ interface Column {
         CardModule,
         ToggleSwitchModule,
         EditorModule,
-        Skeleton
+        Skeleton,
+        MultiLanguagePipe
     ],
     providers: [MessageService, ConfirmationService, PackageService]
 })
@@ -97,6 +99,11 @@ export class PackageListComponent extends ComponentBase implements OnInit {
     statuses!: any[];
     categories = signal<ICategory[]>([]);
     brands!: any[];
+    
+    variantTypes = [
+        { label: 'Color', value: 'color' },
+        { label: 'Size', value: 'size' }
+    ];
 
     packageForm!: FormGroup;
     currentPage = 1;
@@ -138,8 +145,14 @@ export class PackageListComponent extends ComponentBase implements OnInit {
 
     initializeForm() {
         this.packageForm = this.fb.group({
-            name: ['', [Validators.required, Validators.minLength(3)]],
-            description: ['', [Validators.required, Validators.minLength(10)]],
+            name: this.fb.group({
+                en: ['', [Validators.required, Validators.minLength(3)]],
+                ar: ['', [Validators.required, Validators.minLength(3)]]
+            }),
+            description: this.fb.group({
+                en: ['', [Validators.required, Validators.minLength(10)]],
+                ar: ['', [Validators.required, Validators.minLength(10)]]
+            }),
             price: [0, [Validators.required, Validators.min(0)]],
             discountPrice: [0, [Validators.min(0)]],
             stock: [0, [Validators.required, Validators.min(0)]],
@@ -240,7 +253,8 @@ export class PackageListComponent extends ComponentBase implements OnInit {
             images: packageItem.images,
             tags: packageItem.tags,
             isActive: packageItem.isActive,
-            items: packageItem.items
+            items: packageItem.items,
+            category: packageItem.category
         });
 
         // Clear existing items
@@ -254,12 +268,22 @@ export class PackageListComponent extends ComponentBase implements OnInit {
     }
 
     createItemFormGroup(item?: any) {
-        return this.fb.group({
+        const formGroup = this.fb.group({
             productId: [item?.productId?._id || '', Validators.required],
             quantity: [item?.quantity || 1, [Validators.required, Validators.min(1)]],
             requiredVariantAttributes: this.fb.array([]),
             sku: [item?.sku || '']
         });
+        
+        // Populate variant attributes if editing
+        if (item?.requiredVariantAttributes) {
+            const variantAttributesArray = formGroup.get('requiredVariantAttributes') as FormArray;
+            item.requiredVariantAttributes.forEach((attr: any) => {
+                variantAttributesArray.push(this.createVariantAttributeFormGroup(attr));
+            });
+        }
+        
+        return formGroup;
     }
 
     addItem() {
@@ -272,6 +296,34 @@ export class PackageListComponent extends ComponentBase implements OnInit {
         itemsArray.removeAt(index);
     }
 
+    createVariantAttributeFormGroup(attr?: any) {
+        return this.fb.group({
+            variant: [attr?.variant || '', Validators.required],
+            valueEn: [attr?.value?.en || '', Validators.required],
+            valueAr: [attr?.value?.ar || '', Validators.required]
+        });
+    }
+
+    addVariantAttribute(itemIndex: number) {
+        const itemsArray = this.packageForm.get('items') as FormArray;
+        const itemGroup = itemsArray.at(itemIndex);
+        const variantAttributesArray = itemGroup.get('requiredVariantAttributes') as FormArray;
+        variantAttributesArray.push(this.createVariantAttributeFormGroup());
+    }
+
+    removeVariantAttribute(itemIndex: number, variantIndex: number) {
+        const itemsArray = this.packageForm.get('items') as FormArray;
+        const itemGroup = itemsArray.at(itemIndex);
+        const variantAttributesArray = itemGroup.get('requiredVariantAttributes') as FormArray;
+        variantAttributesArray.removeAt(variantIndex);
+    }
+
+    getVariantAttributes(itemIndex: number): FormArray {
+        const itemsArray = this.packageForm.get('items') as FormArray;
+        const itemGroup = itemsArray.at(itemIndex);
+        return itemGroup.get('requiredVariantAttributes') as FormArray;
+    }
+
     hideDialog() {
         this.packageDialog.set(false);
         this.submitted.set(false);
@@ -281,7 +333,7 @@ export class PackageListComponent extends ComponentBase implements OnInit {
         this.submitted.set(true);
 
         if (this.packageForm.valid) {
-            const packageData = this.packageForm.value;
+            const packageData = this.transformPackageData(this.packageForm.value);
             
             if (this.isEdit()) {
                 this.updatePackage(packageData);
@@ -289,6 +341,25 @@ export class PackageListComponent extends ComponentBase implements OnInit {
                 this.createPackage(packageData);
             }
         }
+    }
+
+    transformPackageData(formData: any) {
+        // Transform variant attributes from form format to API format
+        const transformedData = {
+            ...formData,
+            items: formData.items.map((item: any) => ({
+                ...item,
+                requiredVariantAttributes: item.requiredVariantAttributes.map((attr: any) => ({
+                    variant: attr.variant,
+                    value: {
+                        en: attr.valueEn,
+                        ar: attr.valueAr
+                    }
+                }))
+            }))
+        };
+        
+        return transformedData;
     }
 
     createPackage(packageData: CreatePackageDto) {
@@ -440,5 +511,13 @@ export class PackageListComponent extends ComponentBase implements OnInit {
 
     getTagsDisplay(tags: string[]): string {
         return tags?.join(', ') || '';
+    }
+
+    getPackageName(packageItem: IPackage): string {
+        return packageItem.name?.en || packageItem.name?.ar || 'Unnamed Package';
+    }
+
+    getPackageDescription(packageItem: IPackage): string {
+        return packageItem.description?.en || packageItem.description?.ar || '';
     }
 } 

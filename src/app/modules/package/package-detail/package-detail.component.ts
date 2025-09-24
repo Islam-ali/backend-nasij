@@ -13,7 +13,6 @@ import { PanelModule } from 'primeng/panel';
 
 import { IPackage, IPackageInventorySummary } from '../../../interfaces/package.interface';
 import { PackageService } from '../../../services/package.service';
-import { FallbackImgDirective } from '../../../core/directives/fallback-img.directive';
 import { BaseResponse } from '../../../core/models/baseResponse';
 import { ComponentBase } from '../../../core/directives/component-base.directive';
 import { finalize, takeUntil } from 'rxjs';
@@ -32,7 +31,6 @@ import { finalize, takeUntil } from 'rxjs';
         Skeleton,
         DividerModule,
         PanelModule,
-        FallbackImgDirective,
         RouterLink  
     ],
     providers: [PackageService]

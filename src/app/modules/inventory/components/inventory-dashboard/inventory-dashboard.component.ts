@@ -2,14 +2,13 @@ import { ChangeDetectorRef, Component, inject, OnInit, PLATFORM_ID } from '@angu
 import { CommonModule, CurrencyPipe, isPlatformBrowser } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { InventoryService, DashboardSummary } from '../../../../services/inventory.service';
-import { CurrencyFormatPipe } from '../../../../core/pipes';
 import { ChartModule } from 'primeng/chart';
 @Component({
   selector: 'app-inventory-dashboard',
   templateUrl: './inventory-dashboard.component.html',
   styleUrls: ['./inventory-dashboard.component.scss'],
   standalone: true,
-  imports: [CommonModule, RouterModule, CurrencyFormatPipe, ChartModule],
+  imports: [CommonModule, RouterModule, ChartModule],
   providers: [CurrencyPipe]
 })
 export class InventoryDashboardComponent implements OnInit {

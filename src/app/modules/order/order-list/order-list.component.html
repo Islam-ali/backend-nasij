@@ -183,10 +183,11 @@
                 </div>
                 <div class="field">
                     <label for="state">State</label>
-                    <p-dropdown id="state" [options]="stateOptions" formControlName="state" optionLabel="label"
-                        optionValue="value" [style]="{'width':'100%'}">
+                    <p-dropdown id="state" [options]="stateOptions()" formControlName="state" optionLabel="name.en"
+                        optionValue="_id" [style]="{'width':'100%'}">
                     </p-dropdown>
-                    <small class="p-error" *ngIf="submitted && orderForm.get('shippingAddress.state')?.invalid">State is
+                    <small class="p-error"
+                        *ngIf="submitted && orderForm.get('shippingAddress.state')?.invalid">State is
                         required</small>
                 </div>
                 <!-- <div class="field">
@@ -199,8 +200,10 @@
                 </div> -->
                 <div class="field col-12">
                     <label for="country">Country</label>
-                    <p-dropdown id="country" [options]="countryOptions" formControlName="country" optionLabel="label"
-                        optionValue="value" [style]="{'width':'100%'}">
+                    <p-dropdown id="country" [options]="countryOptions()"
+                     formControlName="country" optionLabel="name.en"
+                        optionValue="_id" [style]="{'width':'100%'}">
+                        (onChange)="loadStates()"
                     </p-dropdown>
                     <small class="p-error"
                         *ngIf="submitted && orderForm.get('shippingAddress.country')?.invalid">Country is
@@ -222,7 +225,7 @@
                 <tr>
                     <th>Type</th>
                     <th>Item</th>
-                    <th>Color</th>
+                    <!-- <th>Color</th> -->
                     <!-- <th>Size</th> -->
                     <th>Price</th>
                     <th>Quantity</th>
@@ -245,13 +248,13 @@
                     <td class="w-28 p-0">
                         <p-dropdown formControlName="itemId"
                             [options]="item.get('itemType')?.value === 'package' ? packages() : products()"
-                            appendTo="body" optionLabel="name" optionValue="_id" placeholder="Select Item"
+                            appendTo="body" optionLabel="name.en" optionValue="_id" placeholder="Select Item"
                             styleClass="w-full" filter="true" filterBy="name"
                             [class.p-invalid]="submitted && item.get('itemId')?.invalid"
                             (onChange)="onItemChange($event,rowIndex)">
                         </p-dropdown>
                     </td>
-                    <td class="w-28 p-0">
+                    <!-- <td class="w-28 p-0">
                         <p-dropdown formControlName="color" [options]="item.get('listColors')?.value" appendTo="body"
                             placeholder="Select Color" styleClass="w-full"
                             [class.p-invalid]="submitted && item.get('color')?.invalid"
@@ -259,7 +262,7 @@
                             (onChange)="onColorChange($event,rowIndex)">
                         </p-dropdown>
                     </td>
-                    <!-- <td class="w-28 p-0">
+                    <td class="w-28 p-0">
                         <p-dropdown formControlName="size" 
                             [options]="item.get('listSizes')?.value" 
                             appendTo="body"
@@ -327,7 +330,7 @@
                                         <div class="flex flex-wrap gap-1">
                                             <span *ngFor="let variant of packageItem.selectedVariants"
                                                 class="text-xs bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-2 py-1 rounded">
-                                                {{ variant.variant }}: {{ variant.value }}
+                                                {{ variant.variant }}: {{ variant.value.en }}
                                                 <img [src]="getVariantImage(variant.value , packageItem.productId) || ''"
                                                     alt="Variant Image" class="w-10 h-auto">
                                             </span>
@@ -350,7 +353,7 @@
                             <div class="flex flex-wrap gap-2">
                                 <span *ngFor="let variant of item.get('selectedVariants')?.value"
                                     class="text-sm bg-green-100 dark:bg-green-800 text-green-800 dark:text-green-200 px-3 py-1 rounded">
-                                    {{ variant.variant }}: {{ variant.value }}
+                                    {{ variant.variant }}: {{ variant.value.en }}
                                 </span>
                             </div>
                         </div>

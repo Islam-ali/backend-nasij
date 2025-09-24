@@ -33,10 +33,24 @@
         </ng-template>
         <ng-template pTemplate="body" let-featuredCollection>
             <tr>
-                <td>{{ featuredCollection.sectionSubtitle }}</td>
-                <td>{{ featuredCollection.sectionTitle }}</td>
-                <td>{{ featuredCollection.description | slice:0:50 }}{{ featuredCollection.description.length > 50 ?
-                    '...' : '' }}</td>
+                <td>
+                    <div class="space-y-1">
+                        <div class="font-semibold text-gray-900" dir="ltr">{{ featuredCollection.sectionSubtitle?.en || '-' }}</div>
+                        <div class="text-sm text-gray-600" dir="rtl">{{ featuredCollection.sectionSubtitle?.ar || '-' }}</div>
+                    </div>
+                </td>
+                <td>
+                    <div class="space-y-1">
+                        <div class="font-semibold text-gray-900" dir="ltr">{{ featuredCollection.sectionTitle?.en || '-' }}</div>
+                        <div class="text-sm text-gray-600" dir="rtl">{{ featuredCollection.sectionTitle?.ar || '-' }}</div>
+                    </div>
+                </td>
+                <td>
+                    <div class="space-y-1 max-w-xs">
+                        <div class="text-sm text-gray-600 truncate" dir="ltr">{{ (featuredCollection.description?.en || '').slice(0, 50) }}{{ (featuredCollection.description?.en || '').length > 50 ? '...' : '' }}</div>
+                        <div class="text-sm text-gray-500 truncate" dir="rtl">{{ (featuredCollection.description?.ar || '').slice(0, 50) }}{{ (featuredCollection.description?.ar || '').length > 50 ? '...' : '' }}</div>
+                    </div>
+                </td>
                 <td>
                     <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
                         {{ featuredCollection.collections.length }} items
@@ -81,35 +95,61 @@
         @if(featuredCollectionDialog) {
         <form [formGroup]="featuredCollectionForm" class="space-y-6">
             <!-- Basic Information -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                    <label for="sectionSubtitle" class="block text-sm font-medium text-gray-700 mb-2">Section Subtitle
-                        *</label>
-                    <input id="sectionSubtitle" type="text" pInputText formControlName="sectionSubtitle" class="w-full"
-                        [class.ng-invalid]="featuredCollectionForm.get('sectionSubtitle')?.invalid && featuredCollectionForm.get('sectionSubtitle')?.touched"
-                        placeholder="e.g., FEATURED COLLECTIONS" />
-                    <small *ngIf="getFieldError('sectionSubtitle')" class="text-red-500">{{
-                        getFieldError('sectionSubtitle') }}</small>
-                </div>
-
-                <div>
-                    <label for="sectionTitle" class="block text-sm font-medium text-gray-700 mb-2">Section Title
-                        *</label>
-                    <input id="sectionTitle" type="text" pInputText formControlName="sectionTitle" class="w-full"
-                        [class.ng-invalid]="featuredCollectionForm.get('sectionTitle')?.invalid && featuredCollectionForm.get('sectionTitle')?.touched"
-                        placeholder="e.g., Trending This Season" />
-                    <small *ngIf="getFieldError('sectionTitle')" class="text-red-500">{{ getFieldError('sectionTitle')
-                        }}</small>
+            <!-- Section Subtitle -->
+            <div class="field mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-3">Section Subtitle *</label>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4" formGroupName="sectionSubtitle">
+                    <div>
+                        <label for="sectionSubtitleEn" class="block text-sm text-gray-600 mb-1">English</label>
+                        <input id="sectionSubtitleEn" pInputText type="text" formControlName="en" required
+                            placeholder="e.g., FEATURED COLLECTIONS" class="w-full" dir="ltr" />
+                        <small *ngIf="featuredCollectionForm.get('sectionSubtitle.en')?.invalid && featuredCollectionForm.get('sectionSubtitle.en')?.touched" class="text-red-500">English subtitle is required</small>
+                    </div>
+                    <div>
+                        <label for="sectionSubtitleAr" class="block text-sm text-gray-600 mb-1">العربية</label>
+                        <input id="sectionSubtitleAr" pInputText type="text" formControlName="ar" required
+                            placeholder="مثل: المجموعات المميزة" class="w-full" dir="rtl" />
+                        <small *ngIf="featuredCollectionForm.get('sectionSubtitle.ar')?.invalid && featuredCollectionForm.get('sectionSubtitle.ar')?.touched" class="text-red-500">العنوان الفرعي العربي مطلوب</small>
+                    </div>
                 </div>
             </div>
 
-            <div>
-                <label for="description" class="block text-sm font-medium text-gray-700 mb-2">Description *</label>
-                <textarea id="description" pInputTextarea formControlName="description" rows="3" class="w-full"
-                    [class.ng-invalid]="featuredCollectionForm.get('description')?.invalid && featuredCollectionForm.get('description')?.touched"
-                    placeholder="Enter the main section description..."></textarea>
-                <small *ngIf="getFieldError('description')" class="text-red-500">{{ getFieldError('description')
-                    }}</small>
+            <!-- Section Title -->
+            <div class="field mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-3">Section Title *</label>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4" formGroupName="sectionTitle">
+                    <div>
+                        <label for="sectionTitleEn" class="block text-sm text-gray-600 mb-1">English</label>
+                        <input id="sectionTitleEn" pInputText type="text" formControlName="en" required
+                            placeholder="e.g., Trending This Season" class="w-full" dir="ltr" />
+                        <small *ngIf="featuredCollectionForm.get('sectionTitle.en')?.invalid && featuredCollectionForm.get('sectionTitle.en')?.touched" class="text-red-500">English title is required</small>
+                    </div>
+                    <div>
+                        <label for="sectionTitleAr" class="block text-sm text-gray-600 mb-1">العربية</label>
+                        <input id="sectionTitleAr" pInputText type="text" formControlName="ar" required
+                            placeholder="مثل: الأكثر رواجاً هذا الموسم" class="w-full" dir="rtl" />
+                        <small *ngIf="featuredCollectionForm.get('sectionTitle.ar')?.invalid && featuredCollectionForm.get('sectionTitle.ar')?.touched" class="text-red-500">العنوان العربي مطلوب</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Description -->
+            <div class="field mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-3">Description *</label>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4" formGroupName="description">
+                    <div>
+                        <label for="descEn" class="block text-sm text-gray-600 mb-1">English</label>
+                        <textarea id="descEn" pInputTextarea formControlName="en" [rows]="3" class="w-full" dir="ltr"
+                            placeholder="Enter the main section description in English..."></textarea>
+                        <small *ngIf="featuredCollectionForm.get('description.en')?.invalid && featuredCollectionForm.get('description.en')?.touched" class="text-red-500">English description is required</small>
+                    </div>
+                    <div>
+                        <label for="descAr" class="block text-sm text-gray-600 mb-1">العربية</label>
+                        <textarea id="descAr" pInputTextarea formControlName="ar" [rows]="3" class="w-full" dir="rtl"
+                            placeholder="أدخل وصف القسم الرئيسي بالعربية..."></textarea>
+                        <small *ngIf="featuredCollectionForm.get('description.ar')?.invalid && featuredCollectionForm.get('description.ar')?.touched" class="text-red-500">الوصف العربي مطلوب</small>
+                    </div>
+                </div>
             </div>
 
             <div>
@@ -137,29 +177,42 @@
                                 pTooltip="Remove Collection"></p-button>
                         </div>
 
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label [for]="'title' + i" class="block text-sm font-medium text-gray-700 mb-2">Title
-                                    *</label>
-                                <input [id]="'title' + i" type="text" pInputText formControlName="title" class="w-full"
-                                    [class.ng-invalid]="collectionGroup.get('title')?.invalid && collectionGroup.get('title')?.touched"
-                                    placeholder="e.g., Summer Collection" />
-                                <small *ngIf="getCollectionFieldError(i, 'title')" class="text-red-500">{{
-                                    getCollectionFieldError(i, 'title') }}</small>
+                        <!-- Title Section -->
+                        <div class="field mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-3">Title *</label>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4" formGroupName="title">
+                                <div>
+                                    <label [for]="'titleEn' + i" class="block text-sm text-gray-600 mb-1">English</label>
+                                    <input [id]="'titleEn' + i" pInputText type="text" formControlName="en" required
+                                        placeholder="e.g., Summer Collection" class="w-full" dir="ltr" />
+                                    <small *ngIf="collectionGroup.get('title.en')?.invalid && collectionGroup.get('title.en')?.touched" class="text-red-500">English title is required</small>
+                                </div>
+                                <div>
+                                    <label [for]="'titleAr' + i" class="block text-sm text-gray-600 mb-1">العربية</label>
+                                    <input [id]="'titleAr' + i" pInputText type="text" formControlName="ar" required
+                                        placeholder="مثل: مجموعة الصيف" class="w-full" dir="rtl" />
+                                    <small *ngIf="collectionGroup.get('title.ar')?.invalid && collectionGroup.get('title.ar')?.touched" class="text-red-500">العنوان العربي مطلوب</small>
+                                </div>
                             </div>
-
-
                         </div>
 
-                        <div class="mt-4">
-                            <label [for]="'description' + i"
-                                class="block text-sm font-medium text-gray-700 mb-2">Description *</label>
-                            <textarea [id]="'description' + i" pInputTextarea formControlName="description" rows="2"
-                                class="w-full"
-                                [class.ng-invalid]="collectionGroup.get('description')?.invalid && collectionGroup.get('description')?.touched"
-                                placeholder="Enter collection description..."></textarea>
-                            <small *ngIf="getCollectionFieldError(i, 'description')" class="text-red-500">{{
-                                getCollectionFieldError(i, 'description') }}</small>
+                        <!-- Description Section -->
+                        <div class="field mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-3">Description *</label>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4" formGroupName="description">
+                                <div>
+                                    <label [for]="'descEn' + i" class="block text-sm text-gray-600 mb-1">English</label>
+                                    <textarea [id]="'descEn' + i" pInputTextarea formControlName="en" [rows]="2" class="w-full" dir="ltr"
+                                        placeholder="Enter collection description in English..."></textarea>
+                                    <small *ngIf="collectionGroup.get('description.en')?.invalid && collectionGroup.get('description.en')?.touched" class="text-red-500">English description is required</small>
+                                </div>
+                                <div>
+                                    <label [for]="'descAr' + i" class="block text-sm text-gray-600 mb-1">العربية</label>
+                                    <textarea [id]="'descAr' + i" pInputTextarea formControlName="ar" [rows]="2" class="w-full" dir="rtl"
+                                        placeholder="أدخل وصف المجموعة بالعربية..."></textarea>
+                                    <small *ngIf="collectionGroup.get('description.ar')?.invalid && collectionGroup.get('description.ar')?.touched" class="text-red-500">الوصف العربي مطلوب</small>
+                                </div>
+                            </div>
                         </div>
 
                         <div class="mt-4">
@@ -174,17 +227,26 @@
                             <small *ngIf="getCollectionFieldError(i, 'image')" class="text-red-500">{{
                                 getCollectionFieldError(i, 'image') }}</small>
                         </div>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                            <div>
-                                <label [for]="'buttonText' + i"
-                                    class="block text-sm font-medium text-gray-700 mb-2">Button Text *</label>
-                                <input [id]="'buttonText' + i" type="text" pInputText formControlName="buttonText"
-                                    class="w-full"
-                                    [class.ng-invalid]="collectionGroup.get('buttonText')?.invalid && collectionGroup.get('buttonText')?.touched"
-                                    placeholder="e.g., Shop Collection" />
-                                <small *ngIf="getCollectionFieldError(i, 'buttonText')" class="text-red-500">{{
-                                    getCollectionFieldError(i, 'buttonText') }}</small>
+                        <!-- Button Text Section -->
+                        <div class="field mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-3">Button Text *</label>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4" formGroupName="buttonText">
+                                <div>
+                                    <label [for]="'buttonTextEn' + i" class="block text-sm text-gray-600 mb-1">English</label>
+                                    <input [id]="'buttonTextEn' + i" pInputText type="text" formControlName="en" required
+                                        placeholder="e.g., Shop Collection" class="w-full" dir="ltr" />
+                                    <small *ngIf="collectionGroup.get('buttonText.en')?.invalid && collectionGroup.get('buttonText.en')?.touched" class="text-red-500">English button text is required</small>
+                                </div>
+                                <div>
+                                    <label [for]="'buttonTextAr' + i" class="block text-sm text-gray-600 mb-1">العربية</label>
+                                    <input [id]="'buttonTextAr' + i" pInputText type="text" formControlName="ar" required
+                                        placeholder="مثل: تسوق المجموعة" class="w-full" dir="rtl" />
+                                    <small *ngIf="collectionGroup.get('buttonText.ar')?.invalid && collectionGroup.get('buttonText.ar')?.touched" class="text-red-500">نص الزر العربي مطلوب</small>
+                                </div>
                             </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
 
                             <div class="w-full flex flex-col gap-2">
                                 <label [for]="'buttonLink' + i"

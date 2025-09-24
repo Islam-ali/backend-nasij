@@ -54,8 +54,10 @@
                 <td>
                     <div class="flex align-items-center gap-2">
                         <img *ngIf="package.images && package.images.length > 0" [src]="package.images[0].filePath"
-                            [alt]="package.name" width="32" height="32" class="rounded-circle" appFallbackImg />
-                        <span class="font-bold">{{package.name}}</span>
+                            [alt]="package.name.en" width="32" height="32" class="rounded-circle" appFallbackImg />
+                        <div class="space-y-1">
+                            <div class="font-bold text-gray-900" dir="ltr">{{ package.name.en }}</div>
+                        </div>
                     </div>
                 </td>
                 <td>
@@ -91,17 +93,19 @@
         </ng-template>
         <ng-template pTemplate="emptymessage">
             <tr>
-                <td colspan="8" class="text-center p-4">
-                    <div *ngIf="loading(); else noData">
-                        <p-skeleton height="2rem" class="mb-2"></p-skeleton>
-                        <p-skeleton height="2rem" class="mb-2"></p-skeleton>
-                        <p-skeleton height="2rem"></p-skeleton>
+                <td colspan="8">
+                    <div class="flex flex-col items-center justify-center">
+                        <div *ngIf="loading(); else noData">
+                            <p-skeleton height="2rem" class="mb-2"></p-skeleton>
+                            <p-skeleton height="2rem" class="mb-2"></p-skeleton>
+                            <p-skeleton height="2rem"></p-skeleton>
+                        </div>
+                        <ng-template #noData>
+                            <i class="pi pi-inbox" style="font-size: 5rem"></i>
+                            <h3>No packages found</h3>
+                            <p>Start by creating your first package.</p>
+                        </ng-template>
                     </div>
-                    <ng-template #noData>
-                        <i class="pi pi-inbox" style="font-size: 5rem"></i>
-                        <h3>No packages found</h3>
-                        <p>Start by creating your first package.</p>
-                    </ng-template>
                 </td>
             </tr>
         </ng-template>
@@ -113,28 +117,54 @@
     header="{{isEdit() ? 'Edit Package' : 'New Package'}}" [modal]="true" styleClass="p-fluid">
     <form [formGroup]="packageForm" (ngSubmit)="savePackage()">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+            <!-- Name Section -->
             <div class="w-full">
-                <label for="name" class="font-bold">Name</label>
-                <input id="name" type="text" pInputText formControlName="name" class="w-full" required autofocus />
-                <small *ngIf="submitted() && packageForm.get('name')?.invalid" class="p-error">Name is required.</small>
+                <label class="font-bold mb-3 block">Name *</label>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4" formGroupName="name">
+                    <div>
+                        <label for="nameEn" class="block text-sm text-gray-600 mb-1">English</label>
+                        <input id="nameEn" pInputText type="text" formControlName="en" required
+                            placeholder="e.g., Summer Package" class="w-full" dir="ltr" />
+                        <small *ngIf="submitted() && packageForm.get('name.en')?.invalid" class="p-error">English name is required</small>
+                    </div>
+                    <div>
+                        <label for="nameAr" class="block text-sm text-gray-600 mb-1">العربية</label>
+                        <input id="nameAr" pInputText type="text" formControlName="ar" required
+                            placeholder="مثل: حزمة الصيف" class="w-full" dir="rtl" />
+                        <small *ngIf="submitted() && packageForm.get('name.ar')?.invalid" class="p-error">الاسم العربي مطلوب</small>
+                    </div>
+                </div>
             </div>
+            
+            <!-- Description Section -->
             <div class="w-full">
-                <label for="description" class="font-bold">Description</label>
-                <textarea id="description" class="w-full" pInputTextarea formControlName="description" required rows="3"
-                    cols="20"></textarea>
-                <small *ngIf="submitted() && packageForm.get('description')?.invalid" class="p-error">Description is
-                    required.</small>
+                <label class="font-bold mb-3 block">Description *</label>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4" formGroupName="description">
+                    <div>
+                        <label for="descEn" class="block text-sm text-gray-600 mb-1">English</label>
+                        <textarea id="descEn" pInputTextarea formControlName="en" [rows]="3" class="w-full" dir="ltr"
+                            placeholder="Enter package description in English..."></textarea>
+                        <small *ngIf="submitted() && packageForm.get('description.en')?.invalid" class="p-error">English description is required</small>
+                    </div>
+                    <div>
+                        <label for="descAr" class="block text-sm text-gray-600 mb-1">العربية</label>
+                        <textarea id="descAr" pInputTextarea formControlName="ar" [rows]="3" class="w-full" dir="rtl"
+                            placeholder="أدخل وصف الحزمة بالعربية..."></textarea>
+                        <small *ngIf="submitted() && packageForm.get('description.ar')?.invalid" class="p-error">الوصف العربي مطلوب</small>
+                    </div>
+                </div>
             </div>
             <div class="w-full">
                 <label for="price" class="font-bold">Price</label>
-                <p-inputNumber id="price" class="w-full" formControlName="price" mode="currency" currency="USD" locale="en-US" />
+                <p-inputNumber id="price" class="w-full" formControlName="price" mode="currency" currency="USD"
+                    locale="en-US" />
                 <small *ngIf="submitted() && packageForm.get('price')?.invalid" class="p-error">Price is
                     required.</small>
             </div>
             <div class="w-full">
                 <label for="discountPrice" class="font-bold">Discount Price</label>
-                <p-inputNumber id="discountPrice" class="w-full" formControlName="discountPrice" mode="currency" currency="USD"
-                    locale="en-US" />
+                <p-inputNumber id="discountPrice" class="w-full" formControlName="discountPrice" mode="currency"
+                    currency="USD" locale="en-US" />
             </div>
             <div class="w-full">
                 <label for="stock" class="font-bold">Stock</label>
@@ -144,9 +174,9 @@
             </div>
             <div class="w-full">
                 <label for="category" class="font-bold">Category</label>
-                <p-dropdown [filter]="true" filterBy="name" styleClass="w-full" [options]="categories()" formControlName="category" optionLabel="name"
-                    optionValue="_id" placeholder="Select a category"
-                    ></p-dropdown>
+                <p-dropdown [filter]="true" filterBy="name" styleClass="w-full" [options]="categories()"
+                    formControlName="category" optionLabel="name.en" optionValue="_id"
+                    placeholder="Select a category"></p-dropdown>
             </div>
             <div class="w-full">
                 <label for="isActive" class="font-bold">Active Status</label>
@@ -161,7 +191,8 @@
             <div class="col-span-2">
                 <label class="font-bold">Images</label>
                 <app-upload-files [control]="packageForm.get('images')!"
-                    [filesServer]="packageForm.get('images')?.value" [accept]="'image/*'" [multiple]="true" class="w-full">
+                    [filesServer]="packageForm.get('images')?.value" [accept]="'image/*'" [multiple]="true"
+                    class="w-full">
                 </app-upload-files>
             </div>
 
@@ -179,21 +210,62 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
                             <div class="w-full">
                                 <label class="font-bold">Product</label>
-                                <p-dropdown [filter]="true" appendTo="body" filterBy="name" styleClass="w-full" [options]="products()" formControlName="productId" optionLabel="name"
+                                <p-dropdown [filter]="true" appendTo="body" filterBy="name" styleClass="w-full"
+                                    [options]="products()" formControlName="productId" optionLabel="name.en"
                                     optionValue="_id" placeholder="Select a product"
                                     [loading]="loadingProducts()"></p-dropdown>
                             </div>
                             <div class="w-full">
                                 <label class="font-bold">Quantity</label>
-                                <p-inputNumber styleClass="w-full" formControlName="quantity" [min]="1" class="w-full" />
+                                <p-inputNumber styleClass="w-full" formControlName="quantity" [min]="1"
+                                    class="w-full" />
                             </div>
-                                <div class="w-full">
+                            <div class="w-full">
                                 <label class="font-bold">SKU</label>
-                                <input pInputText styleClass="w-full" formControlName="sku" placeholder="Optional" class="w-full"/>
+                                <input pInputText styleClass="w-full" formControlName="sku" placeholder="Optional"
+                                    class="w-full" />
                             </div>
                             <div class="w-full flex">
                                 <button type="button" pButton pRipple label="Remove" icon="pi pi-trash"
                                     class="p-button-danger p-button-sm mt-auto" (click)="removeItem(i)"></button>
+                            </div>
+                        </div>
+                        
+                        <!-- Required Variant Attributes -->
+                        <div class="col-span-2 mt-3">
+                            <div class="flex items-center justify-between mb-2">
+                                <label class="font-bold text-sm">Required Variant Attributes</label>
+                                <button type="button" pButton pRipple label="Add Variant" icon="pi pi-plus" 
+                                    class="p-button-sm p-button-outlined" (click)="addVariantAttribute(i)"></button>
+                            </div>
+                            
+                            <div formArrayName="requiredVariantAttributes" class="space-y-2">
+                                <div *ngFor="let variant of getVariantAttributes(i).controls; let j = index" 
+                                     [formGroupName]="j" class="flex gap-2 items-center p-2 bg-gray-50 rounded">
+                                    <div class="flex-1">
+                                        <label class="block text-sm font-medium mb-1">Variant Type</label>
+                                        <p-dropdown styleClass="w-full" [options]="variantTypes" 
+                                                   formControlName="variant" placeholder="Select variant type"></p-dropdown>
+                                    </div>
+                                    <div class="flex-2">
+                                        <label class="block text-sm font-medium mb-1">Value (English)</label>
+                                        <input pInputText styleClass="w-full" formControlName="valueEn" 
+                                               placeholder="English value" class="w-full" />
+                                    </div>
+                                    <div class="flex-2">
+                                        <label class="block text-sm font-medium mb-1">Value (Arabic)</label>
+                                        <input pInputText styleClass="w-full" formControlName="valueAr" 
+                                               placeholder="Arabic value" class="w-full" />
+                                    </div>
+                                    <div class="flex-none">
+                                        <button type="button" pButton pRipple icon="pi pi-trash" 
+                                                class="p-button-danger p-button-sm p-button-text" 
+                                                (click)="removeVariantAttribute(i, j)"></button>
+                                    </div>
+                                </div>
+                                <div *ngIf="getVariantAttributes(i).length === 0" class="text-sm text-gray-500 text-center py-2">
+                                    No variant attributes added
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -216,7 +288,7 @@
 <p-dialog [(visible)]="deletePackageDialog" [style]="{width: '450px'}" header="Confirm" [modal]="true">
     <div class="confirmation-content">
         <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem"></i>
-        <span *ngIf="package()">Are you sure you want to delete <b>{{package().name}}</b>?</span>
+        <span *ngIf="package()">Are you sure you want to delete <b>{{package().name | multiLanguage}}</b>?</span>
     </div>
     <ng-template pTemplate="footer">
         <button pButton pRipple label="No" icon="pi pi-times" class="p-button-text"

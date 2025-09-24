@@ -1,19 +1,20 @@
 import { Archived } from "../shared/components/fields/models/Archived";
+import { MultilingualText } from "../core/models/multi-language";
 
 export interface ICollectionItem {
-  title: string;
-  description: string;
+  title: MultilingualText;
+  description: MultilingualText;
   image: Archived;
-  buttonText: string;
+  buttonText: MultilingualText;
   buttonLink: string;
   queryParams?: Record<string, string>;
 }
 
 export interface IFeaturedCollection {
   _id: string;
-  sectionSubtitle: string;
-  sectionTitle: string;
-  description: string;
+  sectionSubtitle: MultilingualText;
+  sectionTitle: MultilingualText;
+  description: MultilingualText;
   collections: ICollectionItem[];
   isActive: boolean;
   createdAt: Date;
