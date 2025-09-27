@@ -6,7 +6,7 @@ export interface IState {
   name: MultilingualText;
   code: string;
   shippingCost: number;
-  countryId: string;
+  countryId: ICountry;
   country?: ICountry;
   isActive: boolean;
   createdAt?: Date;

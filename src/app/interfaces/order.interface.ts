@@ -21,8 +21,12 @@ export enum PaymentStatus {
 export enum PaymentMethod {
     CASH = 'cash',
     CREDIT_CARD = 'credit_card',
+    DEBIT_CARD = 'debit_card',
+    BANK_TRANSFER = 'bank_transfer',
     PAYPAL = 'paypal',
-    STRIPE = 'stripe'
+    STRIPE = 'stripe',
+    WALLET = 'wallet',
+    VODAFONE_CASH = 'vodafone_cash'
 }
 
 export enum OrderItemType {
@@ -37,8 +41,16 @@ export interface PackageItem {
 }
 
 export interface ProductVariantAttribute {
+    _id: string;
     variant: string;
-    value: string;
+    value: {
+        en: string;
+        ar: string;
+    };
+    image?: {
+        url: string;
+        publicId: string;
+    };
 }
 
 export interface OrderItem {
@@ -68,6 +80,7 @@ export interface ShippingAddress {
 export interface CashPayment {
     amountPaid?: number;
     changeDue?: number;
+    paymentImage?: string;
 }
 
 export interface Order {
@@ -86,6 +99,7 @@ export interface Order {
     coupon?: string;
     cashPayment?: CashPayment;
     paymentMethod: PaymentMethod;
+    paymentImage?: string;
     notes?: string;
     deliveredAt?: Date;
 }

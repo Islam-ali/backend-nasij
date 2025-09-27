@@ -42,7 +42,7 @@ export class ProductsService {
   }
 
   updateProductStatus(id: string, status: string): Observable<BaseResponse<any>> {
-    return this.genericApiService.Put(`${this.apiUrl}`, id, {status:status});
+    return this.genericApiService.Put(`${this.apiUrl}/${id}`, {status:status});
   }
 
 }

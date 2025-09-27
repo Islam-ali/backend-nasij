@@ -1,6 +1,7 @@
 import { IBrand } from "./brand.interface";
 import { ICategory } from "./category.interface";
 import { MultilingualText } from "../core/models/multi-language";
+import { Archived } from "../shared/components/fields/models/Archived";
 
 export interface ProductVariant {
 
@@ -11,8 +12,10 @@ export interface ProductVariant {
 }
 
 export interface ProductVariantAttribute {
+  _id: string;
   variant: string;
   value: MultilingualText;
+  image?: Archived;
 }
 
 export enum ProductStatus {

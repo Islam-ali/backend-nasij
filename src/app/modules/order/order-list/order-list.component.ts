@@ -23,22 +23,26 @@ import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { CardModule } from 'primeng/card';
 import { PanelModule } from 'primeng/panel';
 import { Paginator, PaginatorModule } from 'primeng/paginator';
+import { CheckboxModule } from 'primeng/checkbox';
 
 import { Order, OrderStatus, PaymentMethod, PaymentStatus, OrderItem, OrderItemType } from '../../../interfaces/order.interface';
 import { OrderService } from '../../../services/order.service';
+import { OrderTimelineService } from '../../../services/order-timeline.service';
 import { BaseResponse, pagination } from '../../../core/models/baseResponse';
 import { ComponentBase } from '../../../core/directives/component-base.directive';
 import { finalize, takeUntil } from 'rxjs';
 import { TextareaModule } from 'primeng/textarea';
 import { ProductsService } from '../../../services/products.service';
-import { IProduct, ProductVariant, ProductVariantAttribute } from '../../../interfaces/product.interface';
-import { EnumProductVariant } from '../../product/product-list/product-list.component';
+import { IProduct } from '../../../interfaces/product.interface';
 import { IPackage } from '../../../interfaces/package.interface';
 import { PackageService } from '../../../services/package.service';
 import { ICountry } from '../../../interfaces/country.interface';
 import { IState } from '../../../interfaces/state.interface';
 import { CountryService } from '../../../services/country.service';
 import { StateService } from '../../../services/state.service';
+import { MultiLanguagePipe } from '../../../core/pipes/multi-language.pipe';
+import { OrderTimelineComponent } from '../order-timeline/order-timeline.component';
+import { OrderTrackingStatus } from '../../../interfaces/order-timeline.interface';
 
 interface Column {
     field: string;
@@ -57,28 +61,31 @@ interface ExportColumn {
     styleUrls: ['./order-list.component.scss'],
     standalone: true,
     imports: [
-        CommonModule,
-        ReactiveFormsModule,
-        TableModule,
-        ButtonModule,
-        RippleModule,
-        ToastModule,
-        ToolbarModule,
-        TextareaModule,
-        InputTextModule,
-        DropdownModule,
-        InputNumberModule,
-        SelectModule,
-        DialogModule,
-        TagModule,
-        InputIconModule,
-        IconFieldModule,
-        ConfirmDialogModule,
-        CardModule,
-        PanelModule,
-        PaginatorModule,
-        FormsModule
-    ],
+     CommonModule,
+     ReactiveFormsModule,
+     TableModule,
+     ButtonModule,
+     RippleModule,
+     ToastModule,
+     ToolbarModule,
+     TextareaModule,
+     InputTextModule,
+     DropdownModule,
+     InputNumberModule,
+     SelectModule,
+     DialogModule,
+     TagModule,
+     InputIconModule,
+     IconFieldModule,
+     ConfirmDialogModule,
+     CardModule,
+     PanelModule,
+     PaginatorModule,
+     CheckboxModule,
+     FormsModule,
+     MultiLanguagePipe,
+     OrderTimelineComponent,
+ ],
     providers: [MessageService, ConfirmationService, OrderService, PackageService]
 })
 export class OrderListComponent extends ComponentBase implements OnInit {
@@ -96,6 +103,34 @@ export class OrderListComponent extends ComponentBase implements OnInit {
         pages: 0
     });
     loadingExport: boolean = false;
+
+    // Timeline properties
+    showTimelineDialog = false;
+    selectedOrderForTimeline: Order | null = null;
+    timelineLoading = signal(false);
+
+    // Variant editing properties
+    variantDialog = false;
+    selectedItemIndex: number | null = null;
+    availableVariants: any[] = [];
+    tempSelectedVariants: any[] = [];
+    
+    // Package variant editing properties
+    packageVariantDialog = false;
+    selectedPackageItemIndex: number | null = null;
+    selectedPackageProductIndex: number | null = null;
+    tempPackageVariants: any[] = [];
+    
+    // Package details dialog properties
+    packageDetailsDialog = false;
+    selectedPackageForDetails: any = null;
+    tempPackageItems: any[] = [];
+    currentPackageItemIndex: number = -1;
+    expandedProductIndex: number = -1; // Track which product has expanded variants
+    productVariantsCache: { [key: string]: any[] } = {}; // Cache variants for each product
+
+    // Timeline properties
+    timelineDialog = false;
 
     statusOptions = [
         { label: 'Pending', value: OrderStatus.PENDING },
@@ -117,8 +152,12 @@ export class OrderListComponent extends ComponentBase implements OnInit {
     paymentMethodOptions = [
         { label: 'Cash', value: PaymentMethod.CASH },
         { label: 'Credit Card', value: PaymentMethod.CREDIT_CARD },
+        { label: 'Debit Card', value: PaymentMethod.DEBIT_CARD },
+        { label: 'Bank Transfer', value: PaymentMethod.BANK_TRANSFER },
         { label: 'PayPal', value: PaymentMethod.PAYPAL },
-        { label: 'Stripe', value: PaymentMethod.STRIPE }
+        { label: 'Stripe', value: PaymentMethod.STRIPE },
+        { label: 'Wallet', value: PaymentMethod.WALLET },
+        { label: 'Vodafone Cash', value: PaymentMethod.VODAFONE_CASH }
     ];
 
     countryOptions = signal<ICountry[]>([]);
@@ -131,12 +170,13 @@ export class OrderListComponent extends ComponentBase implements OnInit {
     constructor(
         private fb: FormBuilder,
         private orderService: OrderService,
+        private orderTimelineService: OrderTimelineService,
         private messageService: MessageService,
         private confirmationService: ConfirmationService,
         private productService: ProductsService,
         private packageService: PackageService,
         private countryService: CountryService,
-        private stateService: StateService
+        private stateService: StateService,
     ) {
         super();
     }
@@ -177,10 +217,11 @@ export class OrderListComponent extends ComponentBase implements OnInit {
             tax: [0, [Validators.required, Validators.min(0)]],
             shippingCost: [0],
             total: [0, [Validators.required, Validators.min(0.01)]],
-            // cashPayment: this.fb.group({
-            //     amountPaid: [0, [Validators.required, Validators.min(0)]],
-            //     changeDue: [0]
-            // }),
+            cashPayment: this.fb.group({
+                amountPaid: [0, [Validators.required, Validators.min(0)]],
+                changeDue: [0],
+                paymentImage: [''],
+            }),
             orderStatus: [OrderStatus.PENDING, Validators.required],
             paymentStatus: [PaymentStatus.PENDING, Validators.required],
             paymentMethod: [PaymentMethod.CASH, Validators.required],
@@ -190,8 +231,7 @@ export class OrderListComponent extends ComponentBase implements OnInit {
                 address: ['', Validators.required],
                 city: ['', Validators.required],
                 state: ['', Validators.required],
-                // zipCode: [''],
-                country: ['EG', Validators.required]
+                country: ['', Validators.required]
             }),
             notes: [''],
             deliveredAt: [null]
@@ -219,10 +259,6 @@ export class OrderListComponent extends ComponentBase implements OnInit {
             price: [0, [Validators.required, Validators.min(0)]],
             totalPrice: [0, [Validators.required, Validators.min(0)]],
             discountPrice: [0, [Validators.min(0)]],
-            color: [''],
-            size: [''],
-            listColors: [[]],
-            listSizes: [[]],
             packageItems: [[]],
             selectedVariants: [[]]
         });
@@ -235,55 +271,16 @@ export class OrderListComponent extends ComponentBase implements OnInit {
         this.calculateTotal();
     }
 
-
-    colors(colors: string[], index: number) {
-        console.log(colors, index);
-        colors.map(color => ({ name: color, value: color }));
-        this.items.at(index).get('listColors')?.setValue(colors);
-    }
-    sizes(sizes: string[], index: number) {
-        console.log(sizes, index);
-        sizes.map(size => ({ name: size, value: size }));
-        this.items.at(index).get('listSizes')?.setValue(sizes);
-    }
-    onColorChange(event: any, index: number): void {
-        const item = this.items.at(index);
-        if (item) {
-            item.patchValue({
-                color: event.value,
-            });
-            this.updateSelectedVariants(index);
-        }
-    }
-    onSizeChange(event: any, index: number): void {
-        const item = this.items.at(index);
-        if (item) {
-            item.patchValue({
-                size: event.value,
-            });
-            this.updateSelectedVariants(index);
+    setShippingCost() {
+        const state = this.orderForm.get('shippingAddress')?.value.state;
+        const shippingCost = this.orderForm.get('shippingCost');
+        if (state) {
+            const stateData = this.stateOptions().find((s: any) => s._id === state);
+            shippingCost?.setValue(stateData?.shippingCost || 0);
         }
     }
 
-    private updateSelectedVariants(index: number): void {
-        const item = this.items.at(index);
-        if (item) {
-            const color = item.get('color')?.value;
-            const size = item.get('size')?.value;
-            const selectedVariants = [];
-            
-            if (color) {
-                selectedVariants.push({ variant: 'color', value: color });
-            }
-            if (size) {
-                selectedVariants.push({ variant: 'size', value: size });
-            }
-            
-            item.patchValue({
-                selectedVariants: selectedVariants
-            });
-        }
-    }
+
     getSeverity(status: OrderStatus) {
         switch (status) {
             case OrderStatus.DELIVERED:
@@ -321,6 +318,32 @@ export class OrderListComponent extends ComponentBase implements OnInit {
         }
     }
 
+    getPaymentMethodSeverity(method: string) {
+        switch (method) {
+            case PaymentMethod.CASH:
+                return 'success';
+            case PaymentMethod.VODAFONE_CASH:
+                return 'info';
+            case PaymentMethod.CREDIT_CARD:
+            case PaymentMethod.DEBIT_CARD:
+                return 'primary';
+            case PaymentMethod.PAYPAL:
+            case PaymentMethod.STRIPE:
+                return 'secondary';
+            case PaymentMethod.BANK_TRANSFER:
+                return 'warning';
+            case PaymentMethod.WALLET:
+                return 'help';
+            default:
+                return 'info';
+        }
+    }
+
+    viewPaymentImage(imageUrl: string): void {
+        // Open image in a new window/tab
+        window.open(imageUrl, '_blank');
+    }
+
     onGlobalFilter(dt: Table, event: any): void {
         dt.filterGlobal((event.target as HTMLInputElement).value, 'contains');
     }
@@ -337,11 +360,11 @@ export class OrderListComponent extends ComponentBase implements OnInit {
         }
     }
 
-    loadOrders(page: number = 0, limit: number = 10) {
+    loadOrders() {
         this.loading.set(true);
         this.orderService.getOrders({
-            limit: limit,
-            page: page + 1
+            limit: this.pagination().limit,
+            page: this.pagination().page
         }).pipe(
             takeUntil(this.destroy$),
             finalize(() => this.loading.set(false))
@@ -389,6 +412,23 @@ export class OrderListComponent extends ComponentBase implements OnInit {
             })
         });
     }
+    onItemChange(event: any, index: number) {
+        const itemType = this.items.at(index).get('itemType')?.value;
+        const itemId = event.value;
+        
+        if (itemType === OrderItemType.PACKAGE) {
+            const selectedPackage = this.packages().find(p => p._id === itemId);
+            if (selectedPackage) {
+                this.items.at(index).get('price')?.setValue(selectedPackage.price || 0);
+                
+                // Open package details dialog to select variants for each product
+                this.openPackageDetailsDialog(selectedPackage, index);
+            }
+        } else {
+            this.items.at(index).get('price')?.setValue(this.products().find(p => p._id === itemId)?.price || 0);
+        }
+        this.calculateTotal();
+    }
     openNew() {
         this.orderForm.reset({
             orderStatus: OrderStatus.PENDING,
@@ -399,8 +439,10 @@ export class OrderListComponent extends ComponentBase implements OnInit {
             shippingCost: 0,
             total: 0,
             items: [],
-            shippingAddress: {
-                country: 'EG'
+            cashPayment: {
+                amountPaid: 0,
+                changeDue: 0,
+                paymentImage: ''
             }
         });
         this.isEditOrder = false;
@@ -410,10 +452,13 @@ export class OrderListComponent extends ComponentBase implements OnInit {
     editOrder(order: Order) {
         // add cashPayment to orderForm if editOrder , else remove cashPayment
 
-        this.orderForm.addControl('cashPayment', this.fb.group({
-            amountPaid: [0, [Validators.required, Validators.min(0)]],
-            changeDue: [0]
-        }));
+        this.orderForm.patchValue({
+            cashPayment: {
+                amountPaid: order.cashPayment?.amountPaid || 0,
+                changeDue: order.cashPayment?.changeDue || 0,
+                paymentImage: order.cashPayment?.paymentImage || ''
+            }
+        });
         this.orderForm.patchValue({
             ...order,
             deliveredAt: order.deliveredAt ? new Date(order.deliveredAt) : null
@@ -438,29 +483,11 @@ export class OrderListComponent extends ComponentBase implements OnInit {
                         price: [item.price],
                         totalPrice: [item.totalPrice],
                         discountPrice: [item.discountPrice],
-                        color: [''],
-                        size: [''],
-                        listColors: [[]],
-                        listSizes: [[]],
                         packageItems: [item.packageItems || []],
                         selectedVariants: [item.selectedVariants || []]
                     }));
                 } else {
-                    // Handle product items
-                    const { colors, sizes } = item.productId ? this.extractColorsAndSizes(item.productId) : { colors: [], sizes: [] };
-                    console.log(item.productId?._id, 'item.productId');
-
-                    // Build selectedVariants from color and size if not present
                     let selectedVariants = item.selectedVariants || [];
-                    if (!selectedVariants.length && (item.color || item.size)) {
-                        selectedVariants = [];
-                        if (item.color) {
-                            selectedVariants.push({ variant: 'color', value: item.color });
-                        }
-                        if (item.size) {
-                            selectedVariants.push({ variant: 'size', value: item.size });
-                        }
-                    }
 
                     this.items.push(this.fb.group({
                         itemType: [item.itemType || OrderItemType.PRODUCT],
@@ -470,30 +497,17 @@ export class OrderListComponent extends ComponentBase implements OnInit {
                         price: [item.price],
                         totalPrice: [item.totalPrice],
                         discountPrice: [item.discountPrice],
-                        color: [item.color],
-                        size: [item.size],
-                        listColors: [colors],
-                        listSizes: [sizes],
+
                         packageItems: [[]],
                         selectedVariants: [selectedVariants]
                     }));
                 }
             });
         }
-        console.log(this.orderForm.value, 'orderForm', order);
         this.isEditOrder = true;
         this.orderDialog = true;
     }
 
-    getVariantImage(variant: string, productId: IProduct) {
-        const color:any = productId.variants.find(v => v.attributes?.find(attr => attr.variant === EnumProductVariant.COLOR && (attr.value.en === variant || attr.value.ar === variant)));
-
-        const attr = color ? color.attributes?.find((x:any) => x.variant === EnumProductVariant.COLOR && (x.value.en === variant || x.value.ar === variant)) : null;
-        if (attr) {
-            return attr.image?.filePath;
-        }
-        return null;
-    }
 
     deleteOrder(order: Order) {
         if (!order._id) return;
@@ -582,10 +596,6 @@ export class OrderListComponent extends ComponentBase implements OnInit {
             cleanedData.items = cleanedData.items.map((item: any) => {
                 const cleanedItem = { ...item };
                 
-                // Remove form-specific fields
-                delete cleanedItem.listColors;
-                delete cleanedItem.listSizes;
-                
                 // Remove empty productId for packages
                 if (cleanedItem.itemType === 'package' && (!cleanedItem.productId || cleanedItem.productId === '')) {
                     delete cleanedItem.productId;
@@ -601,11 +611,14 @@ export class OrderListComponent extends ComponentBase implements OnInit {
                             cleanedPkgItem.productId = cleanedPkgItem.productId._id;
                         }
                         
-                        // Remove _id from selectedVariants
+                        // Ensure _id exists for selectedVariants
                         if (cleanedPkgItem.selectedVariants && Array.isArray(cleanedPkgItem.selectedVariants)) {
                             cleanedPkgItem.selectedVariants = cleanedPkgItem.selectedVariants.map((variant: any) => {
-                                const { _id, ...cleanVariant } = variant;
-                                return cleanVariant;
+                                // Ensure _id exists for validation
+                                if (!variant._id) {
+                                    variant._id = new Date().getTime().toString() + Math.random().toString(36).substr(2, 9);
+                                }
+                                return variant;
                             });
                         }
                         
@@ -618,10 +631,15 @@ export class OrderListComponent extends ComponentBase implements OnInit {
                 // Clean selectedVariants for products
                 if (cleanedItem.selectedVariants && Array.isArray(cleanedItem.selectedVariants)) {
                     cleanedItem.selectedVariants = cleanedItem.selectedVariants.map((variant: any) => {
-                        const { _id, ...cleanVariant } = variant;
-                        return cleanVariant;
+                        return variant;
                     });
                 }
+                
+                // Set productId for products
+                if (cleanedItem.itemType === 'product' && cleanedItem.itemId && !cleanedItem.productId) {
+                    cleanedItem.productId = cleanedItem.itemId;
+                }
+
                 
                 return cleanedItem;
             });
@@ -671,77 +689,6 @@ export class OrderListComponent extends ComponentBase implements OnInit {
         });
     }
 
-    onItemChange(event: any, index: number) {
-        const itemType = this.items.controls[index].get('itemType')?.value;
-        const itemId = event.value;
-        
-        if (itemType === OrderItemType.PACKAGE) {
-            const packageData: IPackage | undefined = this.packages().find(p => p._id === itemId);
-            if (packageData) {
-                console.log(packageData, index);
-                this.items.controls[index].get('price')?.setValue(packageData.discountPrice || packageData.price);
-                this.items.controls[index].get('itemId')?.setValue(packageData._id);
-                this.calculateTotal();
-            }
-        } else {
-            const product: IProduct | undefined = this.products().find(p => p._id === itemId);
-            if (product) {
-                console.log(product, index);
-                this.items.controls[index].get('price')?.setValue(product.price);
-                this.items.controls[index].get('itemId')?.setValue(product._id);
-                this.calculateTotal();
-                const { colors, sizes } = this.extractColorsAndSizes(product);
-                this.colors(colors, index)
-                this.sizes(sizes, index)
-                
-                // Clear selected variants when product changes
-                this.items.controls[index].get('selectedVariants')?.setValue([]);
-                this.items.controls[index].get('color')?.setValue('');
-                this.items.controls[index].get('size')?.setValue('');
-                
-                console.log(colors, sizes);
-            }
-        }
-    }
-
-    onItemTypeChange(event: any, index: number) {
-        const itemType = event.value;
-        this.items.controls[index].get('itemType')?.setValue(itemType);
-        
-        // Clear item selection when type changes
-        this.items.controls[index].get('itemId')?.setValue('');
-        this.items.controls[index].get('productId')?.setValue('');
-        this.items.controls[index].get('price')?.setValue(0);
-        this.items.controls[index].get('color')?.setValue('');
-        this.items.controls[index].get('size')?.setValue('');
-        this.items.controls[index].get('listColors')?.setValue([]);
-        this.items.controls[index].get('listSizes')?.setValue([]);
-        
-        this.calculateTotal();
-    }
-
-    private extractColorsAndSizes(product: IProduct): { colors: string[], sizes: string[] } {
-        if (!product || !product.variants) return { colors: [], sizes: [] };
-
-        const colors = new Set<string>();
-        const sizes = new Set<string>();
-        product.variants.forEach((variant: ProductVariant) => {
-            if (variant.attributes) {
-                variant.attributes.forEach((attr: ProductVariantAttribute) => {
-                    if (attr.variant === EnumProductVariant.COLOR) {
-                        colors.add(attr.value.en || attr.value.ar);
-                    } else if (attr.variant === EnumProductVariant.SIZE) {
-                        sizes.add(attr.value.en || attr.value.ar);
-                    }
-                });
-            }
-        });
-
-        product.colors = Array.from(colors);
-        product.sizes = Array.from(sizes);
-        return { colors: product.colors, sizes: product.sizes };
-    }
-
     calculateTotal() {
         let subtotal = 0;
         this.items.controls.forEach(item => {
@@ -771,9 +718,763 @@ export class OrderListComponent extends ComponentBase implements OnInit {
         this.orderForm.reset();
     }
 
+    // Variant editing methods
+    openVariantDialog(itemIndex: number): void {
+        this.selectedItemIndex = itemIndex;
+        const item = this.items.at(itemIndex);
+        const productId = item.get('itemId')?.value;
+        
+        if (!productId) {
+            this.messageService.add({
+                severity: 'warn',
+                summary: 'Warning',
+                detail: 'Please select a product first'
+            });
+            return;
+        }
+
+        // Get current selected variants
+        this.tempSelectedVariants = [...(item.get('selectedVariants')?.value || [])];
+        
+        // Load available variants for the product
+        this.loadAvailableVariants(productId);
+        
+        this.variantDialog = true;
+    }
+
+    closeVariantDialog(): void {
+        this.variantDialog = false;
+        this.selectedItemIndex = null;
+        this.availableVariants = [];
+        this.tempSelectedVariants = [];
+    }
+
+    loadAvailableVariants(productId: string): void {
+        // Find the product and get its variants
+        const product = this.products().find(p => p._id === productId);
+        if (product && product.variants) {
+            // Group attributes by variant type
+            const variantGroups: { [key: string]: any[] } = {};
+            
+            product.variants.forEach(variant => {
+                if (variant.attributes) {
+                    variant.attributes.forEach(attr => {
+                        const variantType = attr.variant;
+                        if (!variantGroups[variantType]) {
+                            variantGroups[variantType] = [];
+                        }
+                        // Check if this attribute is not already in the group
+                        const exists = variantGroups[variantType].some(existing => 
+                            existing._id === attr._id || 
+                            (existing.value?.en === attr.value?.en && existing.value?.ar === attr.value?.ar)
+                        );
+                        if (!exists) {
+                            variantGroups[variantType].push(attr);
+                        }
+                    });
+                }
+            });
+            
+            // Convert to array format
+            this.availableVariants = Object.keys(variantGroups).map(variantType => ({
+                variant: variantType,
+                options: variantGroups[variantType]
+            }));
+        } else {
+            this.availableVariants = [];
+        }
+    }
+
+    getSelectedProductName(): string {
+        if (this.selectedItemIndex === null) return '';
+        const item = this.items.at(this.selectedItemIndex);
+        const productId = item.get('itemId')?.value;
+        const product = this.products().find(p => p._id === productId);
+        return product?.name?.en || 'Unknown Product';
+    }
+
+    getSelectedItemName(itemId: string, itemType: string): string {
+        if (!itemId) return '';
+        
+        if (itemType === 'package') {
+            const packageItem = this.packages().find(p => p._id === itemId);
+            return packageItem?.name?.en || 'Unknown Package';
+        } else {
+            const product = this.products().find(p => p._id === itemId);
+            return product?.name?.en || 'Unknown Product';
+        }
+    }
+
+    getVariantButtonLabel(item: any, rowIndex: number): string {
+        const hasVariants = item.get('selectedVariants')?.value?.length > 0;
+        const isEditMode = this.orderForm.get('_id')?.value;
+        
+        if (hasVariants) {
+            return 'Edit Variants';
+        } else {
+            return 'Add Variants';
+        }
+    }
+
+    getCurrentVariantsCount(): number {
+        return this.tempSelectedVariants.length;
+    }
+
+    isVariantSelected(variant: any): boolean {
+        return this.tempSelectedVariants.some(v => v.variant === variant.variant);
+    }
+
+    isVariantOptionSelected(variantType: string, option: any): boolean {
+        return this.tempSelectedVariants.some(v => {
+            if (v.variant !== variantType) return false;
+            
+            // Compare by ID first (most reliable)
+            if (v._id && option._id && v._id === option._id) return true;
+            
+            // Compare by value
+            if (v.value && option.value) {
+                if (typeof v.value === 'object' && typeof option.value === 'object') {
+                    return v.value.en === option.value.en && v.value.ar === option.value.ar;
+                } else {
+                    return v.value === option.value;
+                }
+            }
+            
+            return false;
+        });
+    }
+
+    toggleVariant(variant: any, event: any): void {
+        const checked = event.checked;
+        if (checked) {
+            // Add first option of this variant type
+            if (variant.options.length > 0) {
+                const firstOption = variant.options[0];
+                this.tempSelectedVariants.push({
+                    _id: firstOption._id,
+                    variant: variant.variant,
+                    value: firstOption.value,
+                    image: firstOption.image
+                });
+            }
+        } else {
+            // Remove all variants of this type
+            this.tempSelectedVariants = this.tempSelectedVariants.filter(v => v.variant !== variant.variant);
+        }
+    }
+
+    selectVariantOption(variantType: string, option: any): void {
+        // Check if this exact option is already selected
+        const isAlreadySelected = this.tempSelectedVariants.some(v => {
+            if (v.variant !== variantType) return false;
+            
+            // Compare by ID first (most reliable)
+            if (v._id && option._id && v._id === option._id) return true;
+            
+            // Compare by value
+            if (v.value && option.value) {
+                if (typeof v.value === 'object' && typeof option.value === 'object') {
+                    return v.value.en === option.value.en && v.value.ar === option.value.ar;
+                } else {
+                    return v.value === option.value;
+                }
+            }
+            
+            return false;
+        });
+        
+        if (isAlreadySelected) {
+            // If already selected, do nothing
+            return;
+        }
+        
+        // Check if there's already a variant of this type
+        const existingVariantIndex = this.tempSelectedVariants.findIndex(v => v.variant === variantType);
+        
+        if (existingVariantIndex !== -1) {
+            // Replace existing variant of this type
+            this.tempSelectedVariants[existingVariantIndex] = {
+                _id: option._id,
+                variant: variantType,
+                value: option.value,
+                image: option.image
+            };
+        } else {
+            // Add new variant
+            this.tempSelectedVariants.push({
+                _id: option._id,
+                variant: variantType,
+                value: option.value,
+                image: option.image
+            });
+        }
+    }
+
+    removeVariant(variant: any): void {
+        this.tempSelectedVariants = this.tempSelectedVariants.filter(v => 
+            !(v.variant === variant.variant && 
+              (v.value?.en === variant.value?.en || v.value === variant.value))
+        );
+    }
+
+    getSelectedVariantsSummary(): any[] {
+        return this.tempSelectedVariants;
+    }
+
+    saveVariants(): void {
+        if (this.selectedItemIndex === null) return;
+        
+        // Ensure all variants have _id
+        const variantsWithId = this.tempSelectedVariants.map(variant => ({
+            ...variant,
+            _id: variant._id || new Date().getTime().toString() + Math.random().toString(36).substr(2, 9)
+        }));
+        
+        const item = this.items.at(this.selectedItemIndex);
+        item.get('selectedVariants')?.setValue([...variantsWithId]);
+        
+        this.messageService.add({
+            severity: 'success',
+            summary: 'Success',
+            detail: 'Variants updated successfully'
+        });
+        
+        this.closeVariantDialog();
+    }
+
+    // Package variant editing methods
+    openPackageVariantDialog(packageItemIndex: number, packageProductIndex: number): void {
+        this.selectedPackageItemIndex = packageItemIndex;
+        this.selectedPackageProductIndex = packageProductIndex;
+        
+        const packageItem = this.items.at(packageItemIndex);
+        const packageProducts = packageItem.get('packageItems')?.value || [];
+        const packageProduct = packageProducts[packageProductIndex];
+        
+        if (!packageProduct || !packageProduct.productId) {
+            this.messageService.add({
+                severity: 'warn',
+                summary: 'Warning',
+                detail: 'Package product not found'
+            });
+            return;
+        }
+
+        // Get current selected variants for this package product
+        this.tempPackageVariants = [...(packageProduct.selectedVariants || [])];
+        
+        // Load available variants for the package product
+        this.loadAvailableVariants(packageProduct.productId._id || packageProduct.productId);
+        
+        this.packageVariantDialog = true;
+    }
+
+    closePackageVariantDialog(): void {
+        this.packageVariantDialog = false;
+        this.selectedPackageItemIndex = null;
+        this.selectedPackageProductIndex = null;
+        this.availableVariants = [];
+        this.tempPackageVariants = [];
+    }
+
+    getSelectedPackageProductName(): string {
+        if (this.selectedPackageItemIndex === null || this.selectedPackageProductIndex === null) return '';
+        
+        const packageItem = this.items.at(this.selectedPackageItemIndex);
+        const packageProducts = packageItem.get('packageItems')?.value || [];
+        const packageProduct = packageProducts[this.selectedPackageProductIndex];
+        
+        if (packageProduct && packageProduct.productId) {
+            return packageProduct.productId.name?.en || 'Unknown Product';
+        }
+        return 'Unknown Product';
+    }
+
+    getCurrentPackageVariantsCount(): number {
+        return this.tempPackageVariants.length;
+    }
+
+    isPackageVariantSelected(variant: any): boolean {
+        return this.tempPackageVariants.some(v => v.variant === variant.variant);
+    }
+
+    isPackageVariantOptionSelected(variantType: string, option: any): boolean {
+        return this.tempPackageVariants.some(v => {
+            if (v.variant !== variantType) return false;
+            
+            // Compare by ID first (most reliable)
+            if (v._id && option._id && v._id === option._id) return true;
+            
+            // Compare by value
+            if (v.value && option.value) {
+                if (typeof v.value === 'object' && typeof option.value === 'object') {
+                    return v.value.en === option.value.en && v.value.ar === option.value.ar;
+                } else {
+                    return v.value === option.value;
+                }
+            }
+            
+            return false;
+        });
+    }
+
+    togglePackageVariant(variant: any, event: any): void {
+        const checked = event.checked;
+        if (checked) {
+            // Add first option of this variant type
+            if (variant.options.length > 0) {
+                const firstOption = variant.options[0];
+                this.tempPackageVariants.push({
+                    _id: firstOption._id,
+                    variant: variant.variant,
+                    value: firstOption.value,
+                    image: firstOption.image
+                });
+            }
+        } else {
+            // Remove all variants of this type
+            this.tempPackageVariants = this.tempPackageVariants.filter(v => v.variant !== variant.variant);
+        }
+    }
+
+    selectPackageVariantOption(variantType: string, option: any): void {
+        // Check if this exact option is already selected
+        const isAlreadySelected = this.tempPackageVariants.some(v => {
+            if (v.variant !== variantType) return false;
+            
+            // Compare by ID first (most reliable)
+            if (v._id && option._id && v._id === option._id) return true;
+            
+            // Compare by value
+            if (v.value && option.value) {
+                if (typeof v.value === 'object' && typeof option.value === 'object') {
+                    return v.value.en === option.value.en && v.value.ar === option.value.ar;
+                } else {
+                    return v.value === option.value;
+                }
+            }
+            
+            return false;
+        });
+        
+        if (isAlreadySelected) {
+            // If already selected, do nothing
+            return;
+        }
+        
+        // Check if there's already a variant of this type
+        const existingVariantIndex = this.tempPackageVariants.findIndex(v => v.variant === variantType);
+        
+        if (existingVariantIndex !== -1) {
+            // Replace existing variant of this type
+            this.tempPackageVariants[existingVariantIndex] = {
+                _id: option._id,
+                variant: variantType,
+                value: option.value,
+                image: option.image
+            };
+        } else {
+            // Add new variant
+            this.tempPackageVariants.push({
+                _id: option._id,
+                variant: variantType,
+                value: option.value,
+                image: option.image
+            });
+        }
+    }
+
+    removePackageVariant(variant: any): void {
+        this.tempPackageVariants = this.tempPackageVariants.filter(v => 
+            !(v.variant === variant.variant && 
+              (v.value?.en === variant.value?.en || v.value === variant.value))
+        );
+    }
+
+    getSelectedPackageVariantsSummary(): any[] {
+        return this.tempPackageVariants;
+    }
+
+    savePackageVariants(): void {
+        if (this.selectedPackageItemIndex === null || this.selectedPackageProductIndex === null) return;
+        
+        // Ensure all variants have _id
+        const variantsWithId = this.tempPackageVariants.map(variant => ({
+            ...variant,
+            _id: variant._id || new Date().getTime().toString() + Math.random().toString(36).substr(2, 9)
+        }));
+        
+        const packageItem = this.items.at(this.selectedPackageItemIndex);
+        const packageProducts = packageItem.get('packageItems')?.value || [];
+        packageProducts[this.selectedPackageProductIndex].selectedVariants = [...variantsWithId];
+        packageItem.get('packageItems')?.setValue([...packageProducts]);
+        
+        this.messageService.add({
+            severity: 'success',
+            summary: 'Success',
+            detail: 'Package variants updated successfully'
+        });
+        
+        this.closePackageVariantDialog();
+    }
+
+    // Package details dialog methods
+    openPackageDetailsDialog(packageData: any, itemIndex: number): void {
+        this.selectedPackageForDetails = packageData;
+        this.currentPackageItemIndex = itemIndex;
+        
+        // Initialize temp package items with default quantities
+        this.tempPackageItems = packageData.items?.map((item: any) => ({
+            productId: item.productId._id,
+            quantity: item.quantity || 1,
+            selectedVariants: item.selectedVariants || []
+        })) || [];
+        
+        // Cache variants for each product
+        this.productVariantsCache = {};
+        this.tempPackageItems.forEach(item => {
+            this.productVariantsCache[item.productId] = this.getProductVariants(item.productId);
+        });
+        
+        this.packageDetailsDialog = true;
+    }
+
+    closePackageDetailsDialog(): void {
+        this.packageDetailsDialog = false;
+        this.selectedPackageForDetails = null;
+        this.tempPackageItems = [];
+        this.currentPackageItemIndex = -1;
+        this.expandedProductIndex = -1;
+        this.productVariantsCache = {};
+    }
+
+    toggleProductVariants(productIndex: number): void {
+        if (this.expandedProductIndex === productIndex) {
+            this.expandedProductIndex = -1; // Collapse if already expanded
+        } else {
+            this.expandedProductIndex = productIndex; // Expand this product
+        }
+    }
+
+    getProductVariants(productId: string): any[] {
+        const product = this.products().find(p => p._id === productId);
+        if (product && product.variants) {
+            const variantGroups: { [key: string]: any[] } = {};
+            
+            product.variants.forEach(variant => {
+            if (variant.attributes) {
+                    variant.attributes.forEach(attr => {
+                        const variantType = attr.variant;
+                        if (!variantGroups[variantType]) {
+                            variantGroups[variantType] = [];
+                        }
+                        const exists = variantGroups[variantType].some(existing => 
+                            existing._id === attr._id || 
+                            (existing.value?.en === attr.value?.en && existing.value?.ar === attr.value?.ar)
+                        );
+                        if (!exists) {
+                            variantGroups[variantType].push(attr);
+                    }
+                });
+            }
+        });
+
+            return Object.keys(variantGroups).map(variantType => ({
+                variant: variantType,
+                options: variantGroups[variantType]
+            }));
+        }
+        return [];
+    }
+
+    isProductVariantSelected(productIndex: number, variantType: string, option: any): boolean {
+        const product = this.tempPackageItems[productIndex];
+        if (!product || !product.selectedVariants) return false;
+        
+        return product.selectedVariants.some((v: any) => {
+            if (v.variant !== variantType) return false;
+            
+            if (v._id && option._id && v._id === option._id) return true;
+            
+            if (v.value && option.value) {
+                if (typeof v.value === 'object' && typeof option.value === 'object') {
+                    return v.value.en === option.value.en && v.value.ar === option.value.ar;
+                } else {
+                    return v.value === option.value;
+                }
+            }
+            
+            return false;
+        });
+    }
+
+    selectProductVariantOption(productIndex: number, variantType: string, option: any): void {
+        console.log('selectProductVariantOption called:', { productIndex, variantType, option });
+        const product = this.tempPackageItems[productIndex];
+        if (!product) {
+            console.log('Product not found at index:', productIndex);
+            return;
+        }
+
+        if (!product.selectedVariants) {
+            product.selectedVariants = [];
+        }
+        
+        console.log('Current selectedVariants:', product.selectedVariants);
+
+        // Check if this exact option is already selected
+        const isAlreadySelected = product.selectedVariants.some((v: any) => {
+            if (v.variant !== variantType) return false;
+            
+            if (v._id && option._id && v._id === option._id) return true;
+            
+            if (v.value && option.value) {
+                if (typeof v.value === 'object' && typeof option.value === 'object') {
+                    return v.value.en === option.value.en && v.value.ar === option.value.ar;
+                } else {
+                    return v.value === option.value;
+                }
+            }
+            
+            return false;
+        });
+        
+        if (isAlreadySelected) {
+            // If already selected, remove it
+            product.selectedVariants = product.selectedVariants.filter((v: any) => {
+                if (v.variant !== variantType) return true;
+                
+                if (v._id && option._id && v._id === option._id) return false;
+                
+                if (v.value && option.value) {
+                    if (typeof v.value === 'object' && typeof option.value === 'object') {
+                        return !(v.value.en === option.value.en && v.value.ar === option.value.ar);
+                    } else {
+                        return v.value !== option.value;
+                    }
+                }
+                
+                return true;
+            });
+            return;
+        }
+        
+        // Check if there's already a variant of this type
+        const existingVariantIndex = product.selectedVariants.findIndex((v: any) => v.variant === variantType);
+        
+        if (existingVariantIndex !== -1) {
+            // Replace existing variant of this type
+            product.selectedVariants[existingVariantIndex] = {
+                _id: option._id,
+                variant: variantType,
+                value: option.value,
+                image: option.image
+            };
+        } else {
+            // Add new variant
+            product.selectedVariants.push({
+                _id: option._id,
+                variant: variantType,
+                value: option.value,
+                image: option.image
+            });
+        }
+        
+        // Force change detection
+        this.tempPackageItems = [...this.tempPackageItems];
+        console.log('After selection, selectedVariants:', product.selectedVariants);
+    }
+
+    removeProductVariant(productIndex: number, variant: any): void {
+        const product = this.tempPackageItems[productIndex];
+        if (!product || !product.selectedVariants) return;
+
+        product.selectedVariants = product.selectedVariants.filter((v: any) => 
+            !(v.variant === variant.variant && 
+              (v.value?.en === variant.value?.en || v.value === variant.value))
+        );
+    }
+
+    saveProductVariants(): void {
+        if (this.selectedPackageProductIndex !== null && this.selectedPackageProductIndex >= 0) {
+            // Ensure all variants have _id
+            const variantsWithId = this.tempPackageVariants.map(variant => ({
+                ...variant,
+                _id: variant._id || new Date().getTime().toString() + Math.random().toString(36).substr(2, 9)
+            }));
+            
+            this.tempPackageItems[this.selectedPackageProductIndex].selectedVariants = [...variantsWithId];
+            this.packageVariantDialog = false;
+            this.selectedPackageProductIndex = null;
+            this.tempPackageVariants = [];
+        }
+    }
+
+    savePackageDetails(): void {
+        if (this.currentPackageItemIndex >= 0) {
+            // Update the package items in the form
+            this.items.at(this.currentPackageItemIndex).get('packageItems')?.setValue([...this.tempPackageItems]);
+            
+            this.messageService.add({
+                severity: 'success',
+                summary: 'Success',
+                detail: 'Package details saved successfully'
+            });
+            
+            this.closePackageDetailsDialog();
+        }
+    }
+
+    getProductName(productId: any): string {
+        if (typeof productId === 'object' && productId.name) {
+            return productId.name.en || productId.name.ar || 'Unknown Product';
+        }
+        const product = this.products().find(p => p._id === productId);
+        return product?.name?.en || 'Unknown Product';
+    }
+
+    getSelectedVariantsForProduct(productIndex: number): any[] {
+        const product = this.tempPackageItems[productIndex];
+        if (!product || !product.selectedVariants) return [];
+        
+        // Filter out variants that don't have proper structure
+        return product.selectedVariants.filter((variant: any) => 
+            variant && 
+            variant.variant && 
+            variant.value && 
+            (variant.value.en || variant.value.ar || variant.value)
+        );
+    }
+
+    editPackageVariants(itemIndex: number): void {
+        const item = this.items.at(itemIndex);
+        const packageId = item.get('itemId')?.value;
+        const selectedPackage = this.packages().find(p => p._id === packageId);
+        
+        if (selectedPackage) {
+            this.openPackageDetailsDialog(selectedPackage, itemIndex);
+        }
+    }
+
+    // Enhanced UI properties
+    showFilters = signal(false);
+    loadingExportSignal = signal(false);
+
+    // Enhanced methods
+    toggleFilters(): void {
+        this.showFilters.set(!this.showFilters());
+    }
+
+    exportOrders(): void {
+        this.loadingExportSignal.set(true);
+        // TODO: Implement export functionality
+        setTimeout(() => {
+            this.loadingExportSignal.set(false);
+            this.messageService.add({
+                severity: 'success',
+                summary: 'Export Complete',
+                detail: 'Orders exported successfully'
+            });
+        }, 2000);
+    }
+
+    viewOrderDetails(order: any): void {
+        // TODO: Implement order details view
+        this.messageService.add({
+            severity: 'info',
+            summary: 'Order Details',
+            detail: `Viewing details for order #${order.orderNumber}`
+        });
+    }
+
+    // Math utility for template
+    Math = Math;
+
+    // Payment image methods
+    paymentImagePreview: string | null = null;
+
+    onPaymentImageChange(event: any): void {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (e: any) => {
+                this.paymentImagePreview = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+    }
+
+    removePaymentImage(): void {
+        this.paymentImagePreview = null;
+    }
+
     onPageChange(event: any) {
         const page = event.first / event.rows + 1;
         const limit = event.rows;
-        this.loadOrders(page, limit);
+        this.pagination.set({
+            ...this.pagination(),
+            page: page,
+            limit: limit
+        });
+        this.loadOrders();
+    }
+
+    // Timeline methods
+    viewOrderTimeline(): void {
+        if (this.selectedOrders && this.selectedOrders.length === 1) {
+            this.selectedOrderForTimeline = this.selectedOrders[0];
+            this.showTimelineDialog = true;
+        }
+    }
+
+    viewOrderTimelineDirect(order: Order): void {
+        this.selectedOrderForTimeline = order;
+        this.showTimelineDialog = true;
+    }
+
+    closeTimelineDialog(): void {
+        this.showTimelineDialog = false;
+        this.selectedOrderForTimeline = null;
+    }
+
+    // Update order status with timeline
+    updateOrderStatusWithTimeline(order: Order, status: OrderTrackingStatus, note?: string): void {
+        this.timelineLoading.set(true);
+        this.orderTimelineService.updateOrderStatusWithTimeline(order._id, status, note)
+            .pipe(
+                takeUntil(this.destroy$),
+                finalize(() => this.timelineLoading.set(false))
+            )
+            .subscribe({
+                next: (response) => {
+                    if (response.success) {
+                        this.messageService.add({
+                            severity: 'success',
+                            summary: 'Success',
+                            detail: 'Order status updated successfully'
+                        });
+                        this.loadOrders(); // Reload orders
+                    } else {
+                        this.messageService.add({
+                            severity: 'error',
+                            summary: 'Error',
+                            detail: response.message || 'Failed to update order status'
+                        });
+                    }
+                },
+                error: (error) => {
+                    console.error('Error updating order status:', error);
+                    this.messageService.add({
+                        severity: 'error',
+                        summary: 'Error',
+                        detail: 'Failed to update order status'
+                    });
+                }
+            });
+    }
+
+    // Get status display info
+    getStatusDisplayInfo(status: string): { icon: string; label: { en: string; ar: string }; color: string } {
+        return this.orderTimelineService.getStatusDisplayInfo(status);
     }
 }

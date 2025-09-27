@@ -19,7 +19,7 @@
 </p-toolbar>
 
 <p-table #dt [value]="products()" [columns]="cols" responsiveLayout="scroll" [lazy]="true" [loading]="loading()"
-    [globalFilterFields]="['name','category.name','status']" [showCurrentPageReport]="true"
+    [globalFilterFields]="['name','category.name.en','status']" [showCurrentPageReport]="true"
     [(selection)]="selectedProducts" selectionMode="multiple" [rowHover]="true" dataKey="_id">
     <ng-template pTemplate="caption">
         <div class="flex flex-column md:flex-row md:justify-between md:align-items-center">
@@ -255,6 +255,7 @@
                                 <label for="category" class="font-semibold">Category </label>
                                 <p-dropdown appendTo="body" id="category" styleClass="w-full" formControlName="category"
                                     [options]="categoryOptions" placeholder="Select Category"
+                                    optionLabel="label" optionValue="value"
                                     [class.ng-invalid]="submitted && productForm.get('category')?.invalid">
                                 </p-dropdown>
                                 <small class="ng-dirty ng-invalid text-red-500"

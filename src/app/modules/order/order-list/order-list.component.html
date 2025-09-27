@@ -1,46 +1,87 @@
 <!-- Header with title and actions -->
 <p-toast></p-toast>
-<p-toolbar styleClass="mb-4 gap-2">
-    <ng-template pTemplate="left">
-        <div class="my-2">
-            <p-button severity="success" label="New Order" icon="pi pi-plus" class="mr-2" (click)="openNew()"
-                [style]="{'margin-right': '.5em'}">
-            </p-button>
+<div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-6">
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+                <i class="pi pi-shopping-cart mr-3 text-blue-600"></i>
+                Order Management
+            </h1>
+            <p class="text-gray-600 dark:text-gray-400">
+                Manage and track all customer orders efficiently
+            </p>
         </div>
-    </ng-template>
-</p-toolbar>
+        <div class="flex flex-col sm:flex-row gap-3">
+            <p-button severity="success" label="Create New Order" icon="pi pi-plus" size="large" (click)="openNew()"
+                styleClass="p-button-raised">
+            </p-button>
+            <p-button severity="info" label="View Timeline" icon="pi pi-clock" size="large" (click)="viewOrderTimeline()"
+                styleClass="p-button-outlined" [disabled]="!selectedOrders || selectedOrders.length !== 1">
+            </p-button>
+            <!-- <p-button severity="secondary" label="Export Orders" icon="pi pi-download" size="large"
+                [loading]="loadingExportSignal()" (click)="exportOrders()" styleClass="p-button-outlined">
+            </p-button> -->
+        </div>
+    </div>
+</div>
 
 <!-- Order Table -->
-<p-table #dt [value]="orders()" [loading]="loading()"
-    [globalFilterFields]="['orderNumber', 'customer.name', 'status', 'paymentStatus']"
-    [tableStyle]="{'min-width': '75rem'}" [selection]="selectedOrders" [(selection)]="selectedOrders" dataKey="_id">
-    <ng-template pTemplate="caption">
-        <div class="flex flex-column md:flex-row md:justify-between md:align-items-center">
-            <h5 class="m-0">Manage Orders</h5>
-            <p-iconField iconPosition="left" class="ml-auto">
-                <p-inputIcon>
-                    <i class="pi pi-search"></i>
-                </p-inputIcon>
-                <input pInputText type="text" (input)="onGlobalFilter(dt, $event)" placeholder="Search..."
-                    class="w-full sm:w-auto" />
-            </p-iconField>
-        </div>
-    </ng-template>
-    <ng-template pTemplate="header">
-        <tr>
-            <!-- <th style="width: 4rem">
-                <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
-            </th> -->
-            <th pSortableColumn="orderNumber">Order # <p-sortIcon field="orderNumber"></p-sortIcon></th>
-            <!-- <th pSortableColumn="user.name">User <p-sortIcon field="user.name"></p-sortIcon></th> -->
-            <th pSortableColumn="total">Total <p-sortIcon field="total"></p-sortIcon></th>
-            <th pSortableColumn="status">Status <p-sortIcon field="status"></p-sortIcon></th>
-            <th pSortableColumn="paymentStatus">Payment <p-sortIcon field="paymentStatus"></p-sortIcon></th>
-            <th pSortableColumn="createdAt">Date <p-sortIcon field="createdAt"></p-sortIcon></th>
-            <th pSortableColumn="createdAt">Time <p-sortIcon field="createdAt"></p-sortIcon></th>
-
-            <th style="width: 12rem"></th>
-        </tr>
+<div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+    <p-table #dt [value]="orders()" [loading]="loading()"
+        [globalFilterFields]="['orderNumber', 'customer.name', 'status', 'paymentStatus']"
+        [tableStyle]="{'min-width': '75rem'}" dataKey="_id"
+        styleClass="p-datatable-striped">
+        <ng-template pTemplate="caption">
+            <div
+                class="flex flex-col md:flex-row md:justify-between md:items-center gap-4 p-6 border-b border-gray-200 dark:border-gray-700">
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-1">Orders List</h3>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">
+                        Total: {{ pagination().total }} orders
+                    </p>
+                </div>
+                <div class="flex flex-col sm:flex-row gap-3">
+                    <p-iconField iconPosition="left" class="w-full sm:w-80">
+                        <p-inputIcon>
+                            <i class="pi pi-search"></i>
+                        </p-inputIcon>
+                        <input pInputText type="text" (input)="onGlobalFilter(dt, $event)"
+                            placeholder="Search orders by number, customer, status..." class="w-full" />
+                    </p-iconField>
+                    <p-button icon="pi pi-filter" severity="secondary" [outlined]="true" (click)="toggleFilters()"
+                        [label]="showFilters() ? 'Hide Filters' : 'Show Filters'">
+                    </p-button>
+                </div>
+            </div>
+        </ng-template>
+        <ng-template pTemplate="header">
+            <tr class="bg-gray-50 dark:bg-gray-700">
+                <!-- <th class="text-center p-4 font-semibold text-gray-700 dark:text-gray-300" style="width: 3rem">
+                    <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
+                </th> -->
+                <th class="text-left p-4 font-semibold text-gray-700 dark:text-gray-300">
+                    <i class="pi pi-hashtag mr-2"></i>Order #
+                </th>
+                <th class="text-left p-4 font-semibold text-gray-700 dark:text-gray-300">
+                    <i class="pi pi-user mr-2"></i>Customer
+                </th>
+                <th class="text-right p-4 font-semibold text-gray-700 dark:text-gray-300">
+                    <i class="pi pi-dollar mr-2"></i>Total
+                </th>
+                <th class="text-center p-4 font-semibold text-gray-700 dark:text-gray-300">
+                    <i class="pi pi-info-circle mr-2"></i>Status
+                </th>
+                <th class="text-center p-4 font-semibold text-gray-700 dark:text-gray-300">
+                    <i class="pi pi-credit-card mr-2"></i>Payment
+                </th>
+                <th class="text-center p-4 font-semibold text-gray-700 dark:text-gray-300">
+                    <i class="pi pi-calendar mr-2"></i>Date
+                </th>
+                <th class="text-center p-4 font-semibold text-gray-700 dark:text-gray-300">
+                    <i class="pi pi-cog mr-2"></i>Actions
+                </th>
+            </tr>
+        </ng-template>
         <!-- <tr>
             <th></th>
             <th>
@@ -57,67 +98,147 @@
                     (click)="dt.clear()"></button>
             </th>
         </tr> -->
-    </ng-template>
 
-    <ng-template pTemplate="body" let-order>
-        <tr>
-            <!-- <td>
-                <p-tableCheckbox [value]="order"></p-tableCheckbox>
-            </td> -->
-            <td>{{ order.orderNumber }}</td>
-            <!-- <td>{{ order.user?.name }}</td> -->
-            <td>{{ order.total | currency:'USD':'symbol':'1.2-2' }}</td>
-            <td>
-                <p-tag [value]="order.orderStatus | titlecase" [severity]="getSeverity(order.orderStatus)"></p-tag>
-            </td>
-            <td>
-                <p-tag [value]="order.paymentStatus | titlecase"
-                    [severity]="getPaymentSeverity(order.paymentStatus)"></p-tag>
-            </td>
-            <td>{{ order.createdAt | date:'shortDate' }}</td>
-            <td>{{ order.createdAt | date:'shortTime' }}</td>
-            <td>
-                <div class="flex">
-                    <p-button icon="pi pi-pencil" class="mr-2" [rounded]="true" [outlined]="true" severity="success"
-                        (click)="editOrder(order)"></p-button>
-                    <p-button icon="pi pi-trash" severity="warn" [rounded]="true" [outlined]="true"
-                        (click)="deleteOrder(order)"></p-button>
-                </div>
-            </td>
-        </tr>
-    </ng-template>
+        <ng-template pTemplate="body" let-order>
+            <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                <!-- <td class="text-center p-4">
+                    <p-tableCheckbox [value]="order"></p-tableCheckbox>
+                </td> -->
+                <td class="p-4">
+                    <div class="flex items-center">
+                        <div
+                            class="w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center mr-3">
+                            <i class="pi pi-shopping-cart text-blue-600 dark:text-blue-400 text-sm"></i>
+                        </div>
+                        <div>
+                            <div class="font-semibold text-gray-900 dark:text-white">#{{ order.orderNumber }}</div>
+                            <div class="text-xs text-gray-500 dark:text-gray-400">{{ order._id?.slice(-8) }}</div>
+                        </div>
+                    </div>
+                </td>
+                <td class="p-4">
+                    <div class="flex items-center">
+                        <div
+                            class="w-8 h-8 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center mr-3">
+                            <i class="pi pi-user text-green-600 dark:text-green-400 text-sm"></i>
+                        </div>
+                        <div>
+                            <div class="font-medium text-gray-900 dark:text-white">
+                                {{ order.shippingAddress?.fullName || 'Unknown Customer' }}
+                            </div>
+                            <div class="text-xs text-gray-500 dark:text-gray-400">
+                                {{ order.shippingAddress?.phone || 'No phone' }}
+                            </div>
+                        </div>
+                    </div>
+                </td>
+                <td class="p-4 text-right">
+                    <div class="font-bold text-lg text-gray-900 dark:text-white">
+                        {{ order.total | currency:'USD':'symbol':'1.2-2' }}
+                    </div>
+                    <div class="text-xs text-gray-500 dark:text-gray-400">
+                        {{ order.items?.length || 0 }} items
+                    </div>
+                </td>
+                <td class="p-4 text-center">
+                    <p-tag [value]="order.orderStatus | titlecase" [severity]="getSeverity(order.orderStatus)"
+                        styleClass="px-3 py-1">
+                    </p-tag>
+                </td>
+                <td class="p-4 text-center">
+                    <div class="flex flex-col items-center gap-1">
+                        <p-tag [value]="order.paymentStatus | titlecase"
+                            [severity]="getPaymentSeverity(order.paymentStatus)" styleClass="px-2 py-1 text-xs">
+                        </p-tag>
+                        <p-tag [value]="order.paymentMethod | titlecase"
+                            [severity]="getPaymentMethodSeverity(order.paymentMethod)" styleClass="px-2 py-1 text-xs">
+                        </p-tag>
+                    </div>
+                </td>
+                <td class="p-4 text-center">
+                    <div class="text-sm font-medium text-gray-900 dark:text-white">
+                        {{ order.createdAt | date:'MMM dd, yyyy' }}
+                    </div>
+                    <div class="text-xs text-gray-500 dark:text-gray-400">
+                        {{ order.createdAt | date:'HH:mm' }}
+                    </div>
+                </td>
+                <td class="p-4 text-center">
+                    <div class="flex justify-center gap-2">
+                        <!-- <p-button icon="pi pi-eye" [rounded]="true" [outlined]="true" severity="info" size="small"
+                            pTooltip="View Details" (click)="viewOrderDetails(order)">
+                        </p-button> -->
+                        <p-button icon="pi pi-clock" [rounded]="true" [outlined]="true" severity="secondary" size="small"
+                            pTooltip="View Timeline" (click)="viewOrderTimelineDirect(order)">
+                        </p-button>
+                        <p-button icon="pi pi-pencil" [rounded]="true" [outlined]="true" severity="success" size="small"
+                            pTooltip="Edit Order" (click)="editOrder(order)">
+                        </p-button>
+                        <p-button icon="pi pi-trash" [rounded]="true" [outlined]="true" severity="danger" size="small"
+                            pTooltip="Delete Order" (click)="deleteOrder(order)">
+                        </p-button>
+                    </div>
+                </td>
+            </tr>
+        </ng-template>
 
-    <ng-template pTemplate="emptymessage">
-        <tr>
-            <td colspan="9" class="text-center py-6">
-                <div class="flex flex-column gap-2 items-center justify-center">
-                    <i class="pi pi-inbox text-5xl text-400"></i>
-                    <span class="text-xl text-600">No orders found.</span>
-                </div>
-            </td>
-        </tr>
-    </ng-template>
-    <!-- pagination -->
-    <ng-template pTemplate="footer">
-        <tr>
-            <td colspan="9" class="text-center py-6">
+        <ng-template pTemplate="emptymessage">
+            <tr>
+                <td colspan="7" class="text-center py-12">
+                    <div class="flex flex-col items-center justify-center gap-4">
+                        <div
+                            class="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center">
+                            <i class="pi pi-shopping-cart text-2xl text-gray-400"></i>
+                        </div>
+                        <div class="text-center">
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">No orders found</h3>
+                            <p class="text-gray-500 dark:text-gray-400 mb-4">
+                                Start by creating your first order or adjust your search criteria.
+                            </p>
+                            <p-button label="Create New Order" icon="pi pi-plus" severity="success" (click)="openNew()">
+                            </p-button>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="footer">
+            <td colspan="7">
+            <div
+                class="flex justify-center items-center gap-4 p-4 bg-gray-50 dark:bg-gray-700 border-t border-gray-200 dark:border-gray-600">
+
                 <p-paginator [rows]="pagination().limit" [totalRecords]="pagination().total"
-                    [rowsPerPageOptions]="[5, 10, 25, 50]" (onPageChange)="onPageChange($event)"></p-paginator>
-            </td>
-        </tr>
-    </ng-template>
-</p-table>
+                     (onPageChange)="onPageChange($event)"
+                    [showCurrentPageReport]="false" [rowsPerPageOptions]="[10, 25, 50]" styleClass="p-paginator-sm">
+                </p-paginator>
+            </div>
+        </td>
+        </ng-template>
+    </p-table>
+</div>
 
 <!-- Order Dialog -->
-<p-dialog [(visible)]="orderDialog" [style]="{width: '80vw'}"
-    header="{{orderForm.get('_id')?.value ? 'Edit Order' : 'New Order'}}" [modal]="true" [closable]="false"
-    [resizable]="true" [draggable]="true" [dismissableMask]="true" [contentStyle]="{'max-height': '90vh'}"
-    [styleClass]="'order-dialog'">
+<p-dialog [(visible)]="orderDialog" [style]="{width: '90vw', maxWidth: '1200px'}"
+    [header]="orderForm.get('_id')?.value ? 'Edit Order' : 'Create New Order'" [modal]="true" [closable]="true"
+    [resizable]="true" [draggable]="true" [dismissableMask]="true"
+    [contentStyle]="{'max-height': '90vh', 'padding': '0'}" [styleClass]="'order-dialog'">
     @if(orderDialog){
-    <form [formGroup]="orderForm">
-        <h4 class="mb-4">Order Information</h4>
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <!-- <div class="field">
+    <div class="p-6">
+        <form [formGroup]="orderForm" class="space-y-6">
+            <!-- Order Header -->
+            <div
+                class="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-lg p-6 mb-6">
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="w-10 h-10 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
+                        <i class="pi pi-shopping-cart text-blue-600 dark:text-blue-400"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold text-gray-900 dark:text-white">Order Information</h3>
+                        <p class="text-sm text-gray-600 dark:text-gray-400">Basic order details and status</p>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <!-- <div class="field">
                 <label for="orderNumber">Order #</label>
                 <input id="orderNumber" pInputText formControlName="orderNumber"
                     [class.p-invalid]="submitted && orderForm.get('orderNumber')?.invalid">
@@ -125,387 +246,474 @@
                     required</small>
             </div> -->
 
-            <div class="field">
-                <label for="orderStatus">Order Status</label>
-                <p-dropdown id="orderStatus" [options]="statusOptions" formControlName="orderStatus" optionLabel="label"
-                    optionValue="value" [style]="{'width':'100%'}">
-                </p-dropdown>
+                    <div class="space-y-2">
+                        <label for="orderStatus" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                            <i class="pi pi-info-circle mr-2"></i>Order Status
+                        </label>
+                        <p-dropdown id="orderStatus" [options]="statusOptions" formControlName="orderStatus"
+                            optionLabel="label" optionValue="value" [style]="{'width':'100%'}"
+                            placeholder="Select status" styleClass="w-full">
+                        </p-dropdown>
+                    </div>
+
+                    <div class="space-y-2">
+                        <label for="paymentStatus" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                            <i class="pi pi-credit-card mr-2"></i>Payment Status
+                        </label>
+                        <p-dropdown id="paymentStatus" [options]="paymentStatusOptions" formControlName="paymentStatus"
+                            optionLabel="label" optionValue="value" [style]="{'width':'100%'}"
+                            placeholder="Select payment status" styleClass="w-full">
+                        </p-dropdown>
+                    </div>
+
+                    <div class="space-y-2">
+                        <label for="paymentMethod" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                            <i class="pi pi-wallet mr-2"></i>Payment Method
+                        </label>
+                        <p-dropdown id="paymentMethod" [options]="paymentMethodOptions" formControlName="paymentMethod"
+                            optionLabel="label" optionValue="value" [style]="{'width':'100%'}"
+                            placeholder="Select payment method" styleClass="w-full">
+                        </p-dropdown>
+                    </div>
+                </div>
             </div>
 
-            <div class="field">
-                <label for="paymentStatus">Payment Status</label>
-                <p-dropdown id="paymentStatus" [options]="paymentStatusOptions" formControlName="paymentStatus"
-                    optionLabel="label" optionValue="value" [style]="{'width':'100%'}">
-                </p-dropdown>
+            <!-- Payment Image Display -->
+            <div class="bg-yellow-50 dark:bg-yellow-900/20 rounded-lg p-4"
+                *ngIf="orderForm.get('paymentMethod')?.value === 'vodafone_cash' && orderForm.get('paymentImage')?.value">
+                <div class="flex items-center gap-3 mb-3">
+                    <i class="pi pi-image text-yellow-600 dark:text-yellow-400"></i>
+                    <h4 class="font-semibold text-yellow-800 dark:text-yellow-200">Payment Screenshot</h4>
+                </div>
+                <div class="flex items-center gap-4">
+                    <img [src]="orderForm.get('paymentImage')?.value" alt="Payment Screenshot"
+                        class="w-24 h-24 object-cover rounded-lg border-2 border-yellow-200 dark:border-yellow-700 cursor-pointer"
+                        (click)="viewPaymentImage(orderForm.get('paymentImage')?.value)">
+                    <div class="text-sm text-yellow-700 dark:text-yellow-300">
+                        <p class="font-medium">Vodafone Cash Payment</p>
+                        <p class="text-xs">Click to view full size</p>
+                    </div>
+                </div>
             </div>
 
-            <div class="field">
-                <label for="paymentMethod">Payment Method</label>
-                <p-dropdown id="paymentMethod" [options]="paymentMethodOptions" formControlName="paymentMethod"
-                    optionLabel="label" optionValue="value" [style]="{'width':'100%'}">
-                </p-dropdown>
+
+    <!-- Shipping Address Section -->
+    <div
+        class="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-lg p-6">
+        <div class="flex items-center gap-3 mb-4">
+            <div class="w-10 h-10 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center">
+                <i class="pi pi-map-marker text-green-600 dark:text-green-400"></i>
             </div>
-        </div>
-
-        <div class="w-full">
-            <h4 class="mb-4">Shipping Address</h4>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" formGroupName="shippingAddress">
-                <div class="field">
-                    <label for="fullName">Full Name</label>
-                    <input id="fullName" pInputText formControlName="fullName"
-                        [class.p-invalid]="submitted && orderForm.get('shippingAddress.fullName')?.invalid">
-                    <small class="p-error" *ngIf="submitted && orderForm.get('shippingAddress.fullName')?.invalid">Full
-                        name is
-                        required</small>
-                </div>
-                <div class="field">
-                    <label for="phone">Phone</label>
-                    <input id="phone" pInputText formControlName="phone"
-                        [class.p-invalid]="submitted && orderForm.get('shippingAddress.phone')?.invalid">
-                    <small class="p-error" *ngIf="submitted && orderForm.get('shippingAddress.phone')?.invalid">Phone is
-                        required</small>
-                </div>
-                <div class="field">
-                    <label for="address">address</label>
-                    <input id="address" pInputText formControlName="address"
-                        [class.p-invalid]="submitted && orderForm.get('shippingAddress.address')?.invalid">
-                    <small class="p-error"
-                        *ngIf="submitted && orderForm.get('shippingAddress.address')?.invalid">address
-                        is
-                        required</small>
-                </div>
-                <div class="field">
-                    <label for="city">City</label>
-                    <input id="city" pInputText formControlName="city"
-                        [class.p-invalid]="submitted && orderForm.get('shippingAddress.city')?.invalid">
-                    <small class="p-error" *ngIf="submitted && orderForm.get('shippingAddress.city')?.invalid">City
-                        is required</small>
-                </div>
-                <div class="field">
-                    <label for="state">State</label>
-                    <p-dropdown id="state" [options]="stateOptions()" formControlName="state" optionLabel="name.en"
-                        optionValue="_id" [style]="{'width':'100%'}">
-                    </p-dropdown>
-                    <small class="p-error"
-                        *ngIf="submitted && orderForm.get('shippingAddress.state')?.invalid">State is
-                        required</small>
-                </div>
-                <!-- <div class="field">
-                    <label for="zipCode">ZIP/Postal Code</label>
-                    <input id="zipCode" pInputText formControlName="zipCode"
-                        [class.p-invalid]="submitted && orderForm.get('shippingAddress.zipCode')?.invalid">
-                    <small class="p-error" *ngIf="submitted && orderForm.get('shippingAddress.zipCode')?.invalid">ZIP
-                        code is
-                        required</small>
-                </div> -->
-                <div class="field col-12">
-                    <label for="country">Country</label>
-                    <p-dropdown id="country" [options]="countryOptions()"
-                     formControlName="country" optionLabel="name.en"
-                        optionValue="_id" [style]="{'width':'100%'}">
-                        (onChange)="loadStates()"
-                    </p-dropdown>
-                    <small class="p-error"
-                        *ngIf="submitted && orderForm.get('shippingAddress.country')?.invalid">Country is
-                        required</small>
-                </div>
-
+            <div>
+                <h3 class="text-xl font-bold text-gray-900 dark:text-white">Shipping Address</h3>
+                <p class="text-sm text-gray-600 dark:text-gray-400">Customer delivery information</p>
             </div>
         </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" formGroupName="shippingAddress">
+            <div class="space-y-2">
+                <label for="fullName" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    <i class="pi pi-user mr-2"></i>Full Name *
+                </label>
+                <input id="fullName" pInputText formControlName="fullName" placeholder="Enter customer full name"
+                    class="w-full" [class.p-invalid]="submitted && orderForm.get('shippingAddress.fullName')?.invalid">
+                <small class="p-error" *ngIf="submitted && orderForm.get('shippingAddress.fullName')?.invalid">
+                    Full name is required
+                </small>
+            </div>
+            <div class="field">
+                <label for="phone">Phone</label>
+                <input id="phone" pInputText formControlName="phone"
+                    [class.p-invalid]="submitted && orderForm.get('shippingAddress.phone')?.invalid">
+                <small class="p-error" *ngIf="submitted && orderForm.get('shippingAddress.phone')?.invalid">Phone is
+                    required</small>
+            </div>
 
-        <h4 class="mb-4">Order Items</h4>
-        <div class="flex justify-content-between align-items-center mb-3">
-            <button type="button" pButton pRipple icon="pi pi-plus" label="Add Item" class="p-button-sm"
-                (click)="addItem()"></button>
+            <div class="field col-12">
+                <label for="country">Country</label>
+                <p-dropdown id="country" [options]="countryOptions()" formControlName="country" optionLabel="name.en"
+                    optionValue="_id" [style]="{'width':'100%'}" (onChange)="loadStates()">
+                </p-dropdown>
+                <small class="p-error" *ngIf="submitted && orderForm.get('shippingAddress.country')?.invalid">Country is
+                    required</small>
+            </div>
+            <!-- set shipping cost based on state -->
+            <div class="field">
+                <label for="state">State</label>
+                <p-dropdown id="state" [options]="stateOptions()" formControlName="state" optionLabel="name.en"
+                    optionValue="_id" [style]="{'width':'100%'}" (onChange)="setShippingCost()">
+                </p-dropdown>
+                <small class="p-error" *ngIf="submitted && orderForm.get('shippingAddress.state')?.invalid">State is
+                    required</small>
+            </div>
+
+            <div class="field">
+                <label for="address">address</label>
+                <input id="address" pInputText formControlName="address"
+                    [class.p-invalid]="submitted && orderForm.get('shippingAddress.address')?.invalid">
+                <small class="p-error" *ngIf="submitted && orderForm.get('shippingAddress.address')?.invalid">address
+                    is
+                    required</small>
+            </div>
+            <div class="field">
+                <label for="city">City</label>
+                <input id="city" pInputText formControlName="city"
+                    [class.p-invalid]="submitted && orderForm.get('shippingAddress.city')?.invalid">
+                <small class="p-error" *ngIf="submitted && orderForm.get('shippingAddress.city')?.invalid">City
+                    is required</small>
+            </div>
+
+
+        </div>
+    </div>
+
+    <!-- Order Items Section -->
+    <div class="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-lg p-6">
+        <div class="flex items-center justify-between mb-6">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-purple-100 dark:bg-purple-900 rounded-full flex items-center justify-center">
+                    <i class="pi pi-shopping-bag text-purple-600 dark:text-purple-400"></i>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold text-gray-900 dark:text-white">Order Items</h3>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">Products and packages in this order</p>
+                </div>
+            </div>
+            <p-button icon="pi pi-plus" label="Add Item" severity="success" size="large" (click)="addItem()"
+                styleClass="p-button-raised">
+            </p-button>
         </div>
 
-        <p-table [value]="items.controls" [scrollable]="true" scrollHeight="600px" columnResizeMode="fit"
-            [rowHover]="true" [resizableColumns]="true">
-            <ng-template pTemplate="header">
-                <tr>
-                    <th>Type</th>
-                    <th>Item</th>
-                    <!-- <th>Color</th> -->
-                    <!-- <th>Size</th> -->
-                    <th>Price</th>
-                    <th>Quantity</th>
-                    <th>Discount</th>
-                    <th>Total</th>
-                    <th></th>
-                </tr>
-            </ng-template>
-            <ng-template pTemplate="body" let-item let-rowIndex="rowIndex">
-                <tr [formGroup]="item">
-                    <td class="w-28 p-0">
-                        <p-dropdown formControlName="itemType" [options]="[
+        <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+            <p-table [value]="items.controls" [scrollable]="true" scrollHeight="500px" columnResizeMode="fit"
+                [rowHover]="true" [resizableColumns]="true" styleClass="p-datatable-sm">
+                <ng-template pTemplate="header">
+                    <tr class="bg-gray-50 dark:bg-gray-700">
+                        <th class="text-left p-3 font-semibold text-gray-700 dark:text-gray-300">
+                            <i class="pi pi-tag mr-2"></i>Type
+                        </th>
+                        <th class="text-left p-3 font-semibold text-gray-700 dark:text-gray-300">
+                            <i class="pi pi-box mr-2"></i>Item
+                        </th>
+                        <th class="text-left p-3 font-semibold text-gray-700 dark:text-gray-300">
+                            <i class="pi pi-palette mr-2"></i>Variants
+                        </th>
+                        <th class="text-right p-3 font-semibold text-gray-700 dark:text-gray-300">
+                            <i class="pi pi-dollar mr-2"></i>Price
+                        </th>
+                        <th class="text-center p-3 font-semibold text-gray-700 dark:text-gray-300">
+                            <i class="pi pi-sort-numeric-up mr-2"></i>Qty
+                        </th>
+                        <th class="text-right p-3 font-semibold text-gray-700 dark:text-gray-300">
+                            <i class="pi pi-percentage mr-2"></i>Discount
+                        </th>
+                        <th class="text-right p-3 font-semibold text-gray-700 dark:text-gray-300">
+                            <i class="pi pi-calculator mr-2"></i>Total
+                        </th>
+                        <th class="text-center p-3 font-semibold text-gray-700 dark:text-gray-300">
+                            <i class="pi pi-cog mr-2"></i>Actions
+                        </th>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-item let-rowIndex="rowIndex">
+                    <tr [formGroup]="item" class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                        <td class="p-3">
+                            <p-dropdown formControlName="itemType" [options]="[
                                 {label: 'Product', value: 'product'},
                                 {label: 'Package', value: 'package'}
-                            ]" appendTo="body" optionLabel="label" optionValue="value" placeholder="Select Type"
-                            styleClass="w-full" [class.p-invalid]="submitted && item.get('itemType')?.invalid"
-                            (onChange)="onItemTypeChange($event,rowIndex)">
-                        </p-dropdown>
-                    </td>
-                    <td class="w-28 p-0">
-                        <p-dropdown formControlName="itemId"
-                            [options]="item.get('itemType')?.value === 'package' ? packages() : products()"
-                            appendTo="body" optionLabel="name.en" optionValue="_id" placeholder="Select Item"
-                            styleClass="w-full" filter="true" filterBy="name"
-                            [class.p-invalid]="submitted && item.get('itemId')?.invalid"
-                            (onChange)="onItemChange($event,rowIndex)">
-                        </p-dropdown>
-                    </td>
-                    <!-- <td class="w-28 p-0">
-                        <p-dropdown formControlName="color" [options]="item.get('listColors')?.value" appendTo="body"
-                            placeholder="Select Color" styleClass="w-full"
-                            [class.p-invalid]="submitted && item.get('color')?.invalid"
-                            [disabled]="item.get('itemType')?.value === 'package'"
-                            (onChange)="onColorChange($event,rowIndex)">
-                        </p-dropdown>
-                    </td>
-                    <td class="w-28 p-0">
-                        <p-dropdown formControlName="size" 
-                            [options]="item.get('listSizes')?.value" 
-                            appendTo="body"
-                            placeholder="Select Size" 
-                            styleClass="w-full"
-                            [class.p-invalid]="submitted && item.get('size')?.invalid"
-                            [disabled]="item.get('itemType')?.value === 'package'"
-                            (onChange)="onSizeChange($event,rowIndex)">
-                        </p-dropdown>
-                    </td> -->
-                    <td class="w-28 p-0">
-                        <p-inputNumber mode="currency" currency="USD" locale="en-US" formControlName="price"
-                            (onInput)="calculateTotal()" class="w-full">
-                        </p-inputNumber>
-                    </td>
-                    <td class="w-28 p-0">
-                        <p-inputNumber formControlName="quantity" [min]="1" (onInput)="calculateTotal()" class="w-full">
-                        </p-inputNumber>
-                    </td>
-                    <td class="w-28 p-0">
-                        <p-inputNumber mode="currency" currency="USD" locale="en-US" formControlName="discountPrice"
-                            (onInput)="calculateTotal()" class="w-full">
-                        </p-inputNumber>
-                    </td>
-                    <td class="w-28 p-0">
-                        <p-inputNumber mode="currency" currency="USD" locale="en-US" formControlName="totalPrice"
-                            [readonly]="true" class="w-full">
-                        </p-inputNumber>
-                    </td>
-                    <td style="width: 50px" class="text-center">
-                        <button type="button" pButton pRipple icon="pi pi-trash"
-                            class="p-button-rounded p-button-text p-button-danger p-button-sm"
-                            (click)="removeItem(rowIndex)">
-                        </button>
-                    </td>
-                </tr>
+                                        ]" appendTo="body" optionLabel="label" optionValue="value"
+                                placeholder="Select Type" styleClass="w-full"
+                                [class.p-invalid]="submitted && item.get('itemType')?.invalid"
+                                (onChange)="onItemChange($event, rowIndex)">
+                            </p-dropdown>
+                        </td>
+                        <td class="p-3">
+                            <div class="space-y-2">
+                                <p-dropdown formControlName="itemId"
+                                    [options]="item.get('itemType')?.value === 'package' ? packages() : products()"
+                                    appendTo="body" optionLabel="name.en" optionValue="_id" placeholder="Select Item"
+                                    styleClass="w-full" filter="true" filterBy="name"
+                                    [class.p-invalid]="submitted && item.get('itemId')?.invalid"
+                                    (onChange)="onItemChange($event,rowIndex)" [showClear]="true">
+                                </p-dropdown>
+                            </div>
+                        </td>
+                        <!-- Variants -->
+                        <td class="p-3">
+                            <div class="space-y-2">
+                                <p-button icon="pi pi-tag"
+                                    [label]="item.get('selectedVariants')?.value?.length > 0 ? 'Edit Variants' : 'Add Variants'"
+                                    styleClass="p-button-sm p-button-outlined" (onClick)="openVariantDialog(rowIndex)"
+                                    [disabled]="!item.get('itemId')?.value || item.get('itemType')?.value === 'package'">
+                                </p-button>
+                                <div *ngIf="item.get('selectedVariants')?.value?.length > 0"
+                                    class="text-xs text-gray-600 dark:text-gray-400">
+                                    {{ item.get('selectedVariants')?.value?.length }} variant(s)
+                                </div>
+                            </div>
+                        </td>
 
-                <!-- Package Items Details Row -->
-                <tr *ngIf="item.get('itemType')?.value === 'package' && item.get('packageItems')?.value?.length > 0"
-                    class="bg-blue-50 dark:bg-blue-900/20">
-                    <td colspan="9" class="p-3">
-                        <div class="ml-4">
-                            <h6 class="text-sm font-semibold text-blue-800 dark:text-blue-200 mb-2">
-                                <i class="pi pi-box mr-2"></i>Package Contents:
-                            </h6>
-                            <div class="flex flex-wrap w-full gap-3">
-                                <div *ngFor="let packageItem of item.get('packageItems')?.value"
-                                    class="flex flex-wrap gap-3 bg-white dark:bg-gray-800 rounded-lg p-3 border border-blue-200 dark:border-blue-700">
-                                    <div class="flex items-center justify-between mb-2 gap-2 w-full">
-                                        <span class="text-sm font-medium text-gray-900 dark:text-white">
-                                            Product Name: {{ packageItem.productId.name }}
-                                        </span>
-                                        <span
-                                            class="text-xs bg-blue-100 dark:bg-blue-800 text-blue-800 dark:text-blue-200 px-2 py-1 rounded">
-                                            Qty: {{ packageItem.quantity }}
-                                        </span>
-                                    </div>
+                        <td class="p-3 text-right">
+                            <p-inputNumber mode="currency" currency="USD" locale="en-US" formControlName="price"
+                                (onInput)="calculateTotal()" class="w-full" placeholder="0.00">
+                            </p-inputNumber>
+                        </td>
+                        <td class="p-3 text-center">
+                            <p-inputNumber formControlName="quantity" [min]="1" (onInput)="calculateTotal()"
+                                class="w-full" placeholder="1">
+                            </p-inputNumber>
+                        </td>
+                        <td class="p-3 text-right">
+                            <p-inputNumber mode="currency" currency="USD" locale="en-US" formControlName="discountPrice"
+                                (onInput)="calculateTotal()" class="w-full" placeholder="0.00">
+                            </p-inputNumber>
+                        </td>
+                        <td class="p-3 text-right">
+                            <p-inputNumber mode="currency" currency="USD" locale="en-US" formControlName="totalPrice"
+                                [readonly]="true" class="w-full bg-gray-50 dark:bg-gray-700">
+                            </p-inputNumber>
+                        </td>
+                        <td class="p-3 text-center">
+                            <p-button icon="pi pi-trash" severity="danger" [rounded]="true" [outlined]="true"
+                                size="small" pTooltip="Remove Item" (click)="removeItem(rowIndex)">
+                            </p-button>
+                        </td>
+                    </tr>
 
-                                    <!-- Selected Variants -->
-                                    <div *ngIf="packageItem.selectedVariants && packageItem.selectedVariants.length > 0"
-                                        class="mt-2 w-full">
-                                        <h6 class="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
-                                            Selected Variants:
-                                        </h6>
-                                        <div class="flex flex-wrap gap-1">
-                                            <span *ngFor="let variant of packageItem.selectedVariants"
-                                                class="text-xs bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-2 py-1 rounded">
-                                                {{ variant.variant }}: {{ variant.value.en }}
-                                                <img [src]="getVariantImage(variant.value , packageItem.productId) || ''"
-                                                    alt="Variant Image" class="w-10 h-auto">
+                    <!-- Package Items Details Row -->
+                    <tr *ngIf="item.get('itemType')?.value === 'package'" class="bg-blue-50 dark:bg-blue-900/20">
+                        <td colspan="9" class="p-3">
+                            <div class="ml-4">
+                                <h6 class="text-sm font-semibold text-blue-800 dark:text-blue-200 mb-2">
+                                    <i class="pi pi-box mr-2"></i>Package Contents:
+                                </h6>
+                                <div class="flex flex-wrap w-full gap-3">
+                                    <div *ngFor="let packageItem of item.get('packageItems')?.value; let i = index"
+                                        class="flex flex-wrap gap-3 bg-white dark:bg-gray-800 rounded-lg p-3 border border-blue-200 dark:border-blue-700">
+                                        <div class="flex items-center justify-between mb-2 gap-2 w-full">
+                                            <span class="text-sm font-medium text-gray-900 dark:text-white">
+                                                Product Name: {{ packageItem.productId.name | multiLanguage: 'en' }}
                                             </span>
+                                            <span
+                                                class="text-xs bg-blue-100 dark:bg-blue-800 text-blue-800 dark:text-blue-200 px-2 py-1 rounded">
+                                                Qty: {{ packageItem.quantity }}
+                                            </span>
+                                        </div>
+
+                                        <!-- Selected Variants -->
+                                        <div class="mt-2 w-full">
+                                            <div class="flex items-center justify-between mb-1">
+                                                <h6 class="text-xs font-medium text-gray-600 dark:text-gray-400">
+                                                    Selected Variants:
+                                                </h6>
+                                                <p-button icon="pi pi-tag" label="Edit Variants"
+                                                    styleClass="p-button-sm p-button-outlined p-button-text"
+                                                    (onClick)="editPackageVariants(rowIndex)">
+                                                </p-button>
+                                            </div>
+                                            <div *ngIf="packageItem.selectedVariants && packageItem.selectedVariants.length > 0"
+                                                class="flex flex-wrap gap-1">
+                                                <span *ngFor="let variant of packageItem.selectedVariants"
+                                                    class="text-xs bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-2 py-1 rounded flex items-center gap-1">
+                                                    <span class="font-medium">{{ variant.variant }}:</span>
+                                                    <span>{{ variant.value?.en || variant.value }}</span>
+                                                    <img *ngIf="variant.image" [src]="variant.image.filePath"
+                                                        alt="Variant Image" class="w-4 h-4 rounded object-cover">
+                                                </span>
+                                            </div>
+                                            <div *ngIf="!packageItem.selectedVariants || packageItem.selectedVariants.length === 0"
+                                                class="text-xs text-gray-500 italic">
+                                                No variants selected
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                    </td>
-                </tr>
+                        </td>
+                    </tr>
 
-                <!-- Selected Variants for Products -->
-                <tr *ngIf="item.get('itemType')?.value === 'product' && item.get('selectedVariants')?.value?.length > 0"
-                    class="bg-green-50 dark:bg-green-900/20">
-                    <td colspan="9" class="p-3">
-                        <div class="ml-4">
-                            <h6 class="text-sm font-semibold text-green-800 dark:text-green-200 mb-2">
-                                <i class="pi pi-tag mr-2"></i>Selected Variants:
-                            </h6>
-                            <div class="flex flex-wrap gap-2">
-                                <span *ngFor="let variant of item.get('selectedVariants')?.value"
-                                    class="text-sm bg-green-100 dark:bg-green-800 text-green-800 dark:text-green-200 px-3 py-1 rounded">
-                                    {{ variant.variant }}: {{ variant.value.en }}
-                                </span>
+                    <!-- Selected Variants for Products -->
+                    <tr *ngIf="item.get('itemType')?.value === 'product' && item.get('selectedVariants')?.value?.length > 0"
+                        class="bg-green-50 dark:bg-green-900/20">
+                        <td colspan="9" class="p-3">
+                            <div class="ml-4">
+                                <h6 class="text-sm font-semibold text-green-800 dark:text-green-200 mb-2">
+                                    <i class="pi pi-tag mr-2"></i>Selected Variants:
+                                </h6>
+                                <div class="flex flex-wrap gap-2">
+                                    <span *ngFor="let variant of item.get('selectedVariants')?.value"
+                                        class="text-sm bg-green-100 dark:bg-green-800 text-green-800 dark:text-green-200 px-3 py-1 rounded flex items-center gap-2">
+                                        <span class="font-medium">{{ variant.variant }}:</span>
+                                        <span>{{ variant.value?.en || variant.value }}</span>
+                                        <img *ngIf="variant.image?.url" [src]="variant.image.url" alt="Variant Image"
+                                            class="w-6 h-6 rounded object-cover">
+                                    </span>
+                                </div>
                             </div>
-                        </div>
-                    </td>
-                </tr>
-            </ng-template>
-        </p-table>
+                        </td>
+                    </tr>
+                </ng-template>
+            </p-table>
+        </div>
+    </div>
 
-        <!-- Enhanced Order Summary Table -->
-        <div class="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-xl p-6 shadow-lg border border-gray-200 dark:border-gray-700">
-            <h3 class="text-2xl font-bold text-gray-800 dark:text-white mb-6 flex items-center">
-                <i class="pi pi-calculator mr-3 text-blue-600 dark:text-blue-400"></i>
-                Order Summary
-            </h3>
-            
+    <!-- Order Summary Section -->
+    <div
+        class="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-xl p-6 shadow-lg border border-gray-200 dark:border-gray-700">
+        <div class="flex items-center gap-3 mb-6">
+            <div class="w-10 h-10 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
+                <i class="pi pi-calculator text-blue-600 dark:text-blue-400"></i>
+            </div>
+            <div>
+                <h3 class="text-xl font-bold text-gray-900 dark:text-white">Order Summary</h3>
+                <p class="text-sm text-gray-600 dark:text-gray-400">Final pricing and totals</p>
+            </div>
+        </div>
+
+        <div class="space-y-4">
+            <!-- Subtotal -->
+            <div
+                class="flex justify-between items-center p-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md transition-shadow duration-200">
+                <div class="flex items-center">
+                    <i class="pi pi-shopping-cart mr-3 text-gray-600 dark:text-gray-400"></i>
+                    <span class="text-lg font-semibold text-gray-700 dark:text-gray-300">Subtotal</span>
+                </div>
+                <span class="text-xl font-bold text-gray-900 dark:text-white">
+                    {{ orderForm.get('subtotal')?.value | currency:'USD':'symbol':'1.2-2' }}
+                </span>
+            </div>
+
+            <!-- Tax -->
+            <div
+                class="flex justify-between items-center p-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md transition-shadow duration-200">
+                <div class="flex items-center">
+                    <i class="pi pi-percentage mr-3 text-gray-600 dark:text-gray-400"></i>
+                    <span class="text-lg font-semibold text-gray-700 dark:text-gray-300">Tax</span>
+                </div>
+                <span class="text-xl font-bold text-gray-900 dark:text-white">
+                    {{ orderForm.get('tax')?.value | currency:'USD':'symbol':'1.2-2' }}
+                </span>
+            </div>
+
+            <!-- Shipping -->
+            <div
+                class="flex justify-between items-center p-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md transition-shadow duration-200">
+                <div class="flex items-center">
+                    <i class="pi pi-truck mr-3 text-gray-600 dark:text-gray-400"></i>
+                    <span class="text-lg font-semibold text-gray-700 dark:text-gray-300">Shipping</span>
+                </div>
+                <span class="text-xl font-bold text-gray-900 dark:text-white">
+                    {{ orderForm.get('shippingCost')?.value | currency:'USD':'symbol':'1.2-2' }}
+                </span>
+            </div>
+
+            <!-- Total -->
+            <div
+                class="flex justify-between items-center p-6 bg-gradient-to-r from-blue-500 to-blue-600 dark:from-blue-600 dark:to-blue-700 rounded-lg shadow-lg border-2 border-blue-400 dark:border-blue-500">
+                <div class="flex items-center">
+                    <i class="pi pi-dollar mr-3 text-white"></i>
+                    <span class="text-2xl font-bold text-white">Total</span>
+                </div>
+                <span class="text-3xl font-bold text-white">
+                    {{ orderForm.get('total')?.value | currency:'USD':'symbol':'1.2-2' }}
+                </span>
+            </div>
+        </div>
+    </div>
+    
+
+    <!-- Cash Payment Section (Only in Edit Mode) -->
+    @if (isEditOrder) {
+    <div
+        class="bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20 rounded-lg p-6 mt-6">
+        <div class="flex items-center gap-3 mb-4">
+            <div class="w-10 h-10 bg-yellow-100 dark:bg-yellow-900 rounded-full flex items-center justify-center">
+                <i class="pi pi-money-bill text-yellow-600 dark:text-yellow-400"></i>
+            </div>
+            <div>
+                <h3 class="text-xl font-bold text-gray-900 dark:text-white">Cash Payment Details</h3>
+                <p class="text-sm text-gray-600 dark:text-gray-400">Track cash payments and change</p>
+            </div>
+        </div>
+        <ng-container [formGroup]="cashPayment">
             <div class="space-y-4">
-                <!-- Subtotal -->
-                <div class="flex justify-between items-center p-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md transition-shadow duration-200">
-                    <div class="flex items-center">
-                        <i class="pi pi-shopping-cart mr-3 text-gray-600 dark:text-gray-400"></i>
-                        <span class="text-lg font-semibold text-gray-700 dark:text-gray-300">Subtotal</span>
+                <!-- Cash Payment Fields -->
+
+                <!-- Cash Payment Input -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="space-y-2">
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                            <i class="pi pi-money-bill mr-2"></i>Amount Paid
+                        </label>
+                        <p-inputNumber mode="currency" currency="USD" locale="en-US" formControlName="amountPaid"
+                            class="w-full" placeholder="0.00">
+                        </p-inputNumber>
                     </div>
-                    <span class="text-xl font-bold text-gray-900 dark:text-white">
-                        {{ orderForm.get('subtotal')?.value | currency:'USD':'symbol':'1.2-2' }}
-                    </span>
+                    <div class="space-y-2">
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                            <i class="pi pi-calculator mr-2"></i>Change Due
+                        </label>
+                        <p-inputNumber mode="currency" currency="USD" locale="en-US" formControlName="changeDue"
+                            [readonly]="true" class="w-full bg-gray-50 dark:bg-gray-700">
+                        </p-inputNumber>
+                    </div>
                 </div>
 
-                <!-- Tax -->
-                <div class="flex justify-between items-center p-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md transition-shadow duration-200">
-                    <div class="flex items-center">
-                        <i class="pi pi-percentage mr-3 text-gray-600 dark:text-gray-400"></i>
-                        <span class="text-lg font-semibold text-gray-700 dark:text-gray-300">Tax</span>
-                    </div>
-                    <span class="text-xl font-bold text-gray-900 dark:text-white">
-                        {{ orderForm.get('tax')?.value | currency:'USD':'symbol':'1.2-2' }}
-                    </span>
-                </div>
-
-                <!-- Shipping -->
-                <div class="flex justify-between items-center p-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md transition-shadow duration-200">
-                    <div class="flex items-center">
-                        <i class="pi pi-truck mr-3 text-gray-600 dark:text-gray-400"></i>
-                        <span class="text-lg font-semibold text-gray-700 dark:text-gray-300">Shipping</span>
-                    </div>
-                    <span class="text-xl font-bold text-gray-900 dark:text-white">
-                        {{ orderForm.get('shippingCost')?.value | currency:'USD':'symbol':'1.2-2' }}
-                    </span>
-                </div>
-
-                <!-- Total -->
-                <div class="flex justify-between items-center p-6 bg-gradient-to-r from-blue-500 to-blue-600 dark:from-blue-600 dark:to-blue-700 rounded-lg shadow-lg border-2 border-blue-400 dark:border-blue-500">
-                    <div class="flex items-center">
-                        <i class="pi pi-dollar mr-3 text-white"></i>
-                        <span class="text-2xl font-bold text-white">Total</span>
-                    </div>
-                    <span class="text-3xl font-bold text-white">
-                        {{ orderForm.get('total')?.value | currency:'USD':'symbol':'1.2-2' }}
-                    </span>
-                </div>
-
-                <!-- Cash Payment Section (Only in Edit Mode) -->
-                @if (isEditOrder) {
-                <ng-container [formGroup]="cashPayment">
-                    <div class="mt-6 pt-6 border-t-2 border-gray-300 dark:border-gray-600">
-                        <h4 class="text-xl font-bold text-gray-800 dark:text-white mb-4 flex items-center">
-                            <i class="pi pi-credit-card mr-3 text-green-600 dark:text-green-400"></i>
-                            Cash Payment
-                        </h4>
-                        
-                        <!-- Cash Payment Input -->
-                        <div class="flex justify-between items-center p-4 bg-gradient-to-r from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 rounded-lg border-2 border-green-200 dark:border-green-700 shadow-sm hover:shadow-md transition-shadow duration-200">
-                            <div class="flex items-center">
-                                <i class="pi pi-money-bill mr-3 text-green-600 dark:text-green-400"></i>
-                                <span class="text-lg font-semibold text-green-800 dark:text-green-300">Amount Paid</span>
-                            </div>
-                            <div class="w-48">
-                                <p-inputNumber 
-                                    mode="currency" 
-                                    currency="USD" 
-                                    locale="en-US" 
-                                    formControlName="amountPaid"
-                                    (onInput)="calculateChangeDue()" 
-                                    class="w-full"
-                                    styleClass="w-full"
-                                    inputStyleClass="text-right font-semibold text-lg">
-                                </p-inputNumber>
-                            </div>
-                        </div>
-
-                        <!-- Change Due Display -->
-                        <div class="flex justify-between items-center p-4 bg-gradient-to-r from-yellow-50 to-yellow-100 dark:from-yellow-900/20 dark:to-yellow-800/20 rounded-lg border-2 border-yellow-200 dark:border-yellow-700 shadow-sm hover:shadow-md transition-shadow duration-200 mt-3">
-                            <div class="flex items-center">
-                                <i class="pi pi-refresh mr-3 text-yellow-600 dark:text-yellow-400"></i>
-                                <span class="text-lg font-semibold text-yellow-800 dark:text-yellow-300">Change Due</span>
-                            </div>
-                            <div class="w-48">
-                                <p-inputNumber 
-                                    mode="currency" 
-                                    currency="USD" 
-                                    locale="en-US" 
-                                    formControlName="changeDue"
-                                    [readonly]="true" 
-                                    class="w-full"
-                                    styleClass="w-full"
-                                    inputStyleClass="text-right font-bold text-lg"
-                                    [class.text-green-600]="cashPayment.get('changeDue')?.value >= 0"
-                                    [class.text-red-600]="cashPayment.get('changeDue')?.value < 0">
-                                </p-inputNumber>
-                            </div>
-                        </div>
-
-                        <!-- Payment Status Indicator -->
-                        <div class="mt-4 p-3 rounded-lg" 
-                             [class.bg-green-100]="cashPayment.get('changeDue')?.value >= 0"
-                             [class.bg-red-100]="cashPayment.get('changeDue')?.value < 0"
-                             [class.dark:bg-green-900\30]="cashPayment.get('changeDue')?.value >= 0"
-                             [class.dark:bg-red-900\30]="cashPayment.get('changeDue')?.value < 0">
-                            <div class="flex items-center justify-center">
-                                <i class="pi mr-2" 
-                                   [class.pi-check-circle]="cashPayment.get('changeDue')?.value >= 0"
-                                   [class.pi-exclamation-triangle]="cashPayment.get('changeDue')?.value < 0"
-                                   [class.text-green-600]="cashPayment.get('changeDue')?.value >= 0"
-                                   [class.text-red-600]="cashPayment.get('changeDue')?.value < 0"></i>
-                                <span class="font-semibold"
-                                      [class.text-green-800]="cashPayment.get('changeDue')?.value >= 0"
-                                      [class.text-red-800]="cashPayment.get('changeDue')?.value < 0"
-                                      [class.dark:text-green-300]="cashPayment.get('changeDue')?.value >= 0"
-                                      [class.dark:text-red-300]="cashPayment.get('changeDue')?.value < 0">
-                                    {{ cashPayment.get('changeDue')?.value >= 0 ? 'Payment Complete' : 'Payment Incomplete' }}
-                                </span>
-                            </div>
+                <!-- Payment Image Upload -->
+                <div class="space-y-2" *ngIf="orderForm.get('paymentMethod')?.value === 'vodafone_cash'">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                        <i class="pi pi-image mr-2"></i>Payment Screenshot
+                    </label>
+                    <div class="flex items-center gap-4">
+                        <input type="file" accept="image/*" (change)="onPaymentImageChange($event)"
+                            class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                        <div *ngIf="paymentImagePreview" class="flex items-center gap-2">
+                            <img [src]="paymentImagePreview" alt="Preview"
+                                class="w-16 h-16 object-cover rounded border">
+                            <p-button icon="pi pi-times" severity="danger" [rounded]="true" [outlined]="true"
+                                size="small" (click)="removePaymentImage()">
+                            </p-button>
                         </div>
                     </div>
-                </ng-container>
-                }
+                </div>
             </div>
-        </div>
-
-        <div class="w-full mt-4">
-            <div class="field">
-                <label for="notes">Notes</label>
-                <textarea id="notes" pTextarea formControlName="notes" rows="3" class="w-full"></textarea>
-            </div>
-        </div>
-
-    </form>
+        </ng-container>
+    </div>
     }
+
+
+    <!-- Notes Section -->
+    <div class="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-lg p-6 mt-6">
+        <div class="flex items-center gap-3 mb-4">
+            <div class="w-10 h-10 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center">
+                <i class="pi pi-file-edit text-gray-600 dark:text-gray-400"></i>
+            </div>
+            <div>
+                <h3 class="text-xl font-bold text-gray-900 dark:text-white">Order Notes</h3>
+                <p class="text-sm text-gray-600 dark:text-gray-400">Additional information and comments</p>
+            </div>
+        </div>
+        <div class="space-y-2">
+            <label for="notes" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                <i class="pi pi-comment mr-2"></i>Notes
+            </label>
+            <textarea id="notes" pTextarea formControlName="notes" rows="4" class="w-full"
+                placeholder="Enter any additional notes or special instructions...">
+                    </textarea>
+        </div>
+    </div>
+</form>
+</div>
+}
+
+
     <ng-template pTemplate="footer">
-        <div class="flex justify-end gap-2">
-            <p-button label="Cancel" severity="danger" icon="pi pi-times" (click)="hideDialog()">
+        <div
+            class="flex flex-col sm:flex-row justify-end gap-3 p-6 bg-gray-50 dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
+            <p-button label="Cancel" icon="pi pi-times" (click)="hideDialog()" severity="secondary" [outlined]="true"
+                size="large">
             </p-button>
-            <p-button label="Save" severity="success" icon="pi pi-check" (click)="saveOrder()">
+            <p-button [label]="orderForm.get('_id')?.value ? 'Update Order' : 'Create Order'" icon="pi pi-check"
+                (click)="saveOrder()" [loading]="loading()" severity="success" size="large">
             </p-button>
         </div>
     </ng-template>
@@ -516,3 +724,211 @@
 
 <!-- Confirmation dialog for delete -->
 <p-confirmDialog [style]="{width: '450px'}"></p-confirmDialog>
+
+<!-- Variant Edit Dialog -->
+<p-dialog [(visible)]="variantDialog" [style]="{width: '60vw'}" header="Edit Product Variants" [modal]="true"
+    [closable]="true" [resizable]="true" [draggable]="true" [dismissableMask]="true"
+    [contentStyle]="{'max-height': '80vh'}">
+
+    @if(variantDialog && selectedItemIndex !== null) {
+    <div class="space-y-4">
+        <!-- Product Info -->
+        <div class="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
+            <h4 class="font-semibold text-blue-800 dark:text-blue-200 mb-2">
+                <i class="pi pi-box mr-2"></i>Product: {{ getSelectedProductName() }}
+            </h4>
+            <p class="text-sm text-blue-600 dark:text-blue-300">
+                Current variants: {{ getCurrentVariantsCount() }}
+            </p>
+        </div>
+
+        <!-- Available Variants -->
+        <div class="space-y-3">
+            <h5 class="font-semibold text-gray-800 dark:text-gray-200">
+                <i class="pi pi-tag mr-2"></i>Available Variants
+            </h5>
+
+            <div *ngIf="availableVariants.length === 0" class="text-center py-8 text-gray-500">
+                <i class="pi pi-info-circle text-2xl mb-2"></i>
+                <p>No variants available for this product</p>
+            </div>
+
+            <div *ngFor="let variant of availableVariants"
+                class="border border-gray-200 dark:border-gray-600 rounded-lg p-4">
+                <div class="flex items-center justify-between mb-3">
+                    <h6 class="font-medium text-gray-800 dark:text-gray-200 capitalize">
+                        {{ variant.variant }}
+                    </h6>
+                    <p-checkbox [ngModel]="isVariantSelected(variant)" (onChange)="toggleVariant(variant, $event)"
+                        [binary]="true">
+                    </p-checkbox>
+                </div>
+
+                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+                    <div *ngFor="let option of variant.options"
+                        class="flex items-center space-x-2 p-2 border rounded cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700"
+                        [class.bg-blue-100]="isVariantOptionSelected(variant.variant, option)"
+                        [class.dark:bg-blue-900]="isVariantOptionSelected(variant.variant, option)"
+                        (click)="selectVariantOption(variant.variant, option)">
+                        <img *ngIf="option.image?.url" [src]="option.image.url" alt="Variant"
+                            class="w-8 h-8 rounded object-cover">
+                        <span class="text-sm">{{ option.value.en || option.value }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Selected Variants Summary -->
+        <div *ngIf="getSelectedVariantsSummary().length > 0" class="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg">
+            <h5 class="font-semibold text-green-800 dark:text-green-200 mb-3">
+                <i class="pi pi-check-circle mr-2"></i>Selected Variants
+            </h5>
+            <div class="flex flex-wrap gap-2">
+                <span *ngFor="let variant of getSelectedVariantsSummary()"
+                    class="bg-green-100 dark:bg-green-800 text-green-800 dark:text-green-200 px-3 py-1 rounded-full text-sm flex items-center gap-2">
+                    <span class="font-medium">{{ variant.variant }}:</span>
+                    <span>{{ variant.value.en || variant.value }}</span>
+                    <img *ngIf="variant.image?.url" [src]="variant.image.url" alt="Variant"
+                        class="w-4 h-4 rounded object-cover">
+                    <button type="button" class="text-green-600 hover:text-green-800 ml-1"
+                        (click)="removeVariant(variant)">
+                        <i class="pi pi-times text-xs"></i>
+                    </button>
+                </span>
+            </div>
+        </div>
+    </div>
+    }
+
+    <ng-template pTemplate="footer">
+        <div class="flex justify-end gap-2">
+            <p-button label="Cancel" severity="secondary" icon="pi pi-times" (click)="closeVariantDialog()">
+            </p-button>
+            <p-button label="Save Variants" severity="success" icon="pi pi-check" (click)="saveVariants()">
+            </p-button>
+        </div>
+    </ng-template>
+</p-dialog>
+
+
+<!-- Package Details Dialog -->
+<p-dialog [(visible)]="packageDetailsDialog" [style]="{width: '70vw'}" header="Package Details - Select Variants"
+    [modal]="true" [closable]="true" [resizable]="true" [draggable]="true" [dismissableMask]="true"
+    [contentStyle]="{'max-height': '80vh'}">
+
+    @if(packageDetailsDialog && selectedPackageForDetails) {
+    <div class="space-y-4">
+        <!-- Package Info -->
+        <div class="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
+            <h4 class="font-semibold text-blue-800 dark:text-blue-200 mb-2">
+                <i class="pi pi-box mr-2"></i>Package: {{ selectedPackageForDetails.name?.en }}
+            </h4>
+            <p class="text-sm text-blue-600 dark:text-blue-300">
+                Select variants for each product in this package
+            </p>
+        </div>
+
+        <!-- Package Products -->
+        <div class="space-y-3">
+            <h5 class="font-semibold text-gray-800 dark:text-gray-200">
+                <i class="pi pi-list mr-2"></i>Package Products
+            </h5>
+
+            <div *ngFor="let packageItem of tempPackageItems; let i = index"
+                class="border border-gray-200 dark:border-gray-600 rounded-lg p-4">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="flex-1">
+                        <h6 class="font-medium text-gray-800 dark:text-gray-200">
+                            {{ getProductName(packageItem.productId) }}
+                        </h6>
+                        <p class="text-sm text-gray-600 dark:text-gray-400">
+                            Quantity: {{ packageItem.quantity }}
+                        </p>
+                    </div>
+                    <div class="flex flex-col items-center gap-2">
+                        <p-inputNumber [(ngModel)]="packageItem.quantity" [min]="1" [max]="10" size="small"
+                            styleClass="w-10">
+                        </p-inputNumber>
+                        <p-button [icon]="expandedProductIndex === i ? 'pi pi-chevron-up' : 'pi pi-chevron-down'"
+                            [label]="expandedProductIndex === i ? 'Hide Variants' : 'Show Variants'"
+                            styleClass="p-button-sm p-button-outlined" (onClick)="toggleProductVariants(i)">
+                        </p-button>
+                    </div>
+                </div>
+
+                <!-- Variants Selection (Expandable) -->
+                <div *ngIf="expandedProductIndex === i" class="mt-4 border-t border-gray-200 dark:border-gray-600 pt-4">
+                    <h6 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                        <i class="pi pi-tag mr-2"></i>Select Variants
+                    </h6>
+
+                    <div *ngFor="let variant of productVariantsCache[packageItem.productId] || []" class="mb-4">
+                        <div class="text-xs font-medium text-gray-600 dark:text-gray-400 capitalize mb-2">
+                            {{ variant.variant }}
+                        </div>
+                        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+                            <button type="button" *ngFor="let option of variant.options"
+                                (click)="selectProductVariantOption(i, variant.variant, option)"
+                                class="flex items-center space-x-2 p-2 border rounded cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                                [class.bg-blue-100]="isProductVariantSelected(i, variant.variant, option)"
+                                [class.dark:bg-blue-900]="isProductVariantSelected(i, variant.variant, option)"
+                                [class.border-blue-300]="isProductVariantSelected(i, variant.variant, option)">
+                                <img *ngIf="option.image?.url" [src]="option.image.url" alt="Variant"
+                                    class="w-6 h-6 rounded object-cover">
+                                <span class="text-xs">{{ option.value.en || option.value }} xx</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Selected Variants Display -->
+                <div *ngIf="getSelectedVariantsForProduct(i).length > 0"
+                    class="mt-3 p-3 bg-green-50 dark:bg-green-900/20 rounded">
+                    <h6 class="text-sm font-medium text-green-800 dark:text-green-200 mb-2">
+                        Selected Variants:
+                    </h6>
+                    <div class="flex flex-wrap gap-2">
+                        <span *ngFor="let variant of getSelectedVariantsForProduct(i)"
+                            class="bg-green-100 dark:bg-green-800 text-green-800 dark:text-green-200 px-2 py-1 rounded text-xs flex items-center gap-1">
+                            <span class="font-medium">{{ variant.variant }}:</span>
+                            <span>{{ variant.value?.en || variant.value }}</span>
+                            <img *ngIf="variant.image?.filePath" [src]="variant.image.filePath" alt="Variant"
+                                class="w-3 h-3 rounded object-cover">
+                            <button type="button" class="text-green-600 hover:text-green-800 ml-1"
+                                (click)="removeProductVariant(i, variant)">
+                                <i class="pi pi-times text-xs"></i>
+                            </button>
+                        </span>
+                    </div>
+                </div>
+
+                <div *ngIf="getSelectedVariantsForProduct(i).length === 0 && expandedProductIndex !== i"
+                    class="mt-3 p-3 bg-gray-50 dark:bg-gray-800 rounded">
+                    <p class="text-sm text-gray-500 dark:text-gray-400 italic">
+                        No variants selected
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    }
+
+    <ng-template pTemplate="footer">
+        <div class="flex justify-end gap-2">
+            <p-button label="Cancel" severity="secondary" icon="pi pi-times" (click)="closePackageDetailsDialog()">
+            </p-button>
+            <p-button label="Save Package Details" severity="success" icon="pi pi-check" (click)="savePackageDetails()">
+            </p-button>
+        </div>
+    </ng-template>
+</p-dialog>
+
+<!-- Order Timeline Dialog -->
+@if (selectedOrderForTimeline) {
+    <app-order-timeline 
+        [orderId]="selectedOrderForTimeline._id"
+        [orderNumber]="selectedOrderForTimeline.orderNumber"
+        [visible]="showTimelineDialog"
+        (onClose)="closeTimelineDialog()">
+    </app-order-timeline>
+}

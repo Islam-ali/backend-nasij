@@ -31,9 +31,9 @@ export class GenericApiService<T> {
     return this.http.post<T>(endpoint, body, { params });
   }
 
-  Put(endpoint: string, id: number | string, body: Partial<T>, queryParams?: Record<string, any>): Observable<T> {
+  Put(endpoint: string, body: Partial<T>, queryParams?: Record<string, any>): Observable<T> {
     const params = toHttpParams(queryParams);
-    return this.http.put<T>(`${endpoint}/${id}`, body, { params });
+    return this.http.put<T>(endpoint, body, { params });
   }
 
   Patch(endpoint: string, id: number | string, body: Partial<T>, queryParams?: Record<string, any>): Observable<T> {

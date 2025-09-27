@@ -43,7 +43,7 @@ export class OrderService {
       url: `${this.apiUrl}/${id}`
     });
     
-    return this.genericApiService.Put(`${this.apiUrl}`, id, cleanedOrder);
+    return this.genericApiService.Put(`${this.apiUrl}/${id}`, cleanedOrder);
   }
 
   private transformOrderForBackend(order: Partial<Order>): any {
@@ -71,7 +71,6 @@ export class OrderService {
   updateOrderStatus(id: string, status: OrderStatus): Observable<BaseResponse<Order>> {
     return this.genericApiService.Put(
       `${this.apiUrl}/${id}/status`, 
-      id, 
       { status }
     );
   }
@@ -79,7 +78,6 @@ export class OrderService {
   updatePaymentStatus(id: string, status: PaymentStatus): Observable<BaseResponse<Order>> {
     return this.genericApiService.Put(
       `${this.apiUrl}/${id}/payment-status`, 
-      id, 
       { status }
     );
   }

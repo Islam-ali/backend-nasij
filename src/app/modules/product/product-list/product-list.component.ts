@@ -376,7 +376,7 @@ export class ProductListComponent extends ComponentBase implements OnInit {
     loadCategories() {
         this.categoryService.listCategories().pipe(takeUntil(this.destroy$)).subscribe({
             next: (res: any) => {
-                this.categoryOptions = res.data.map((cat: any) => ({ label: cat.name, value: cat._id }));
+                this.categoryOptions = res.data.map((cat: any) => ({ label: cat.name.en, value: cat._id }));
             },
             error: () => this.messageService.add({
                 severity: 'error', summary: 'Error', detail: 'Failed to load categories', life: 1000

@@ -1,0 +1,202 @@
+<!-- Timeline Dialog -->
+<p-dialog 
+  [visible]="visible" 
+  [closable]="true" 
+  [draggable]="true" 
+  [resizable]="true"
+  [style]="{ width: '90vw', maxWidth: '800px' }"
+  header="Order Timeline"
+  (onHide)="visible = false;onClose.emit()"
+  >
+  
+  <div class="timeline-container">
+    <!-- Header -->
+    <div class="timeline-header mb-4">
+      <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+        <i class="pi pi-clock mr-2 text-blue-600"></i>
+        Order Timeline - {{ orderNumber }}
+      </h3>
+      <div class="flex items-center justify-between">
+        <div class="current-status">
+          @if (currentStatus()) {
+            <p-tag 
+              [value]="currentStatusLabel() || 'Unknown'" 
+              [severity]="getStatusColor(currentStatus()!)"
+              [icon]="getStatusIcon(currentStatus()!)">
+            </p-tag>
+          }
+        </div>
+        <p-button 
+          label="Add Event" 
+          icon="pi pi-plus" 
+          size="small" 
+          severity="success"
+          (click)="showAddEvent()">
+        </p-button>
+      </div>
+    </div>
+
+    <!-- Timeline Events -->
+    <div class="timeline-events">
+      @if (loading()) {
+        <!-- Loading Skeleton -->
+        <div class="space-y-4">
+          @for (item of [1,2,3]; track item) {
+            <div class="timeline-item-skeleton">
+              <p-skeleton width="100%" height="80px"></p-skeleton>
+            </div>
+          }
+        </div>
+      } @else if (timelineEvents().length === 0) {
+        <!-- Empty State -->
+        <div class="empty-state text-center py-8">
+          <i class="pi pi-clock text-4xl text-gray-400 mb-4"></i>
+          <p class="text-gray-500 dark:text-gray-400">No timeline events found</p>
+        </div>
+      } @else {
+        <!-- Timeline Items -->
+        <div class="timeline-items space-y-4">
+          @for (event of timelineEvents(); track event.id) {
+            <div class="timeline-item" [class.latest]="isLatestEvent(event)" [class.done]="event.isDone">
+              <div class="timeline-marker">
+                <div class="marker-icon" [class.latest]="isLatestEvent(event)" [class.done]="event.isDone">
+                  {{ getStatusIcon(event.status) }}
+                </div>
+                @if (!isLatestEvent(event)) {
+                  <div class="timeline-line" [class.done]="event.isDone"></div>
+                }
+              </div>
+              
+              <div class="timeline-content">
+                <div class="timeline-card">
+                  <div class="timeline-header">
+                    <div class="flex items-center justify-between">
+                      <div class="status-info">
+                        <p-tag 
+                          [value]="event.statusLabel.en || event.status" 
+                          [severity]="getStatusColor(event.status)"
+                          [icon]="getStatusIcon(event.status)"
+                          [class.done]="event.isDone">
+                        </p-tag>
+                        @if (isLatestEvent(event)) {
+                          <span class="latest-badge">Latest</span>
+                        }
+                        @if (event.isDone) {
+                          <span class="done-badge">✓ Done</span>
+                        }
+                        <div class="event-actions">
+                          @if (!event.isDone) {
+                            <p-button 
+                              icon="pi pi-check" 
+                              size="small" 
+                              severity="success" 
+                              [text]="true"
+                              pTooltip="Mark as Done"
+                              (click)="markEventAsDone(event.id)">
+                            </p-button>
+                          } @else {
+                            <p-button 
+                              icon="pi pi-times" 
+                              size="small" 
+                              severity="secondary" 
+                              [text]="true"
+                              pTooltip="Mark as Not Done"
+                              (click)="markEventAsNotDone(event.id)">
+                            </p-button>
+                          }
+                        </div>
+                      </div>
+                      <span class="timeline-date text-sm text-gray-500">
+                        {{ formatDate(event.dateTime) }}
+                      </span>
+                    </div>
+                  </div>
+                  
+                  @if (event.note) {
+                    <div class="timeline-note mt-3">
+                      <p class="text-gray-700 dark:text-gray-300">{{ event.note }}</p>
+                    </div>
+                  }
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- Add Event Dialog -->
+  <p-dialog 
+    [visible]="showAddEventDialog()" 
+    [modal]="true" 
+    [closable]="true" 
+    [draggable]="false" 
+    [resizable]="false"
+    [style]="{ width: '500px' }"
+    header="Add Timeline Event"
+    (onHide)="cancelAddEvent()">
+    
+    <div class="add-event-form">
+      <div class="form-group mb-4">
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          Status
+        </label>
+        <p-dropdown 
+          [(ngModel)]="newEvent.status" 
+          [options]="statusOptions" 
+          optionLabel="label" 
+          optionValue="value"
+          placeholder="Select Status"
+          [style]="{ width: '100%' }">
+          <ng-template pTemplate="selectedItem" let-selectedOption>
+            <div class="flex items-center">
+              <span class="mr-2">{{ selectedOption.icon }}</span>
+              <span>{{ selectedOption.label }}</span>
+            </div>
+          </ng-template>
+          <ng-template pTemplate="item" let-option>
+            <div class="flex items-center">
+              <span class="mr-2">{{ option.icon }}</span>
+              <span>{{ option.label }}</span>
+            </div>
+          </ng-template>
+        </p-dropdown>
+      </div>
+      
+      <div class="form-group mb-4">
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          Note (Optional)
+        </label>
+        <textarea 
+          pInputTextarea 
+          [(ngModel)]="newEvent.note" 
+          placeholder="Add a note for this status update..."
+          rows="3"
+          class="w-full">
+        </textarea>
+      </div>
+    </div>
+    
+    <ng-template pTemplate="footer">
+      <div class="flex justify-end gap-2">
+        <p-button 
+          label="Cancel" 
+          icon="pi pi-times" 
+          severity="secondary" 
+          (click)="cancelAddEvent()">
+        </p-button>
+        <p-button 
+          label="Add Event" 
+          icon="pi pi-check" 
+          severity="success" 
+          [loading]="addingEvent()"
+          (click)="addTimelineEvent()">
+        </p-button>
+      </div>
+    </ng-template>
+  </p-dialog>
+</p-dialog>
+
+<!-- Toast Messages -->
+<p-toast></p-toast>

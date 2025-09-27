@@ -146,7 +146,7 @@ export class StateListComponent implements OnInit, OnDestroy {
       nameAr: state.name.ar,
       code: state.code,
       shippingCost: state.shippingCost,
-      countryId: state.countryId,
+      countryId: state.countryId._id,
       isActive: state.isActive
     });
     this.submitted.set(false);
@@ -243,8 +243,4 @@ export class StateListComponent implements OnInit, OnDestroy {
     this.submitted.set(false);
   }
 
-  getCountryName(countryId: string): string {
-    const country = this.countries().find(c => c._id === countryId);
-    return country ? `${country.name.en}` : 'Unknown';
-  }
 }
