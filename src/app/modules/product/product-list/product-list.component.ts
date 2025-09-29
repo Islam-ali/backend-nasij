@@ -137,10 +137,23 @@ export class ProductListComponent extends ComponentBase implements OnInit {
         { label: 'Winter', value: 'winter' }
     ];
 
+    // Dynamic variant options - can be extended
     variantOptions = [
-        { label: 'Size', value: EnumProductVariant.SIZE },
-        { label: 'Color', value: EnumProductVariant.COLOR }
+        { label: 'Size', value: 'size' },
+        { label: 'Color', value: 'color' },
+        { label: 'Material', value: 'material' },
+        { label: 'Style', value: 'style' },
+        { label: 'Pattern', value: 'pattern' },
+        { label: 'Finish', value: 'finish' },
+        { label: 'Weight', value: 'weight' },
+        { label: 'Length', value: 'length' },
+        { label: 'Width', value: 'width' },
+        { label: 'Height', value: 'height' }
     ];
+
+    // Custom variant input
+    customVariantInput = '';
+    showCustomVariantInput = false;
 
     @ViewChild('dt') dt: Table | undefined;
     exportColumns!: ExportColumn[];
@@ -281,7 +294,7 @@ export class ProductListComponent extends ComponentBase implements OnInit {
 
     addAttribute(variantIndex: number): void {
         const attributeGroup = this.fb.group({
-            variant: [EnumProductVariant.SIZE, [Validators.required]],
+            variant: ['', [Validators.required]], // Dynamic variant type
             value: this.fb.group({
                 en: ['', [Validators.required, Validators.minLength(1)]],
                 ar: ['', [Validators.required, Validators.minLength(1)]]
@@ -597,18 +610,92 @@ export class ProductListComponent extends ComponentBase implements OnInit {
         this.currentLanguage.set(event.value);
     }
 
-    getVariantIcon(variantType: EnumProductVariant): string {
+    getVariantIcon(variantType: string): string {
         switch (variantType) {
             case 'size':
                 return 'pi-arrows-alt';
             case 'color':
                 return 'pi-palette';
-            // case 'material':
-            //     return 'pi-box';
-            // case 'style':
-            //     return 'pi-star';
+            case 'material':
+                return 'pi-box';
+            case 'style':
+                return 'pi-star';
+            case 'pattern':
+                return 'pi-th-large';
+            case 'finish':
+                return 'pi-sun';
+            case 'weight':
+                return 'pi-weight-hanging';
+            case 'length':
+                return 'pi-arrows-h';
+            case 'width':
+                return 'pi-arrows-h';
+            case 'height':
+                return 'pi-arrows-v';
             default:
                 return 'pi-tag';
         }
+    }
+
+    // Custom variant methods
+    toggleCustomVariantInput(): void {
+        this.showCustomVariantInput = !this.showCustomVariantInput;
+        if (!this.showCustomVariantInput) {
+            this.customVariantInput = '';
+        }
+    }
+
+    addCustomVariant(): void {
+        if (this.customVariantInput.trim()) {
+            const newVariant = {
+                label: this.customVariantInput.trim(),
+                value: this.customVariantInput.trim().toLowerCase()
+            };
+            
+            // Check if variant already exists
+            const exists = this.variantOptions.some(option => 
+                option.value === newVariant.value
+            );
+            
+            if (!exists) {
+                this.variantOptions.push(newVariant);
+                this.messageService.add({
+                    severity: 'success',
+                    summary: 'Success',
+                    detail: `Custom variant "${newVariant.label}" added successfully`
+                });
+            } else {
+                this.messageService.add({
+                    severity: 'warn',
+                    summary: 'Warning',
+                    detail: 'This variant type already exists'
+                });
+            }
+            
+            this.customVariantInput = '';
+            this.showCustomVariantInput = false;
+        }
+    }
+
+    removeCustomVariant(variantValue: string): void {
+        // Don't allow removing default variants
+        if (['size', 'color'].includes(variantValue)) {
+            this.messageService.add({
+                severity: 'warn',
+                summary: 'Warning',
+                detail: 'Cannot remove default variant types'
+            });
+            return;
+        }
+        
+        this.variantOptions = this.variantOptions.filter(option => 
+            option.value !== variantValue
+        );
+        
+        this.messageService.add({
+            severity: 'success',
+            summary: 'Success',
+            detail: 'Custom variant removed successfully'
+        });
     }
 }

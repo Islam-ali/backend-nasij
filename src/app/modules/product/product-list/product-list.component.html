@@ -379,25 +379,67 @@
                                                             <i class="pi pi-list text-primary mr-1"></i>
                                                             Type
                                                         </label>
-                                                        <p-dropdown 
-                                                            formControlName="variant" 
-                                                            [options]="variantOptions"
-                                                            placeholder="Select variant type" 
-                                                            class="w-full"
-                                                            [class.ng-invalid]="submitted && attribute.get('variant')?.invalid">
-                                                            <ng-template pTemplate="selectedItem" let-option>
-                                                                <div class="flex items-center gap-2">
-                                                                    <i class="pi" [class]="getVariantIcon(option.value)"></i>
-                                                                    <span>{{ option.label }}</span>
-                                                                </div>
-                                                            </ng-template>
-                                                            <ng-template pTemplate="item" let-option>
-                                                                <div class="flex items-center gap-2">
-                                                                    <i class="pi" [class]="getVariantIcon(option.value)"></i>
-                                                                    <span>{{ option.label }}</span>
-                                                                </div>
-                                                            </ng-template>
-                                                        </p-dropdown>
+                                                        <div class="flex gap-2">
+                                                            <p-dropdown 
+                                                                formControlName="variant" 
+                                                                [options]="variantOptions"
+                                                                placeholder="Select variant type" 
+                                                                class="flex-1"
+                                                                [class.ng-invalid]="submitted && attribute.get('variant')?.invalid">
+                                                                <ng-template pTemplate="selectedItem" let-option>
+                                                                    <div class="flex items-center gap-2">
+                                                                        <i class="pi" [class]="getVariantIcon(option.value)"></i>
+                                                                        <span>{{ option.label }}</span>
+                                                                    </div>
+                                                                </ng-template>
+                                                                <ng-template pTemplate="item" let-option>
+                                                                    <div class="flex items-center gap-2">
+                                                                        <i class="pi" [class]="getVariantIcon(option.value)"></i>
+                                                                        <span>{{ option.label }}</span>
+                                                                    </div>
+                                                                </ng-template>
+                                                            </p-dropdown>
+                                                            <button 
+                                                                type="button" 
+                                                                pButton 
+                                                                icon="pi pi-plus" 
+                                                                size="small" 
+                                                                class="p-button-outlined"
+                                                                (click)="toggleCustomVariantInput()"
+                                                                pTooltip="Add custom variant type"
+                                                                tooltipPosition="top">
+                                                            </button>
+                                                        </div>
+                                                        
+                                                        <!-- Custom Variant Input -->
+                                                        <div *ngIf="showCustomVariantInput" class="mt-2 p-3 bg-gray-50 rounded-lg border">
+                                                            <div class="flex gap-2">
+                                                                <input 
+                                                                    pInputText 
+                                                                    [(ngModel)]="customVariantInput"
+                                                                    placeholder="Enter custom variant type"
+                                                                    class="flex-1"
+                                                                    (keyup.enter)="addCustomVariant()"
+                                                                />
+                                                                <button 
+                                                                    type="button" 
+                                                                    pButton 
+                                                                    icon="pi pi-check" 
+                                                                    size="small" 
+                                                                    class="p-button-success"
+                                                                    (click)="addCustomVariant()"
+                                                                    [disabled]="!customVariantInput.trim()">
+                                                                </button>
+                                                                <button 
+                                                                    type="button" 
+                                                                    pButton 
+                                                                    icon="pi pi-times" 
+                                                                    size="small" 
+                                                                    class="p-button-secondary"
+                                                                    (click)="toggleCustomVariantInput()">
+                                                                </button>
+                                                            </div>
+                                                        </div>
                                                         <small class="text-red-500 text-xs" 
                                                             *ngIf="submitted && attribute.get('variant')?.invalid">
                                                             Variant type is required.

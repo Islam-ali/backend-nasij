@@ -132,6 +132,11 @@ export class OrderListComponent extends ComponentBase implements OnInit {
     // Timeline properties
     timelineDialog = false;
 
+    // Image preview properties
+    imagePreviewDialog = false;
+    previewImageUrl: string = '';
+    previewImageTitle: string = '';
+
     statusOptions = [
         { label: 'Pending', value: OrderStatus.PENDING },
         { label: 'Confirmed', value: OrderStatus.CONFIRMED },
@@ -1391,21 +1396,65 @@ export class OrderListComponent extends ComponentBase implements OnInit {
     Math = Math;
 
     // Payment image methods
-    paymentImagePreview: string | null = null;
 
     onPaymentImageChange(event: any): void {
         const file = event.target.files[0];
         if (file) {
             const reader = new FileReader();
             reader.onload = (e: any) => {
-                this.paymentImagePreview = e.target.result;
+                const imageUrl = e.target.result;
+                // Update the form control properly
+                const cashPaymentControl = this.orderForm.get('cashPayment');
+                if (cashPaymentControl) {
+                    const currentValue = cashPaymentControl.value || {};
+                    cashPaymentControl.patchValue({
+                        ...currentValue,
+                        paymentImage: imageUrl
+                    });
+                }
             };
             reader.readAsDataURL(file);
         }
     }
 
     removePaymentImage(): void {
-        this.paymentImagePreview = null;
+        const cashPaymentControl = this.orderForm.get('cashPayment');
+        if (cashPaymentControl) {
+            const currentValue = cashPaymentControl.value || {};
+            cashPaymentControl.patchValue({
+                ...currentValue,
+                paymentImage: null
+            });
+        }
+    }
+
+    // Image preview methods
+    previewImage(imageUrl: string, title: string = 'Image Preview'): void {
+        this.previewImageUrl = imageUrl;
+        this.previewImageTitle = title;
+        this.imagePreviewDialog = true;
+    }
+
+    closeImagePreview(): void {
+        this.imagePreviewDialog = false;
+        this.previewImageUrl = '';
+        this.previewImageTitle = '';
+    }
+
+    getPaymentImageUrl(): string | null {
+        const cashPayment = this.orderForm.get('cashPayment')?.value;
+        return cashPayment?.paymentImage || null;
+    }
+
+    downloadImage(): void {
+        if (this.previewImageUrl) {
+            const link = document.createElement('a');
+            link.href = this.previewImageUrl;
+            link.download = `payment-image-${Date.now()}.jpg`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
     }
 
     onPageChange(event: any) {

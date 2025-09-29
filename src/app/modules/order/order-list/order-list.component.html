@@ -517,7 +517,8 @@
                                                     <span class="font-medium">{{ variant.variant }}:</span>
                                                     <span>{{ variant.value?.en || variant.value }}</span>
                                                     <img *ngIf="variant.image" [src]="variant.image.filePath"
-                                                        alt="Variant Image" class="w-4 h-4 rounded object-cover">
+                                                        alt="Variant Image" class="w-4 h-4 rounded object-cover variant-image"
+                                                        (click)="previewImage(variant.image.filePath, variant.variant + ' - ' + (variant.value?.en || variant.value))">
                                                 </span>
                                             </div>
                                             <div *ngIf="!packageItem.selectedVariants || packageItem.selectedVariants.length === 0"
@@ -545,7 +546,8 @@
                                         <span class="font-medium">{{ variant.variant }}:</span>
                                         <span>{{ variant.value?.en || variant.value }}</span>
                                         <img *ngIf="variant.image?.url" [src]="variant.image.url" alt="Variant Image"
-                                            class="w-6 h-6 rounded object-cover">
+                                            class="w-6 h-6 rounded object-cover variant-image"
+                                            (click)="previewImage(variant.image.url, variant.variant + ' - ' + (variant.value?.en || variant.value))">
                                     </span>
                                 </div>
                             </div>
@@ -666,9 +668,12 @@
                     <div class="flex items-center gap-4">
                         <input type="file" accept="image/*" (change)="onPaymentImageChange($event)"
                             class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
-                        <div *ngIf="paymentImagePreview" class="flex items-center gap-2">
-                            <img [src]="paymentImagePreview" alt="Preview"
-                                class="w-16 h-16 object-cover rounded border">
+                        <div *ngIf="getPaymentImageUrl()" class="flex items-center gap-2">
+                            <div class="image-preview-container">
+                                <img [src]="getPaymentImageUrl()" alt="Payment Preview"
+                                    class="w-16 h-16 object-cover rounded border payment-image-preview"
+                                    (click)="previewImage(getPaymentImageUrl()!, 'Payment Screenshot')">
+                            </div>
                             <p-button icon="pi pi-times" severity="danger" [rounded]="true" [outlined]="true"
                                 size="small" (click)="removePaymentImage()">
                             </p-button>
@@ -789,7 +794,8 @@
                     <span class="font-medium">{{ variant.variant }}:</span>
                     <span>{{ variant.value.en || variant.value }}</span>
                     <img *ngIf="variant.image?.url" [src]="variant.image.url" alt="Variant"
-                        class="w-4 h-4 rounded object-cover">
+                        class="w-4 h-4 rounded object-cover variant-image"
+                        (click)="previewImage(variant.image.url, variant.variant + ' - ' + (variant.value.en || variant.value))">
                     <button type="button" class="text-green-600 hover:text-green-800 ml-1"
                         (click)="removeVariant(variant)">
                         <i class="pi pi-times text-xs"></i>
@@ -893,7 +899,8 @@
                             <span class="font-medium">{{ variant.variant }}:</span>
                             <span>{{ variant.value?.en || variant.value }}</span>
                             <img *ngIf="variant.image?.filePath" [src]="variant.image.filePath" alt="Variant"
-                                class="w-3 h-3 rounded object-cover">
+                                class="w-3 h-3 rounded object-cover variant-image"
+                                (click)="previewImage(variant.image.filePath, variant.variant + ' - ' + (variant.value?.en || variant.value))">
                             <button type="button" class="text-green-600 hover:text-green-800 ml-1"
                                 (click)="removeProductVariant(i, variant)">
                                 <i class="pi pi-times text-xs"></i>
@@ -932,3 +939,25 @@
         (onClose)="closeTimelineDialog()">
     </app-order-timeline>
 }
+
+<!-- Image Preview Dialog -->
+<p-dialog [(visible)]="imagePreviewDialog" [header]="previewImageTitle" [modal]="true" [closable]="true" 
+    [resizable]="true" [draggable]="true" [dismissableMask]="true" [style]="{width: '90vw', maxWidth: '800px'}"
+    [contentStyle]="{'max-height': '90vh', 'overflow': 'auto'}">
+    
+    @if (imagePreviewDialog && previewImageUrl) {
+    <div class="text-center">
+        <img [src]="previewImageUrl" [alt]="previewImageTitle" 
+            class="max-w-full max-h-[70vh] object-contain rounded-lg shadow-lg">
+        
+        <div class="mt-4 flex justify-center gap-2">
+            <p-button label="Download" icon="pi pi-download" severity="secondary" 
+                (click)="downloadImage()" [outlined]="true">
+            </p-button>
+            <p-button label="Close" icon="pi pi-times" severity="secondary" 
+                (click)="closeImagePreview()" [outlined]="true">
+            </p-button>
+        </div>
+    </div>
+    }
+</p-dialog>
