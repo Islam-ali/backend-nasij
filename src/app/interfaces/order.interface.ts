@@ -1,3 +1,4 @@
+import { IPackage } from "./package.interface";
 import { IProduct } from "./product.interface";
 
 export enum OrderStatus {
@@ -30,8 +31,8 @@ export enum PaymentMethod {
 }
 
 export enum OrderItemType {
-    PRODUCT = 'product',
-    PACKAGE = 'package'
+    PRODUCT = 'Product',
+    PACKAGE = 'Package'
 }
 
 export interface PackageItem {
@@ -55,7 +56,7 @@ export interface ProductVariantAttribute {
 
 export interface OrderItem {
     itemType: OrderItemType;
-    itemId: string;
+    itemId:  IProduct | IPackage;
     productId?: IProduct; // Legacy field for backward compatibility
     quantity: number;
     price?: number;

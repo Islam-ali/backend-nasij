@@ -15,9 +15,6 @@
             <p-button severity="success" label="Create New Order" icon="pi pi-plus" size="large" (click)="openNew()"
                 styleClass="p-button-raised">
             </p-button>
-            <p-button severity="info" label="View Timeline" icon="pi pi-clock" size="large" (click)="viewOrderTimeline()"
-                styleClass="p-button-outlined" [disabled]="!selectedOrders || selectedOrders.length !== 1">
-            </p-button>
             <!-- <p-button severity="secondary" label="Export Orders" icon="pi pi-download" size="large"
                 [loading]="loadingExportSignal()" (click)="exportOrders()" styleClass="p-button-outlined">
             </p-button> -->
@@ -168,8 +165,8 @@
                         <!-- <p-button icon="pi pi-eye" [rounded]="true" [outlined]="true" severity="info" size="small"
                             pTooltip="View Details" (click)="viewOrderDetails(order)">
                         </p-button> -->
-                        <p-button icon="pi pi-clock" [rounded]="true" [outlined]="true" severity="secondary" size="small"
-                            pTooltip="View Timeline" (click)="viewOrderTimelineDirect(order)">
+                        <p-button icon="pi pi-clock" [rounded]="true" [outlined]="true" severity="info" size="small"
+                            pTooltip="View Timeline" (click)="viewOrderTimeline(order)">
                         </p-button>
                         <p-button icon="pi pi-pencil" [rounded]="true" [outlined]="true" severity="success" size="small"
                             pTooltip="Edit Order" (click)="editOrder(order)">
@@ -418,8 +415,8 @@
                     <tr [formGroup]="item" class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                         <td class="p-3">
                             <p-dropdown formControlName="itemType" [options]="[
-                                {label: 'Product', value: 'product'},
-                                {label: 'Package', value: 'package'}
+                                {label: 'Product', value: 'Product'},
+                                {label: 'Package', value: 'Package'}
                                         ]" appendTo="body" optionLabel="label" optionValue="value"
                                 placeholder="Select Type" styleClass="w-full"
                                 [class.p-invalid]="submitted && item.get('itemType')?.invalid"
@@ -429,7 +426,7 @@
                         <td class="p-3">
                             <div class="space-y-2">
                                 <p-dropdown formControlName="itemId"
-                                    [options]="item.get('itemType')?.value === 'package' ? packages() : products()"
+                                    [options]="item.get('itemType')?.value === 'Package' ? packages() : products()"
                                     appendTo="body" optionLabel="name.en" optionValue="_id" placeholder="Select Item"
                                     styleClass="w-full" filter="true" filterBy="name"
                                     [class.p-invalid]="submitted && item.get('itemId')?.invalid"
@@ -443,7 +440,7 @@
                                 <p-button icon="pi pi-tag"
                                     [label]="item.get('selectedVariants')?.value?.length > 0 ? 'Edit Variants' : 'Add Variants'"
                                     styleClass="p-button-sm p-button-outlined" (onClick)="openVariantDialog(rowIndex)"
-                                    [disabled]="!item.get('itemId')?.value || item.get('itemType')?.value === 'package'">
+                                    [disabled]="!item.get('itemId')?.value || item.get('itemType')?.value === 'Package'">
                                 </p-button>
                                 <div *ngIf="item.get('selectedVariants')?.value?.length > 0"
                                     class="text-xs text-gray-600 dark:text-gray-400">
@@ -851,9 +848,9 @@
                             Quantity: {{ packageItem.quantity }}
                         </p>
                     </div>
-                    <div class="flex flex-col items-center gap-2">
+                    <div class="flex flex-col items-center gap-2 max-w-[200px]">
                         <p-inputNumber [(ngModel)]="packageItem.quantity" [min]="1" [max]="10" size="small"
-                            styleClass="w-10">
+                            >
                         </p-inputNumber>
                         <p-button [icon]="expandedProductIndex === i ? 'pi pi-chevron-up' : 'pi pi-chevron-down'"
                             [label]="expandedProductIndex === i ? 'Hide Variants' : 'Show Variants'"
@@ -881,7 +878,7 @@
                                 [class.border-blue-300]="isProductVariantSelected(i, variant.variant, option)">
                                 <img *ngIf="option.image?.url" [src]="option.image.url" alt="Variant"
                                     class="w-6 h-6 rounded object-cover">
-                                <span class="text-xs">{{ option.value.en || option.value }} xx</span>
+                                <span class="text-xs">{{ option.value.en || option.value }}</span>
                             </button>
                         </div>
                     </div>
@@ -930,15 +927,6 @@
     </ng-template>
 </p-dialog>
 
-<!-- Order Timeline Dialog -->
-@if (selectedOrderForTimeline) {
-    <app-order-timeline 
-        [orderId]="selectedOrderForTimeline._id"
-        [orderNumber]="selectedOrderForTimeline.orderNumber"
-        [visible]="showTimelineDialog"
-        (onClose)="closeTimelineDialog()">
-    </app-order-timeline>
-}
 
 <!-- Image Preview Dialog -->
 <p-dialog [(visible)]="imagePreviewDialog" [header]="previewImageTitle" [modal]="true" [closable]="true" 
@@ -960,4 +948,53 @@
         </div>
     </div>
     }
+</p-dialog>
+
+<!-- Order Timeline Dialog -->
+<p-dialog 
+    header="Order Timeline Management" 
+    [(visible)]="showTimelineDialog" 
+    [modal]="true" 
+    [style]="{width: '90vw', maxWidth: '1200px'}"
+    [closable]="true"
+    [resizable]="true"
+    [draggable]="true"
+    [dismissableMask]="true"
+    [contentStyle]="{'max-height': '90vh', 'padding': '0'}"
+    (onHide)="closeTimelineDialog()">
+    
+    @if(showTimelineDialog && selectedOrderForTimeline) {
+    <div class="p-6">
+        <div class="mb-6">
+            <div class="flex items-center gap-3 mb-4">
+                <div class="w-10 h-10 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
+                    <i class="pi pi-clock text-blue-600 dark:text-blue-400"></i>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold text-gray-900 dark:text-white">
+                        Timeline for Order #{{ selectedOrderForTimeline.orderNumber }}
+                    </h3>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">
+                        Manage and track the timeline for this order
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <app-order-timeline-manager [orderId]="selectedOrderForTimeline._id"></app-order-timeline-manager>
+    </div>
+    }
+    
+    <ng-template pTemplate="footer">
+        <div class="flex justify-end gap-3 p-6 bg-gray-50 dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
+            <p-button 
+                label="Close" 
+                icon="pi pi-times" 
+                (click)="closeTimelineDialog()" 
+                severity="secondary" 
+                [outlined]="true"
+                size="large">
+            </p-button>
+        </div>
+    </ng-template>
 </p-dialog>

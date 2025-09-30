@@ -1,0 +1,148 @@
+<div class="timeline-form-container">
+  <!-- Form Header (only show if not in dialog mode) -->
+  <div class="form-header" *ngIf="!isDialogMode">
+    <h4>
+      <i class="fas fa-clock me-2"></i>
+      {{ isEditMode ? 'Edit Timeline' : (isOrderMode ? 'Add Timeline to Order' : 'Create New Timeline') }}
+    </h4>
+    <button 
+      type="button" 
+      class="btn-close" 
+      (click)="onCancel()"
+      aria-label="Close">
+    </button>
+  </div>
+
+  <form [formGroup]="timelineForm" (ngSubmit)="onSubmit()" class="timeline-form">
+    <!-- Error Display -->
+    <div *ngIf="error" class="alert alert-danger">
+      <i class="fas fa-exclamation-triangle me-2"></i>
+      {{ error }}
+    </div>
+
+    <!-- Create Timeline Fields -->
+    <div *ngIf="!isOrderMode" class="row">
+      <!-- English Name -->
+      <div class="col-md-6 mb-3">
+        <label for="nameEn" class="form-label">
+          English Name <span class="text-danger">*</span>
+        </label>
+        <input 
+          type="text" 
+          class="form-control" 
+          id="nameEn"
+          formControlName="nameEn"
+          [class.is-invalid]="timelineForm.get('nameEn')?.invalid && timelineForm.get('nameEn')?.touched"
+          placeholder="Enter timeline name in English">
+        <div *ngIf="getFieldError('nameEn')" class="invalid-feedback">
+          {{ getFieldError('nameEn') }}
+        </div>
+      </div>
+
+      <!-- Arabic Name -->
+      <div class="col-md-6 mb-3">
+        <label for="nameAr" class="form-label">
+          Arabic Name <span class="text-danger">*</span>
+        </label>
+        <input 
+          type="text" 
+          class="form-control" 
+          id="nameAr"
+          formControlName="nameAr"
+          [class.is-invalid]="timelineForm.get('nameAr')?.invalid && timelineForm.get('nameAr')?.touched"
+          placeholder="أدخل اسم الجدول الزمني بالعربية"
+          dir="rtl">
+        <div *ngIf="getFieldError('nameAr')" class="invalid-feedback">
+          {{ getFieldError('nameAr') }}
+        </div>
+      </div>
+    </div>
+
+    <!-- Order Mode: Timeline Selection -->
+    <div *ngIf="isOrderMode" class="mb-3">
+      <label for="timelineId" class="form-label">
+        Select Timeline <span class="text-danger">*</span>
+      </label>
+      <select 
+        class="form-select" 
+        id="timelineId"
+        formControlName="timelineId"
+        [class.is-invalid]="timelineForm.get('timelineId')?.invalid && timelineForm.get('timelineId')?.touched">
+        <option value="">Choose a timeline...</option>
+        <option 
+          *ngFor="let timeline of availableTimelines" 
+          [value]="timeline._id">
+          {{ timeline.name.en }} ({{ timeline.name.ar }})
+        </option>
+      </select>
+      <div *ngIf="getFieldError('timelineId')" class="invalid-feedback">
+        {{ getFieldError('timelineId') }}
+      </div>
+    </div>
+
+    <!-- Date & Time -->
+    <div class="mb-3">
+      <label for="dateTime" class="form-label">
+        Date & Time <span class="text-danger">*</span>
+      </label>
+      <input 
+        type="datetime-local" 
+        class="form-control" 
+        id="dateTime"
+        formControlName="dateTime"
+        [class.is-invalid]="timelineForm.get('dateTime')?.invalid && timelineForm.get('dateTime')?.touched">
+      <div *ngIf="getFieldError('dateTime')" class="invalid-feedback">
+        {{ getFieldError('dateTime') }}
+      </div>
+    </div>
+
+    <!-- Icon (for create/edit mode) -->
+    <div *ngIf="!isOrderMode" class="mb-3">
+      <label for="icon" class="form-label">
+        Icon <span class="text-danger">*</span>
+      </label>
+      <input 
+        type="text" 
+        class="form-control" 
+        id="icon"
+        formControlName="icon"
+        [class.is-invalid]="timelineForm.get('icon')?.invalid && timelineForm.get('icon')?.touched"
+        placeholder="e.g., order-placed, shipped, delivered">
+      <div class="form-text">
+        Common icons: order-placed, order-confirmed, processing, shipped, delivered, cancelled, refunded
+      </div>
+      <div *ngIf="getFieldError('icon')" class="invalid-feedback">
+        {{ getFieldError('icon') }}
+      </div>
+    </div>
+
+    <!-- Note (for order mode) -->
+    <div *ngIf="isOrderMode" class="mb-3">
+      <label for="note" class="form-label">Note (Optional)</label>
+      <textarea 
+        class="form-control" 
+        id="note"
+        formControlName="note"
+        rows="3"
+        placeholder="Add a note for this timeline entry..."></textarea>
+    </div>
+
+    <!-- Form Actions -->
+    <div class="form-actions">
+      <button 
+        type="button" 
+        class="btn btn-secondary me-2"
+        (click)="onCancel()"
+        [disabled]="loading">
+        Cancel
+      </button>
+      <button 
+        type="submit" 
+        class="btn btn-primary"
+        [disabled]="loading || timelineForm.invalid">
+        <span *ngIf="loading" class="spinner-border spinner-border-sm me-2"></span>
+        {{ isEditMode ? 'Update' : 'Save' }}
+      </button>
+    </div>
+  </form>
+</div>

@@ -27,7 +27,6 @@ import { CheckboxModule } from 'primeng/checkbox';
 
 import { Order, OrderStatus, PaymentMethod, PaymentStatus, OrderItem, OrderItemType } from '../../../interfaces/order.interface';
 import { OrderService } from '../../../services/order.service';
-import { OrderTimelineService } from '../../../services/order-timeline.service';
 import { BaseResponse, pagination } from '../../../core/models/baseResponse';
 import { ComponentBase } from '../../../core/directives/component-base.directive';
 import { finalize, takeUntil } from 'rxjs';
@@ -41,8 +40,7 @@ import { IState } from '../../../interfaces/state.interface';
 import { CountryService } from '../../../services/country.service';
 import { StateService } from '../../../services/state.service';
 import { MultiLanguagePipe } from '../../../core/pipes/multi-language.pipe';
-import { OrderTimelineComponent } from '../order-timeline/order-timeline.component';
-import { OrderTrackingStatus } from '../../../interfaces/order-timeline.interface';
+import { OrderTimelineManagerComponent } from '../order-timeline-manager/order-timeline-manager.component';
 
 interface Column {
     field: string;
@@ -84,7 +82,7 @@ interface ExportColumn {
      CheckboxModule,
      FormsModule,
      MultiLanguagePipe,
-     OrderTimelineComponent,
+     OrderTimelineManagerComponent,
  ],
     providers: [MessageService, ConfirmationService, OrderService, PackageService]
 })
@@ -175,7 +173,6 @@ export class OrderListComponent extends ComponentBase implements OnInit {
     constructor(
         private fb: FormBuilder,
         private orderService: OrderService,
-        private orderTimelineService: OrderTimelineService,
         private messageService: MessageService,
         private confirmationService: ConfirmationService,
         private productService: ProductsService,
@@ -482,8 +479,7 @@ export class OrderListComponent extends ComponentBase implements OnInit {
                     // Handle package items
                     this.items.push(this.fb.group({
                         itemType: [item.itemType],
-                        itemId: [item.itemId],
-                        productId: [''], // Legacy field
+                        itemId: [item.itemId._id],
                         quantity: [item.quantity],
                         price: [item.price],
                         totalPrice: [item.totalPrice],
@@ -496,8 +492,7 @@ export class OrderListComponent extends ComponentBase implements OnInit {
 
                     this.items.push(this.fb.group({
                         itemType: [item.itemType || OrderItemType.PRODUCT],
-                        itemId: [item.itemId || item.productId?._id],
-                        productId: [item.productId?._id],
+                        itemId: [item.itemId._id],
                         quantity: [item.quantity],
                         price: [item.price],
                         totalPrice: [item.totalPrice],
@@ -1392,6 +1387,16 @@ export class OrderListComponent extends ComponentBase implements OnInit {
         });
     }
 
+    viewOrderTimeline(order: Order): void {
+        this.selectedOrderForTimeline = order;
+        this.showTimelineDialog = true;
+    }
+
+    closeTimelineDialog(): void {
+        this.showTimelineDialog = false;
+        this.selectedOrderForTimeline = null;
+    }
+
     // Math utility for template
     Math = Math;
 
@@ -1468,62 +1473,4 @@ export class OrderListComponent extends ComponentBase implements OnInit {
         this.loadOrders();
     }
 
-    // Timeline methods
-    viewOrderTimeline(): void {
-        if (this.selectedOrders && this.selectedOrders.length === 1) {
-            this.selectedOrderForTimeline = this.selectedOrders[0];
-            this.showTimelineDialog = true;
-        }
-    }
-
-    viewOrderTimelineDirect(order: Order): void {
-        this.selectedOrderForTimeline = order;
-        this.showTimelineDialog = true;
-    }
-
-    closeTimelineDialog(): void {
-        this.showTimelineDialog = false;
-        this.selectedOrderForTimeline = null;
-    }
-
-    // Update order status with timeline
-    updateOrderStatusWithTimeline(order: Order, status: OrderTrackingStatus, note?: string): void {
-        this.timelineLoading.set(true);
-        this.orderTimelineService.updateOrderStatusWithTimeline(order._id, status, note)
-            .pipe(
-                takeUntil(this.destroy$),
-                finalize(() => this.timelineLoading.set(false))
-            )
-            .subscribe({
-                next: (response) => {
-                    if (response.success) {
-                        this.messageService.add({
-                            severity: 'success',
-                            summary: 'Success',
-                            detail: 'Order status updated successfully'
-                        });
-                        this.loadOrders(); // Reload orders
-                    } else {
-                        this.messageService.add({
-                            severity: 'error',
-                            summary: 'Error',
-                            detail: response.message || 'Failed to update order status'
-                        });
-                    }
-                },
-                error: (error) => {
-                    console.error('Error updating order status:', error);
-                    this.messageService.add({
-                        severity: 'error',
-                        summary: 'Error',
-                        detail: 'Failed to update order status'
-                    });
-                }
-            });
-    }
-
-    // Get status display info
-    getStatusDisplayInfo(status: string): { icon: string; label: { en: string; ar: string }; color: string } {
-        return this.orderTimelineService.getStatusDisplayInfo(status);
-    }
 }

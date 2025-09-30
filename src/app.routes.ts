@@ -94,7 +94,11 @@ export const appRoutes: Routes = [
             {
                 path: 'locations',
                 loadChildren: () => import('./app/modules/location/location.module').then(m => m.LocationModule)
-            }
+            },
+            {
+                path: 'timelines',
+                loadComponent: () => import('./app/modules/order/order-timeline-manager/order-timeline-manager.component').then(m => m.OrderTimelineManagerComponent)
+            }   
         ]
     },
     // { path: 'notfound', component: Notfound },

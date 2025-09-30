@@ -90,8 +90,9 @@
   .p-calendar,
   .p-inputnumber,
   .p-chips,
+  .p-inputnumber-input,
   .p-multiselect {
-    width: 100%;
+    width: inherit !important;
   }
 }
 

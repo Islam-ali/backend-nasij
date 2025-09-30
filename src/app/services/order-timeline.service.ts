@@ -1,164 +1,224 @@
 import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { CommonService } from '../core/services/common.service';
-import { GenericApiService } from '../core/services/generic-api.service';
-import { BaseResponse } from '../core/models/baseResponse';
 import { environment } from '../../environments/environment';
-import { OrderTimelineEvent, OrderTimelineResponse, AddTimelineEventRequest } from '../interfaces/order-timeline.interface';
+import { OrderTrackingStatus } from '../interfaces/order-timeline.interface';
+import { BaseResponse } from './inventory.service';
+
+export interface TimelineStep {
+  id: string;
+  orderId: string;
+  status: OrderTrackingStatus;
+  icon: string;
+  timestamp: Date;
+  note?: string;
+  current: boolean;
+  updatedBy?: string;
+  metadata?: any;
+  statusLabel: string;
+}
+
+export interface TimelineResponse {
+  orderId: string;
+  steps: TimelineStep[];
+  currentStatus: OrderTrackingStatus;
+  currentStatusLabel: string;
+}
+
+export interface CreateTimelineStepDto {
+  orderId: string;
+  status: OrderTrackingStatus;
+  note?: string;
+  updatedBy?: string;
+  metadata?: any;
+}
+
+export interface UpdateOrderStatusDto {
+  status: OrderTrackingStatus;
+  note?: string;
+  updatedBy?: string;
+  metadata?: any;
+}
+
+export interface TimelineStats {
+  totalSteps: number;
+  currentStep: number;
+  completedSteps: number;
+  averageStepDuration: number;
+}
 
 @Injectable({
   providedIn: 'root'
 })
 export class OrderTimelineService {
-  private apiUrl = `${environment.apiUrl}/orders`;
+  private readonly apiUrl = `${environment.apiUrl}/orders`;
 
-  constructor(
-    private genericApiService: GenericApiService<any>,
-    private commonService: CommonService
-  ) {}
+  constructor(private http: HttpClient) {}
 
   /**
-   * Get order timeline
+   * Get timeline for a specific order
    */
-  getOrderTimeline(orderId: string): Observable<BaseResponse<OrderTimelineResponse>> {
-    return this.genericApiService.Get(`${this.apiUrl}/${orderId}/timeline`);
+  getTimeline(orderId: string): Observable<BaseResponse<TimelineResponse>> {
+    return this.http.get<BaseResponse<TimelineResponse>>(`${this.apiUrl}/${orderId}/timeline`);
   }
 
   /**
-   * Add timeline event
+   * Add a new timeline step
    */
-  addTimelineEvent(orderId: string, event: AddTimelineEventRequest): Observable<BaseResponse<OrderTimelineResponse>> {
-    const cleanedEvent = this.commonService.removeNullUndefinedEmptyStringKeys(event);
-    return this.genericApiService.Post(`${this.apiUrl}/${orderId}/timeline`, cleanedEvent);
+  addTimelineStep(createTimelineStepDto: CreateTimelineStepDto): Observable<TimelineResponse> {
+    return this.http.post<TimelineResponse>(
+      `${this.apiUrl}/${createTimelineStepDto.orderId}/timeline`,
+      createTimelineStepDto
+    );
   }
 
   /**
-   * Update order status with timeline event
+   * Update order status and create timeline step
    */
-  updateOrderStatusWithTimeline(orderId: string, status: string, note?: string): Observable<BaseResponse<OrderTimelineResponse>> {
-    const event: AddTimelineEventRequest = {
-      status: status as any,
-      note: note || this.getDefaultNoteForStatus(status)
-    };
-    return this.addTimelineEvent(orderId, event);
+  updateOrderStatus(
+    orderId: string,
+    updateOrderStatusDto: UpdateOrderStatusDto
+  ): Observable<TimelineResponse> {
+    return this.http.put<TimelineResponse>(
+      `${this.apiUrl}/${orderId}/status`,
+      updateOrderStatusDto
+    );
+  }
+
+  /**
+   * Get current timeline step
+   */
+  getCurrentStep(orderId: string): Observable<TimelineStep | null> {
+    return this.http.get<TimelineStep | null>(`${this.apiUrl}/${orderId}/timeline/current`);
+  }
+
+  /**
+   * Get timeline steps by status
+   */
+  getStepsByStatus(orderId: string, status: OrderTrackingStatus): Observable<TimelineStep[]> {
+    return this.http.get<TimelineStep[]>(`${this.apiUrl}/${orderId}/timeline/status/${status}`);
+  }
+
+  /**
+   * Get timeline statistics
+   */
+  getTimelineStats(orderId: string): Observable<TimelineStats> {
+    return this.http.get<TimelineStats>(`${this.apiUrl}/${orderId}/timeline/stats`);
+  }
+
+  /**
+   * Delete timeline step
+   */
+  deleteTimelineStep(stepId: string): Observable<{ message: string }> {
+    return this.http.delete<{ message: string }>(`${this.apiUrl}/timeline/${stepId}`);
   }
 
   /**
    * Get default note for status
    */
-  private getDefaultNoteForStatus(status: string): string {
-    const statusNotes: { [key: string]: string } = {
-      'received': 'Order has been received',
-      'confirmed': 'Order has been confirmed',
-      'processing': 'Order is being processed',
-      'preparing': 'Order is being prepared',
-      'ready_for_pickup': 'Order is ready for pickup',
-      'shipped': 'Order has been shipped',
-      'out_for_delivery': 'Order is out for delivery',
-      'delivered': 'Order has been delivered',
-      'cancelled': 'Order has been cancelled',
-      'returned': 'Order has been returned',
-      'refunded': 'Order has been refunded'
+  getDefaultNoteForStatus(status: OrderTrackingStatus): string {
+    const defaultNotes: Record<OrderTrackingStatus, string> = {
+      [OrderTrackingStatus.RECEIVED]: 'Order received and being processed',
+      [OrderTrackingStatus.CONFIRMED]: 'Order confirmed and payment verified',
+      [OrderTrackingStatus.PROCESSING]: 'Order is being processed',
+      [OrderTrackingStatus.PREPARING]: 'Order is being prepared for shipment',
+      [OrderTrackingStatus.READY_FOR_PICKUP]: 'Order is ready for pickup',
+      [OrderTrackingStatus.SHIPPED]: 'Order has been shipped',
+      [OrderTrackingStatus.OUT_FOR_DELIVERY]: 'Order is out for delivery',
+      [OrderTrackingStatus.DELIVERED]: 'Order has been delivered successfully',
+      [OrderTrackingStatus.CANCELLED]: 'Order has been cancelled',
+      [OrderTrackingStatus.RETURNED]: 'Order has been returned',
+      [OrderTrackingStatus.REFUNDED]: 'Order has been refunded',
     };
-    return statusNotes[status] || 'Order status updated';
-  }
 
-  /**
-   * Create default timeline for an order
-   */
-  createDefaultTimeline(orderId: string, currentStatus: string): OrderTimelineEvent[] {
-    const allStatuses = ['received', 'confirmed', 'processing', 'preparing', 'ready_for_pickup', 'shipped', 'out_for_delivery', 'delivered', 'cancelled', 'returned', 'refunded'];
-    const currentIndex = allStatuses.indexOf(currentStatus);
-    
-    return allStatuses.map((status, index) => ({
-      id: `default-${orderId}-${status}`,
-      orderId,
-      status: status as any,
-      icon: this.getStatusDisplayInfo(status).icon as any,
-      dateTime: new Date(),
-      note: this.getDefaultNoteForStatus(status),
-      statusLabel: this.getStatusDisplayInfo(status).label,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      isDone: index <= currentIndex, // Mark as done if it's the current status or before
-    }));
-  }
-
-  /**
-   * Mark timeline event as done
-   */
-  markEventAsDone(eventId: string): Observable<BaseResponse<OrderTimelineEvent>> {
-    return this.genericApiService.Put(`${this.apiUrl}/timeline/${eventId}/done`, {});
-  }
-
-  /**
-   * Mark timeline event as not done
-   */
-  markEventAsNotDone(eventId: string): Observable<BaseResponse<OrderTimelineEvent>> {
-    return this.genericApiService.Put(`${this.apiUrl}/timeline/${eventId}/not-done`, {});
+    return defaultNotes[status] || 'Status updated';
   }
 
   /**
    * Get status display info
    */
-  getStatusDisplayInfo(status: string): { icon: string; label: { en: string; ar: string }; color: string } {
-    const statusInfo: { [key: string]: { icon: string; label: { en: string; ar: string }; color: string } } = {
-      'received': {
-        icon: '📥',
-        label: { en: 'Received', ar: 'تم الاستلام' },
-        color: 'info'
-      },
-      'confirmed': {
-        icon: '✅',
-        label: { en: 'Confirmed', ar: 'تم التأكيد' },
-        color: 'success'
-      },
-      'processing': {
-        icon: '⚙️',
-        label: { en: 'Processing', ar: 'قيد المعالجة' },
-        color: 'warning'
-      },
-      'preparing': {
-        icon: '👨‍🍳',
-        label: { en: 'Preparing', ar: 'قيد التحضير' },
-        color: 'warning'
-      },
-      'ready_for_pickup': {
-        icon: '📦',
-        label: { en: 'Ready for Pickup', ar: 'جاهز للاستلام' },
-        color: 'help'
-      },
-      'shipped': {
-        icon: '🚚',
-        label: { en: 'Shipped', ar: 'تم الشحن' },
-        color: 'secondary'
-      },
-      'out_for_delivery': {
-        icon: '🚛',
-        label: { en: 'Out for Delivery', ar: 'خارج للتوصيل' },
-        color: 'help'
-      },
-      'delivered': {
-        icon: '🎉',
-        label: { en: 'Delivered', ar: 'تم التوصيل' },
-        color: 'success'
-      },
-      'cancelled': {
-        icon: '❌',
-        label: { en: 'Cancelled', ar: 'تم الإلغاء' },
-        color: 'danger'
-      },
-      'returned': {
-        icon: '↩️',
-        label: { en: 'Returned', ar: 'تم الإرجاع' },
-        color: 'warning'
-      },
-      'refunded': {
-        icon: '💰',
-        label: { en: 'Refunded', ar: 'تم الاسترداد' },
-        color: 'info'
-      }
+  getStatusDisplayInfo(status: OrderTrackingStatus): { icon: string; label: string; color: string } {
+    const statusInfo = {
+      [OrderTrackingStatus.RECEIVED]: { icon: '📥', label: 'Received', color: '#6b7280' },
+      [OrderTrackingStatus.CONFIRMED]: { icon: '✅', label: 'Confirmed', color: '#10b981' },
+      [OrderTrackingStatus.PROCESSING]: { icon: '⚙️', label: 'Processing', color: '#3b82f6' },
+      [OrderTrackingStatus.PREPARING]: { icon: '👨‍🍳', label: 'Preparing', color: '#f59e0b' },
+      [OrderTrackingStatus.READY_FOR_PICKUP]: { icon: '📦', label: 'Ready for Pickup', color: '#8b5cf6' },
+      [OrderTrackingStatus.SHIPPED]: { icon: '🚚', label: 'Shipped', color: '#06b6d4' },
+      [OrderTrackingStatus.OUT_FOR_DELIVERY]: { icon: '🚛', label: 'Out for Delivery', color: '#ef4444' },
+      [OrderTrackingStatus.DELIVERED]: { icon: '🎉', label: 'Delivered', color: '#10b981' },
+      [OrderTrackingStatus.CANCELLED]: { icon: '❌', label: 'Cancelled', color: '#ef4444' },
+      [OrderTrackingStatus.RETURNED]: { icon: '↩️', label: 'Returned', color: '#f59e0b' },
+      [OrderTrackingStatus.REFUNDED]: { icon: '💰', label: 'Refunded', color: '#8b5cf6' },
     };
-    return statusInfo[status] || { icon: '❓', label: { en: 'Unknown', ar: 'غير معروف' }, color: 'gray' };
+
+    return statusInfo[status] || { icon: '📋', label: 'Unknown', color: '#6b7280' };
+  }
+
+  /**
+   * Calculate timeline progress
+   */
+  calculateProgress(steps: TimelineStep[]): number {
+    if (steps.length === 0) return 0;
+    const currentIndex = steps.findIndex(step => step.current);
+    return currentIndex >= 0 ? ((currentIndex + 1) / steps.length) * 100 : 0;
+  }
+
+  /**
+   * Get timeline statistics
+   */
+  getTimelineStatistics(steps: TimelineStep[]): {
+    totalSteps: number;
+    currentStep: number;
+    completedSteps: number;
+    averageStepDuration: number;
+  } {
+    const totalSteps = steps.length;
+    const currentIndex = steps.findIndex(step => step.current);
+    const completedSteps = currentIndex >= 0 ? currentIndex : totalSteps;
+
+    let averageStepDuration = 0;
+    if (steps.length > 1) {
+      const firstStep = steps[0].timestamp;
+      const lastStep = steps[steps.length - 1].timestamp;
+      const totalDuration = new Date(lastStep).getTime() - new Date(firstStep).getTime();
+      averageStepDuration = totalDuration / (steps.length - 1);
+    }
+
+    return {
+      totalSteps,
+      currentStep: currentIndex + 1,
+      completedSteps,
+      averageStepDuration,
+    };
+  }
+
+  /**
+   * Format timestamp for display
+   */
+  formatTimestamp(timestamp: Date): string {
+    return new Date(timestamp).toLocaleString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  }
+
+  /**
+   * Get relative time
+   */
+  getRelativeTime(timestamp: Date): string {
+    const now = new Date();
+    const diff = now.getTime() - new Date(timestamp).getTime();
+    const minutes = Math.floor(diff / 60000);
+    const hours = Math.floor(diff / 3600000);
+    const days = Math.floor(diff / 86400000);
+
+    if (days > 0) return `${days} day${days > 1 ? 's' : ''} ago`;
+    if (hours > 0) return `${hours} hour${hours > 1 ? 's' : ''} ago`;
+    if (minutes > 0) return `${minutes} minute${minutes > 1 ? 's' : ''} ago`;
+    return 'Just now';
   }
 }
