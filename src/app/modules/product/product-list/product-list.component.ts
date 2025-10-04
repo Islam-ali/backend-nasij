@@ -536,7 +536,7 @@ export class ProductListComponent extends ComponentBase implements OnInit {
         });
     }
 
-    saveProduct() {
+    saveProduct(addNew: boolean = false) {
         this.submitted = true;
         console.log('Frontend - Form value:', this.productForm.value);
         console.log('Frontend - Form valid:', this.productForm.valid);
@@ -569,7 +569,10 @@ export class ProductListComponent extends ComponentBase implements OnInit {
                 }
             });
         }
-        const request$ = formValue._id
+        if(addNew){
+            formValue._id = null;
+        }
+        const request$ = formValue._id && !addNew
             ? this.productsService.updateProduct(formValue._id, formValue)
             : this.productsService.createProduct(formValue);
 

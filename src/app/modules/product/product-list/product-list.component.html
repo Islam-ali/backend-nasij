@@ -793,6 +793,9 @@
             <p-button label="Save" severity="success" icon="pi pi-check" [disabled]="productForm.invalid"
                 (click)="saveProduct()">
             </p-button>
+            <p-button label="Save & Add New" severity="success" icon="pi pi-check" [disabled]="productForm.invalid"
+            (click)="saveProduct(true)">
+        </p-button>
         </div>
     </ng-template>
 </p-dialog>
