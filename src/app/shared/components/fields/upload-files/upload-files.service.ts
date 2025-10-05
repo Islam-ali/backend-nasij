@@ -16,7 +16,7 @@ export class UploadFilesService {
     const formData = new FormData();
     formData.append('file', form.file);
     formData.append('folderName', form.folderName);
-    formData.append('useCloudinary', 'true');
+    formData.append('useCloudinary', 'false');
 
     const req = new HttpRequest('POST', `${environment.apiUrl}/file-upload`, formData, {
       reportProgress: true,
