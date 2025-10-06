@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { environment } from '../../environments/environment';
+import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
@@ -59,7 +59,7 @@ export class EnvironmentService {
    * Get debug configuration
    */
   getDebugConfig() {
-    return environment.debug;
+    return environment.features.enableDebugMode;
   }
 
   /**
@@ -73,20 +73,20 @@ export class EnvironmentService {
    * Check if console logs are enabled
    */
   isConsoleLoggingEnabled(): boolean {
-    return environment.debug?.enableConsoleLogs || false;
+    return environment.features.enableDebugMode;
   }
 
   /**
    * Check if network logs are enabled
    */
   isNetworkLoggingEnabled(): boolean {
-    return environment.debug?.enableNetworkLogs || false;
+    return environment.features.enableDebugMode;
   }
 
   /**
    * Check if performance monitoring is enabled
    */
   isPerformanceMonitoringEnabled(): boolean {
-    return environment.debug?.enablePerformanceMonitoring || false;
+    return environment.features.enableDebugMode;
   }
 } 

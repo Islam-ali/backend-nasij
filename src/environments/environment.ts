@@ -1,7 +1,8 @@
 export const environment = {
   production: false,
   development: false,
-  apiUrl: 'http://localhost:3000/api/v1',
+  baseUrl: 'https://pledeg.tappih.com/',
+  apiUrl: 'https://pledeg.tappih.com/api/v1', 
   appName: 'Online Store Admin',
   version: '1.0.0',
   // Add other environment variables as needed

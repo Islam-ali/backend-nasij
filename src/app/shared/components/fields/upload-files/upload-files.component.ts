@@ -13,6 +13,7 @@ import { SafePipe } from "../../../../core/pipes/safe.pipe";
 import { ComponentBase } from "../../../../core/directives/component-base.directive";
 import { BaseResponse } from "../../../../core/models/baseResponse";
 import { Archived } from "../models/Archived";
+import { environment } from "../../../../../environments/environment";
 
 interface FileWithProgress {
   file: File | any;
@@ -84,7 +85,7 @@ export class UploadFilesComponent extends ComponentBase implements OnChanges {
       this.selectedFiles = filesArray.map((file: Archived) => ({
         file: file,
         type: file.mimeType,
-        content: file.filePath,
+        content: environment.baseUrl + file.filePath,
         iconClass: this.getFileIconClass(file.mimeType),
         size: this.formatBytes(file.fileSize),
         sizeBytes: file.fileSize,
