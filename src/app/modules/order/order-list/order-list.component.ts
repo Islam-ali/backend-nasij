@@ -40,7 +40,6 @@ import { IState } from '../../../interfaces/state.interface';
 import { CountryService } from '../../../services/country.service';
 import { StateService } from '../../../services/state.service';
 import { MultiLanguagePipe } from '../../../core/pipes/multi-language.pipe';
-import { OrderTimelineManagerComponent } from '../order-timeline-manager/order-timeline-manager.component';
 
 interface Column {
     field: string;
@@ -82,7 +81,6 @@ interface ExportColumn {
      CheckboxModule,
      FormsModule,
      MultiLanguagePipe,
-     OrderTimelineManagerComponent,
  ],
     providers: [MessageService, ConfirmationService, OrderService, PackageService]
 })
@@ -102,10 +100,17 @@ export class OrderListComponent extends ComponentBase implements OnInit {
     });
     loadingExport: boolean = false;
 
-    // Timeline properties
-    showTimelineDialog = false;
-    selectedOrderForTimeline: Order | null = null;
-    timelineLoading = signal(false);
+    // Tracking status options
+    trackingStatusOptions = [
+        { label: 'Not Started', value: 'not_started' },
+        { label: 'Processing', value: 'processing' },
+        { label: 'Packed', value: 'packed' },
+        { label: 'Out For Delivery', value: 'out_for_delivery' },
+        { label: 'Delivered', value: 'delivered' },
+        { label: 'On Hold', value: 'on_hold' },
+        { label: 'Cancelled', value: 'cancelled' },
+        { label: 'Returned', value: 'returned' }
+    ];
 
     // Variant editing properties
     variantDialog = false;
@@ -127,8 +132,7 @@ export class OrderListComponent extends ComponentBase implements OnInit {
     expandedProductIndex: number = -1; // Track which product has expanded variants
     productVariantsCache: { [key: string]: any[] } = {}; // Cache variants for each product
 
-    // Timeline properties
-    timelineDialog = false;
+    // removed timeline feature
 
     // Image preview properties
     imagePreviewDialog = false;
@@ -219,6 +223,7 @@ export class OrderListComponent extends ComponentBase implements OnInit {
             tax: [0, [Validators.required, Validators.min(0)]],
             shippingCost: [0],
             total: [0, [Validators.required, Validators.min(0.01)]],
+            trackingStatus: ['processing', Validators.required],
             cashPayment: this.fb.group({
                 amountPaid: [0, [Validators.required, Validators.min(0)]],
                 changeDue: [0],
@@ -476,6 +481,38 @@ export class OrderListComponent extends ComponentBase implements OnInit {
         if (order.items && order.items.length > 0) {
             order.items.forEach((item: OrderItem) => {
                 if (item.itemType === OrderItemType.PACKAGE) {
+                    // Clean package items to remove extra fields from selectedVariants
+                    const cleanedPackageItems = (item.packageItems || []).map((pkgItem: any) => {
+                        const cleanedVariants = (pkgItem.selectedVariants || []).map((variant: any) => {
+                            const cleanedVariant: any = {
+                                _id: variant._id,
+                                variant: variant.variant
+                            };
+                            
+                            // Clean the value object to only include en and ar
+                            if (variant.value && typeof variant.value === 'object') {
+                                cleanedVariant.value = {
+                                    en: variant.value.en,
+                                    ar: variant.value.ar
+                                };
+                            } else {
+                                cleanedVariant.value = variant.value;
+                            }
+                            
+                            // Include image if present
+                            if (variant.image) {
+                                cleanedVariant.image = variant.image;
+                            }
+                            
+                            return cleanedVariant;
+                        });
+                        
+                        return {
+                            ...pkgItem,
+                            selectedVariants: cleanedVariants
+                        };
+                    });
+                    
                     // Handle package items
                     this.items.push(this.fb.group({
                         itemType: [item.itemType],
@@ -484,11 +521,34 @@ export class OrderListComponent extends ComponentBase implements OnInit {
                         price: [item.price],
                         totalPrice: [item.totalPrice],
                         discountPrice: [item.discountPrice],
-                        packageItems: [item.packageItems || []],
+                        packageItems: [cleanedPackageItems],
                         selectedVariants: [item.selectedVariants || []]
                     }));
                 } else {
-                    let selectedVariants = item.selectedVariants || [];
+                    // Clean product selectedVariants
+                    const cleanedVariants = (item.selectedVariants || []).map((variant: any) => {
+                        const cleanedVariant: any = {
+                            _id: variant._id,
+                            variant: variant.variant
+                        };
+                        
+                        // Clean the value object to only include en and ar
+                        if (variant.value && typeof variant.value === 'object') {
+                            cleanedVariant.value = {
+                                en: variant.value.en,
+                                ar: variant.value.ar
+                            };
+                        } else {
+                            cleanedVariant.value = variant.value;
+                        }
+                        
+                        // Include image if present
+                        if (variant.image) {
+                            cleanedVariant.image = variant.image;
+                        }
+                        
+                        return cleanedVariant;
+                    });
 
                     this.items.push(this.fb.group({
                         itemType: [item.itemType || OrderItemType.PRODUCT],
@@ -499,7 +559,7 @@ export class OrderListComponent extends ComponentBase implements OnInit {
                         discountPrice: [item.discountPrice],
 
                         packageItems: [[]],
-                        selectedVariants: [selectedVariants]
+                        selectedVariants: [cleanedVariants]
                     }));
                 }
             });
@@ -587,7 +647,8 @@ export class OrderListComponent extends ComponentBase implements OnInit {
             const cashPayment = cleanedData.cashPayment;
             cleanedData.cashPayment = {
                 amountPaid: cashPayment.amountPaid || 0,
-                changeDue: cashPayment.changeDue || 0
+                changeDue: cashPayment.changeDue || 0,
+                ...(cashPayment.paymentImage && { paymentImage: cashPayment.paymentImage })
             };
         }
         
@@ -611,14 +672,30 @@ export class OrderListComponent extends ComponentBase implements OnInit {
                             cleanedPkgItem.productId = cleanedPkgItem.productId._id;
                         }
                         
-                        // Ensure _id exists for selectedVariants
+                        // Clean and ensure _id exists for selectedVariants
                         if (cleanedPkgItem.selectedVariants && Array.isArray(cleanedPkgItem.selectedVariants)) {
                             cleanedPkgItem.selectedVariants = cleanedPkgItem.selectedVariants.map((variant: any) => {
-                                // Ensure _id exists for validation
-                                if (!variant._id) {
-                                    variant._id = new Date().getTime().toString() + Math.random().toString(36).substr(2, 9);
+                                const cleanedVariant: any = {
+                                    _id: variant._id || new Date().getTime().toString() + Math.random().toString(36).substr(2, 9),
+                                    variant: variant.variant
+                                };
+                                
+                                // Clean the value object to only include en and ar
+                                if (variant.value && typeof variant.value === 'object') {
+                                    cleanedVariant.value = {
+                                        en: variant.value.en,
+                                        ar: variant.value.ar
+                                    };
+                                } else {
+                                    cleanedVariant.value = variant.value;
                                 }
-                                return variant;
+                                
+                                // Include image if present
+                                if (variant.image) {
+                                    cleanedVariant.image = variant.image;
+                                }
+                                
+                                return cleanedVariant;
                             });
                         }
                         
@@ -631,7 +708,27 @@ export class OrderListComponent extends ComponentBase implements OnInit {
                 // Clean selectedVariants for products
                 if (cleanedItem.selectedVariants && Array.isArray(cleanedItem.selectedVariants)) {
                     cleanedItem.selectedVariants = cleanedItem.selectedVariants.map((variant: any) => {
-                        return variant;
+                        const cleanedVariant: any = {
+                            _id: variant._id || new Date().getTime().toString() + Math.random().toString(36).substr(2, 9),
+                            variant: variant.variant
+                        };
+                        
+                        // Clean the value object to only include en and ar
+                        if (variant.value && typeof variant.value === 'object') {
+                            cleanedVariant.value = {
+                                en: variant.value.en,
+                                ar: variant.value.ar
+                            };
+                        } else {
+                            cleanedVariant.value = variant.value;
+                        }
+                        
+                        // Include image if present
+                        if (variant.image) {
+                            cleanedVariant.image = variant.image;
+                        }
+                        
+                        return cleanedVariant;
                     });
                 }
                 
@@ -710,6 +807,11 @@ export class OrderListComponent extends ComponentBase implements OnInit {
             subtotal: subtotal,
             total: total
         }, { emitEvent: false });
+        
+        // Recalculate change due when total changes
+        if (this.isEditOrder) {
+            this.calculateChangeDue();
+        }
     }
 
     hideDialog() {
@@ -1124,11 +1226,38 @@ export class OrderListComponent extends ComponentBase implements OnInit {
         this.currentPackageItemIndex = itemIndex;
         
         // Initialize temp package items with default quantities
-        this.tempPackageItems = packageData.items?.map((item: any) => ({
-            productId: item.productId._id,
-            quantity: item.quantity || 1,
-            selectedVariants: item.selectedVariants || []
-        })) || [];
+        this.tempPackageItems = packageData.items?.map((item: any) => {
+            // Clean up selectedVariants to remove extra fields from value objects
+            const cleanedVariants = (item.selectedVariants || []).map((variant: any) => {
+                const cleanedVariant: any = {
+                    _id: variant._id,
+                    variant: variant.variant
+                };
+                
+                // Clean the value object to only include en and ar
+                if (variant.value && typeof variant.value === 'object') {
+                    cleanedVariant.value = {
+                        en: variant.value.en,
+                        ar: variant.value.ar
+                    };
+                } else {
+                    cleanedVariant.value = variant.value;
+                }
+                
+                // Include image if present
+                if (variant.image) {
+                    cleanedVariant.image = variant.image;
+                }
+                
+                return cleanedVariant;
+            });
+            
+            return {
+                productId: item.productId._id || item.productId,
+                quantity: item.quantity || 1,
+                selectedVariants: cleanedVariants
+            };
+        }) || [];
         
         // Cache variants for each product
         this.productVariantsCache = {};
@@ -1198,7 +1327,12 @@ export class OrderListComponent extends ComponentBase implements OnInit {
             
             if (v.value && option.value) {
                 if (typeof v.value === 'object' && typeof option.value === 'object') {
-                    return v.value.en === option.value.en && v.value.ar === option.value.ar;
+                    // Extract just the en and ar values, ignoring any extra fields like _id
+                    const vValueEn = v.value.en;
+                    const vValueAr = v.value.ar;
+                    const optionValueEn = option.value.en;
+                    const optionValueAr = option.value.ar;
+                    return vValueEn === optionValueEn && vValueAr === optionValueAr;
                 } else {
                     return v.value === option.value;
                 }
@@ -1209,18 +1343,19 @@ export class OrderListComponent extends ComponentBase implements OnInit {
     }
 
     selectProductVariantOption(productIndex: number, variantType: string, option: any): void {
-        console.log('selectProductVariantOption called:', { productIndex, variantType, option });
         const product = this.tempPackageItems[productIndex];
         if (!product) {
-            console.log('Product not found at index:', productIndex);
             return;
         }
 
         if (!product.selectedVariants) {
             product.selectedVariants = [];
         }
-        
-        console.log('Current selectedVariants:', product.selectedVariants);
+
+        // Clean the value object to remove any extra fields like _id
+        const cleanValue = option.value && typeof option.value === 'object' 
+            ? { en: option.value.en, ar: option.value.ar }
+            : option.value;
 
         // Check if this exact option is already selected
         const isAlreadySelected = product.selectedVariants.some((v: any) => {
@@ -1230,7 +1365,11 @@ export class OrderListComponent extends ComponentBase implements OnInit {
             
             if (v.value && option.value) {
                 if (typeof v.value === 'object' && typeof option.value === 'object') {
-                    return v.value.en === option.value.en && v.value.ar === option.value.ar;
+                    const vValueEn = v.value.en;
+                    const vValueAr = v.value.ar;
+                    const optionValueEn = option.value.en;
+                    const optionValueAr = option.value.ar;
+                    return vValueEn === optionValueEn && vValueAr === optionValueAr;
                 } else {
                     return v.value === option.value;
                 }
@@ -1248,7 +1387,11 @@ export class OrderListComponent extends ComponentBase implements OnInit {
                 
                 if (v.value && option.value) {
                     if (typeof v.value === 'object' && typeof option.value === 'object') {
-                        return !(v.value.en === option.value.en && v.value.ar === option.value.ar);
+                        const vValueEn = v.value.en;
+                        const vValueAr = v.value.ar;
+                        const optionValueEn = option.value.en;
+                        const optionValueAr = option.value.ar;
+                        return !(vValueEn === optionValueEn && vValueAr === optionValueAr);
                     } else {
                         return v.value !== option.value;
                     }
@@ -1256,33 +1399,31 @@ export class OrderListComponent extends ComponentBase implements OnInit {
                 
                 return true;
             });
+            // Force change detection
+            this.tempPackageItems = [...this.tempPackageItems];
             return;
         }
         
         // Check if there's already a variant of this type
         const existingVariantIndex = product.selectedVariants.findIndex((v: any) => v.variant === variantType);
         
+        const newVariant = {
+            _id: option._id,
+            variant: variantType,
+            value: cleanValue,
+            image: option.image
+        };
+        
         if (existingVariantIndex !== -1) {
             // Replace existing variant of this type
-            product.selectedVariants[existingVariantIndex] = {
-                _id: option._id,
-                variant: variantType,
-                value: option.value,
-                image: option.image
-            };
+            product.selectedVariants[existingVariantIndex] = newVariant;
         } else {
             // Add new variant
-            product.selectedVariants.push({
-                _id: option._id,
-                variant: variantType,
-                value: option.value,
-                image: option.image
-            });
+            product.selectedVariants.push(newVariant);
         }
         
         // Force change detection
         this.tempPackageItems = [...this.tempPackageItems];
-        console.log('After selection, selectedVariants:', product.selectedVariants);
     }
 
     removeProductVariant(productIndex: number, variant: any): void {
@@ -1352,7 +1493,35 @@ export class OrderListComponent extends ComponentBase implements OnInit {
         const selectedPackage = this.packages().find(p => p._id === packageId);
         
         if (selectedPackage) {
-            this.openPackageDetailsDialog(selectedPackage, itemIndex);
+            // Get existing package items from the form
+            const existingPackageItems = item.get('packageItems')?.value || [];
+            
+            // Create a modified package object that includes the existing selected variants
+            const packageWithSelectedVariants = {
+                ...selectedPackage,
+                items: selectedPackage.items.map((pkgItem: any, index: number) => {
+                    // Get the product ID from package item
+                    const pkgProductId = pkgItem.productId._id || pkgItem.productId;
+                    
+                    // Find matching existing package item
+                    const existingItem = existingPackageItems.find((existing: any) => {
+                        const existingProductId = existing.productId?._id || existing.productId;
+                        return existingProductId === pkgProductId;
+                    });
+                    
+                    if (existingItem) {
+                        return {
+                            ...pkgItem,
+                            quantity: existingItem.quantity || pkgItem.quantity,
+                            selectedVariants: existingItem.selectedVariants || []
+                        };
+                    }
+                    
+                    return pkgItem;
+                })
+            };
+            
+            this.openPackageDetailsDialog(packageWithSelectedVariants, itemIndex);
         }
     }
 
@@ -1387,15 +1556,7 @@ export class OrderListComponent extends ComponentBase implements OnInit {
         });
     }
 
-    viewOrderTimeline(order: Order): void {
-        this.selectedOrderForTimeline = order;
-        this.showTimelineDialog = true;
-    }
-
-    closeTimelineDialog(): void {
-        this.showTimelineDialog = false;
-        this.selectedOrderForTimeline = null;
-    }
+    // timeline feature removed
 
     // Math utility for template
     Math = Math;

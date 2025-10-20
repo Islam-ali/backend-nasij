@@ -8,7 +8,7 @@ export const appRoutes: Routes = [
         children: [
             {
                 path: '',
-                redirectTo: 'inventory',
+                redirectTo: 'orders',
                 pathMatch: 'full'
             },
             { 
@@ -55,34 +55,34 @@ export const appRoutes: Routes = [
                 path: 'features',
                 loadComponent: () => import('./app/modules/feature/feature-list/feature-list.component').then(m => m.FeatureListComponent)
             },
-            {
-                path: 'inventory',
-                loadComponent: () => import('./app/modules/inventory/components/inventory-dashboard/inventory-dashboard.component').then(m => m.InventoryDashboardComponent)
-            },
-            {
-                path: 'inventory/revenue-management',
-                loadComponent: () => import('./app/modules/inventory/components/revenue-management/revenue-management.component').then(m => m.RevenueManagementComponent)
-            },
-            {
-                path: 'inventory/stock',
-                loadComponent: () => import('./app/modules/inventory/components/stock-management/stock-management.component').then(m => m.StockManagementComponent)
-            },
-            {
-                path: 'inventory/expenses',
-                loadComponent: () => import('./app/modules/inventory/components/expense-management/expense-management.component').then(m => m.ExpenseManagementComponent)
-            },
-            {
-                path: 'inventory/reports',
-                loadComponent: () => import('./app/modules/inventory/components/financial-reports/financial-reports.component').then(m => m.FinancialReportsComponent)
-            },
-            {
-                path: 'inventory/stock-levels',
-                loadComponent: () => import('./app/modules/inventory/components/stock-levels/stock-levels.component').then(m => m.StockLevelsComponent)
-            },
-            {
-                path: 'inventory/quick-actions',
-                loadComponent: () => import('./app/modules/inventory/components/quick-actions/quick-actions.component').then(m => m.QuickActionsComponent)
-            },
+            // {
+            //     path: 'inventory',
+            //     loadComponent: () => import('./app/modules/inventory/components/inventory-dashboard/inventory-dashboard.component').then(m => m.InventoryDashboardComponent)
+            // },
+            // {
+            //     path: 'inventory/revenue-management',
+            //     loadComponent: () => import('./app/modules/inventory/components/revenue-management/revenue-management.component').then(m => m.RevenueManagementComponent)
+            // },
+            // {
+            //     path: 'inventory/stock',
+            //     loadComponent: () => import('./app/modules/inventory/components/stock-management/stock-management.component').then(m => m.StockManagementComponent)
+            // },
+            // {
+            //     path: 'inventory/expenses',
+            //     loadComponent: () => import('./app/modules/inventory/components/expense-management/expense-management.component').then(m => m.ExpenseManagementComponent)
+            // },
+            // {
+            //     path: 'inventory/reports',
+            //     loadComponent: () => import('./app/modules/inventory/components/financial-reports/financial-reports.component').then(m => m.FinancialReportsComponent)
+            // },
+            // {
+            //     path: 'inventory/stock-levels',
+            //     loadComponent: () => import('./app/modules/inventory/components/stock-levels/stock-levels.component').then(m => m.StockLevelsComponent)
+            // },
+            // {
+            //     path: 'inventory/quick-actions',
+            //     loadComponent: () => import('./app/modules/inventory/components/quick-actions/quick-actions.component').then(m => m.QuickActionsComponent)
+            // },
             {
                 path: 'users',
                 loadComponent: () => import('./app/modules/user/user-list/user-list.component').then(m => m.UserListComponent)
@@ -94,11 +94,7 @@ export const appRoutes: Routes = [
             {
                 path: 'locations',
                 loadChildren: () => import('./app/modules/location/location.module').then(m => m.LocationModule)
-            },
-            {
-                path: 'timelines',
-                loadComponent: () => import('./app/modules/order/order-timeline-manager/order-timeline-manager.component').then(m => m.OrderTimelineManagerComponent)
-            }   
+            }
         ]
     },
     // { path: 'notfound', component: Notfound },
