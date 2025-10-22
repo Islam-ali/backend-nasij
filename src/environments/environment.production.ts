@@ -1,8 +1,8 @@
 export const environment = {
   production: true,
   development: false,
-  baseUrl: 'https://pledeg.tappih.com/',
-  apiUrl: 'https://pledeg.tappih.com/api/v1', 
+  baseUrl: 'https://api.pledgestores.com',
+  apiUrl: 'https://api.pledgestores.com/api/v1', 
   appName: 'Online Store Admin',
   version: '1.0.0',
   // Production specific settings
