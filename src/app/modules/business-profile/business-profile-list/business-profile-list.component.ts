@@ -27,6 +27,7 @@ import { BaseResponse } from '../../../core/models/baseResponse';
 import { FallbackImgDirective } from '../../../core/directives/fallback-img.directive';
 import { UploadFilesComponent } from '../../../shared/components/fields/upload-files/upload-files.component';
 import { SafePipe } from '../../../core/pipes/safe.pipe';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-business-profile-list',
@@ -86,6 +87,7 @@ export class BusinessProfileListComponent extends ComponentBase implements OnIni
       }
     });
 
+
     this.logoLightControl.valueChanges.subscribe(value => {
       if (value && value.filePath) {
         this.logoLightPreview = value.filePath;
@@ -93,6 +95,10 @@ export class BusinessProfileListComponent extends ComponentBase implements OnIni
         this.logoLightPreview = null;
       }
     });
+  }
+
+  getImageUrl(filePath: string): string {
+    return `${environment.baseUrl}/${filePath}`;
   }
 
   initForm() {

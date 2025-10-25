@@ -40,6 +40,12 @@ import { IState } from '../../../interfaces/state.interface';
 import { CountryService } from '../../../services/country.service';
 import { StateService } from '../../../services/state.service';
 import { MultiLanguagePipe } from '../../../core/pipes/multi-language.pipe';
+import { environment } from '../../../../environments/environment';
+import { UploadFilesComponent } from "../../../shared/components/fields/upload-files/upload-files.component";
+import { UploadFilesService } from '../../../shared/components/fields/upload-files/upload-files.service';
+import { Archived } from '../../../shared/components/fields/models/Archived';
+import { HttpEventType, HttpResponse } from '@angular/common/http';
+import { HttpEvent } from '@angular/common/http';
 
 interface Column {
     field: string;
@@ -58,31 +64,32 @@ interface ExportColumn {
     styleUrls: ['./order-list.component.scss'],
     standalone: true,
     imports: [
-     CommonModule,
-     ReactiveFormsModule,
-     TableModule,
-     ButtonModule,
-     RippleModule,
-     ToastModule,
-     ToolbarModule,
-     TextareaModule,
-     InputTextModule,
-     DropdownModule,
-     InputNumberModule,
-     SelectModule,
-     DialogModule,
-     TagModule,
-     InputIconModule,
-     IconFieldModule,
-     ConfirmDialogModule,
-     CardModule,
-     PanelModule,
-     PaginatorModule,
-     CheckboxModule,
-     FormsModule,
-     MultiLanguagePipe,
- ],
-    providers: [MessageService, ConfirmationService, OrderService, PackageService]
+    CommonModule,
+    ReactiveFormsModule,
+    TableModule,
+    ButtonModule,
+    RippleModule,
+    ToastModule,
+    ToolbarModule,
+    TextareaModule,
+    InputTextModule,
+    DropdownModule,
+    InputNumberModule,
+    SelectModule,
+    DialogModule,
+    TagModule,
+    InputIconModule,
+    IconFieldModule,
+    ConfirmDialogModule,
+    CardModule,
+    PanelModule,
+    PaginatorModule,
+    CheckboxModule,
+    FormsModule,
+    MultiLanguagePipe,
+    UploadFilesComponent
+],
+    providers: [MessageService, ConfirmationService, OrderService, PackageService, UploadFilesService]  
 })
 export class OrderListComponent extends ComponentBase implements OnInit {
     orderForm!: FormGroup;
@@ -100,17 +107,11 @@ export class OrderListComponent extends ComponentBase implements OnInit {
     });
     loadingExport: boolean = false;
 
-    // Tracking status options
-    trackingStatusOptions = [
-        { label: 'Not Started', value: 'not_started' },
-        { label: 'Processing', value: 'processing' },
-        { label: 'Packed', value: 'packed' },
-        { label: 'Out For Delivery', value: 'out_for_delivery' },
-        { label: 'Delivered', value: 'delivered' },
-        { label: 'On Hold', value: 'on_hold' },
-        { label: 'Cancelled', value: 'cancelled' },
-        { label: 'Returned', value: 'returned' }
-    ];
+    // Filter properties
+    selectedOrderStatus = signal<OrderStatus | null>(null);
+    selectedPaymentStatus = signal<PaymentStatus | null>(null);
+    selectedPaymentMethod = signal<PaymentMethod | null>(null);
+    orderNumberFilter = signal<string>('');
 
     // Variant editing properties
     variantDialog = false;
@@ -140,31 +141,26 @@ export class OrderListComponent extends ComponentBase implements OnInit {
     previewImageTitle: string = '';
 
     statusOptions = [
-        { label: 'Pending', value: OrderStatus.PENDING },
-        { label: 'Confirmed', value: OrderStatus.CONFIRMED },
-        { label: 'Shipped', value: OrderStatus.SHIPPED },
-        { label: 'Delivered', value: OrderStatus.DELIVERED },
-        { label: 'Cancelled', value: OrderStatus.CANCELLED },
-        { label: 'Postponed', value: OrderStatus.POSTPONED },
-        { label: 'Returned', value: OrderStatus.RETURNED }
+        { label: 'قيد الانتظار', value: OrderStatus.PENDING },
+        { label: 'تم التأكيد', value: OrderStatus.CONFIRMED },
+        { label: 'تم الشحن', value: OrderStatus.SHIPPED },
+        { label: 'تم التسليم', value: OrderStatus.DELIVERED },
+        { label: 'تم الإلغاء', value: OrderStatus.CANCELLED },
+        { label: 'تم التأجيل', value: OrderStatus.POSTPONED },
+        { label: 'تم الإرجاع', value: OrderStatus.RETURNED }        
     ];
 
     paymentStatusOptions = [
-        { label: 'Pending', value: PaymentStatus.PENDING },
-        { label: 'Paid', value: PaymentStatus.PAID },
-        { label: 'Failed', value: PaymentStatus.FAILED },
-        { label: 'Refunded', value: PaymentStatus.REFUNDED }
+        { label: 'قيد الانتظار', value: PaymentStatus.PENDING },
+        { label: 'تم الدفع', value: PaymentStatus.PAID },
+        { label: 'فشل الدفع', value: PaymentStatus.FAILED },
+        { label: 'تم الاسترجاع', value: PaymentStatus.REFUNDED }
     ];
+    PaymentMethod = PaymentMethod;
 
     paymentMethodOptions = [
-        { label: 'Cash', value: PaymentMethod.CASH },
-        { label: 'Credit Card', value: PaymentMethod.CREDIT_CARD },
-        { label: 'Debit Card', value: PaymentMethod.DEBIT_CARD },
-        { label: 'Bank Transfer', value: PaymentMethod.BANK_TRANSFER },
-        { label: 'PayPal', value: PaymentMethod.PAYPAL },
-        { label: 'Stripe', value: PaymentMethod.STRIPE },
-        { label: 'Wallet', value: PaymentMethod.WALLET },
-        { label: 'Vodafone Cash', value: PaymentMethod.VODAFONE_CASH }
+        { label: 'نقدي', value: PaymentMethod.CASH },
+        { label: 'فودافون كاش', value: PaymentMethod.VODAFONE_CASH }
     ];
 
     countryOptions = signal<ICountry[]>([]);
@@ -183,6 +179,7 @@ export class OrderListComponent extends ComponentBase implements OnInit {
         private packageService: PackageService,
         private countryService: CountryService,
         private stateService: StateService,
+        private _uploadFilesService: UploadFilesService,
     ) {
         super();
     }
@@ -223,7 +220,6 @@ export class OrderListComponent extends ComponentBase implements OnInit {
             tax: [0, [Validators.required, Validators.min(0)]],
             shippingCost: [0],
             total: [0, [Validators.required, Validators.min(0.01)]],
-            trackingStatus: ['processing', Validators.required],
             cashPayment: this.fb.group({
                 amountPaid: [0, [Validators.required, Validators.min(0)]],
                 changeDue: [0],
@@ -261,7 +257,6 @@ export class OrderListComponent extends ComponentBase implements OnInit {
         const itemGroup = this.fb.group({
             itemType: [OrderItemType.PRODUCT, Validators.required],
             itemId: ['', Validators.required],
-            productId: [''], // Legacy field
             quantity: [1, [Validators.required, Validators.min(1)]],
             price: [0, [Validators.required, Validators.min(0)]],
             totalPrice: [0, [Validators.required, Validators.min(0)]],
@@ -351,10 +346,6 @@ export class OrderListComponent extends ComponentBase implements OnInit {
         window.open(imageUrl, '_blank');
     }
 
-    onGlobalFilter(dt: Table, event: any): void {
-        dt.filterGlobal((event.target as HTMLInputElement).value, 'contains');
-    }
-
     /**
      * Filters the orders table based on user input for specific columns
      * @param event The input event containing the filter value
@@ -367,12 +358,86 @@ export class OrderListComponent extends ComponentBase implements OnInit {
         }
     }
 
+    /**
+     * Filter orders by order status
+     * @param status The order status to filter by
+     */
+    onOrderStatusFilter(status: OrderStatus | null): void {
+        this.selectedOrderStatus.set(status);
+        this.applyFilters();
+    }
+
+    /**
+     * Filter orders by payment status
+     * @param status The payment status to filter by
+     */
+    onPaymentStatusFilter(status: PaymentStatus | null): void {
+        this.selectedPaymentStatus.set(status);
+        this.applyFilters();
+    }
+
+    /**
+     * Filter orders by payment method
+     * @param method The payment method to filter by
+     */
+    onPaymentMethodFilter(method: PaymentMethod | null): void {
+        this.selectedPaymentMethod.set(method);
+        this.applyFilters();
+    }
+
+    /**
+     * Filter orders by order number
+     * @param orderNumber The order number to filter by
+     */
+    onOrderNumberFilter(orderNumber: string): void {
+        this.orderNumberFilter.set(orderNumber);
+        this.applyFilters();
+    }
+
+    /**
+     * Apply all active filters and reload orders
+     */
+    applyFilters(): void {
+        this.pagination.set({
+            ...this.pagination(),
+            page: 1 // Reset to first page when applying filters
+        });
+        this.loadOrders();
+    }
+
+    /**
+     * Clear all filters and reload orders
+     */
+    clearFilters(): void {
+        this.selectedOrderStatus.set(null);
+        this.selectedPaymentStatus.set(null);
+        this.selectedPaymentMethod.set(null);
+        this.orderNumberFilter.set('');
+        this.applyFilters();
+    }
+
     loadOrders() {
         this.loading.set(true);
-        this.orderService.getOrders({
+        const filters: any = {
             limit: this.pagination().limit,
             page: this.pagination().page
-        }).pipe(
+        };
+
+        // Add filter parameters if they are set
+        if (this.selectedOrderStatus()) {
+            filters.orderStatus = this.selectedOrderStatus();
+        }
+        if (this.selectedPaymentStatus()) {
+            filters.paymentStatus = this.selectedPaymentStatus();
+        }
+        if (this.selectedPaymentMethod()) {
+            filters.paymentMethod = this.selectedPaymentMethod();
+        }
+        if (this.orderNumberFilter().trim()) {
+            filters.orderNumber = this.orderNumberFilter().trim();
+        }
+
+        this.orderService.getOrders(filters).pipe(
             takeUntil(this.destroy$),
             finalize(() => this.loading.set(false))
         ).subscribe({
@@ -1569,15 +1634,9 @@ export class OrderListComponent extends ComponentBase implements OnInit {
             const reader = new FileReader();
             reader.onload = (e: any) => {
                 const imageUrl = e.target.result;
-                // Update the form control properly
-                const cashPaymentControl = this.orderForm.get('cashPayment');
-                if (cashPaymentControl) {
-                    const currentValue = cashPaymentControl.value || {};
-                    cashPaymentControl.patchValue({
-                        ...currentValue,
-                        paymentImage: imageUrl
-                    });
-                }
+                this.fileUpload = file;
+                this.uploadPaymentImage();
+                
             };
             reader.readAsDataURL(file);
         }
@@ -1609,7 +1668,62 @@ export class OrderListComponent extends ComponentBase implements OnInit {
 
     getPaymentImageUrl(): string | null {
         const cashPayment = this.orderForm.get('cashPayment')?.value;
-        return cashPayment?.paymentImage || null;
+        return cashPayment?.paymentImage ? `${environment.baseUrl}/${cashPayment.paymentImage}` : null;
+    }
+
+    fileUpload:any
+    uploadPaymentImage(): void {
+
+    this._uploadFilesService.PostImageFile({ file: this.fileUpload, folderName: 'Uploads' }).subscribe({
+        next: (event: HttpEvent<BaseResponse<Archived>>) => {
+          if (event.type === HttpEventType.UploadProgress) {
+            if (event.total) {
+              const progress = Math.round(100 * event.loaded / event.total);
+            }
+          } else if (event instanceof HttpResponse) {
+            // this.updateFileState(fileObj.id, {
+            //   uploading: false,
+            //   uploaded: true,
+            //   progress: 100
+            // });
+  
+            this.messageService.add({
+              severity: 'success',
+              summary: 'Success',
+              detail: `${this.fileUpload.name} uploaded successfully`
+            });
+  
+            const responseData = event.body?.data;
+            if (responseData) {
+                this.cashPayment.patchValue({
+                    paymentImage: responseData.filePath
+                });
+              // this.files.push({ file: fileObj, Result: responseData });
+              // this.updateFormControl();
+            } else {
+              // this.updateFileState(fileObj.id, {
+              //   uploading: false,
+              //   error: 'No response data received from server',
+              //   progress: 0
+              // });
+            }
+          }
+        },
+        error: (error) => {
+          const errorMessage = error.error?.message || error.message || 'Upload failed';
+          // this.updateFileState(fileObj.id, {
+          //   uploading: false,
+          //   error: errorMessage,
+          //   progress: 0
+          // });
+  
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: `Failed to upload ${this.fileUpload.name}`
+          });
+        }
+      });
     }
 
     downloadImage(): void {

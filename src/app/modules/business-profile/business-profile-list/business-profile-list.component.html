@@ -56,7 +56,7 @@
                                                     <label class="block text-sm font-medium text-gray-600 mb-2">Dark Logo</label>
                                                     <div class="bg-gray-800 rounded-lg p-4">
                                         <img *ngIf="logoDarkPreview || businessProfile?.logo_dark"
-                                            [src]="logoDarkPreview || businessProfile?.logo_dark?.filePath"
+                                            [src]="getImageUrl(logoDarkPreview || businessProfile?.logo_dark?.filePath || '')"
                                                             [alt]="businessProfile?.name?.en + ' Dark Logo'"
                                                             class="w-24 h-24 object-contain mx-auto"
                                             appFallbackImg="/assets/images/default-logo.png">
@@ -71,7 +71,7 @@
                                                     <label class="block text-sm font-medium text-gray-600 mb-2">Light Logo</label>
                                                     <div class="bg-gray-100 rounded-lg p-4">
                                         <img *ngIf="logoLightPreview || businessProfile?.logo_light"
-                                            [src]="logoLightPreview || businessProfile?.logo_light?.filePath"
+                                            [src]="getImageUrl(logoLightPreview || businessProfile?.logo_light?.filePath || '')"
                                                             [alt]="businessProfile?.name?.en + ' Light Logo'"
                                                             class="w-24 h-24 object-contain mx-auto"
                                             appFallbackImg="/assets/images/default-logo.png">
