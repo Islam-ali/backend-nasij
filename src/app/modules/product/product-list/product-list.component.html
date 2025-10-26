@@ -52,7 +52,7 @@
                 <span class="font-medium">{{ product.name | multiLanguage:currentLanguage() }}</span>
             </td>
             <td style="width:14%; min-width: 10rem;">
-                <img [src]="product.images?.[0].filePath" [alt]="product.name" width="64" height="64"
+                <img [src]="getImageUrl(product.images?.[0].filePath)" [alt]="product.name" width="64" height="64"
                     class="shadow-4 border-round" [fallback]="'/images/picture.png'" />
             </td>
             <td style="width:14%; min-width:8rem;">

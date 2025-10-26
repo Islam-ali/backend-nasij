@@ -38,6 +38,7 @@ import { IProduct } from '../../../interfaces/product.interface';
 import { IPackage } from '../../../interfaces/package.interface';
 import { PackageService } from '../../../services/package.service';
 import { MultiLanguagePipe } from '../../../core/pipes/multi-language.pipe';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-banner-list',
@@ -107,6 +108,9 @@ export class BannerListComponent extends ComponentBase implements OnInit {
     this.loadBrands();
     this.loadProducts();
     this.loadPackages();
+    }
+    getImageUrl(filePath: string): string {
+        return `${environment.baseUrl}/${filePath}`;
     }
 
   initForm() {

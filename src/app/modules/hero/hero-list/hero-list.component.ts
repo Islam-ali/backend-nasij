@@ -31,6 +31,7 @@ import { BaseResponse, pagination } from '../../../core/models/baseResponse';
 import { UploadFilesComponent } from '../../../shared/components/fields/upload-files/upload-files.component';
 import { ComponentBase } from '../../../core/directives/component-base.directive';
 import { finalize, takeUntil } from 'rxjs';
+import { environment } from '../../../../environments/environment';
 
 interface Column {
     field: string;
@@ -161,6 +162,10 @@ export class HeroListComponent extends ComponentBase implements OnInit {
             startDateControl?.updateValueAndValidity();
             endDateControl?.updateValueAndValidity();
         });
+    }
+
+    getImageUrl(filePath: string): string {
+        return `${environment.baseUrl}/${filePath}`;
     }
 
     getSeverity(status: boolean) {

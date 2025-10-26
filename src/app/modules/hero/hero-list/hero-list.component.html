@@ -57,7 +57,7 @@
                 </td>
                 <td>
                     <div class="flex items-center justify-center">
-                        <img *ngIf="hero.image" [src]="hero.image.filePath" [alt]="hero.title"
+                        <img *ngIf="hero.image" [src]="getImageUrl(hero.image.filePath)" [alt]="hero.title"
                             class="w-16 h-16 object-cover rounded-lg shadow-md border-2 border-gray-200"
                             appFallbackImg="assets/images/picture.png" />
                         <div *ngIf="!hero.image"

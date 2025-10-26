@@ -53,7 +53,7 @@
                 </td> -->
                 <td>
                     <div class="flex align-items-center gap-2">
-                        <img *ngIf="package.images && package.images.length > 0" [src]="package.images[0].filePath"
+                        <img *ngIf="package.images && package.images.length > 0" [src]="getImageUrl(package.images[0].filePath)"
                             [alt]="package.name.en" width="32" height="32" class="rounded-circle" appFallbackImg />
                         <div class="space-y-1">
                             <div class="font-bold text-gray-900" dir="ltr">{{ package.name.en }}</div>

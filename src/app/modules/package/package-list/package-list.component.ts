@@ -39,6 +39,7 @@ import { finalize, takeUntil } from 'rxjs';
 import { ICategory } from '../../../interfaces/category.interface';
 import { CategoryService } from '../../../services/category.service';
 import { MultiLanguagePipe } from '../../../core/pipes/multi-language.pipe';
+import { environment } from '../../../../environments/environment';
 
 interface Column {
     field: string;
@@ -128,6 +129,9 @@ export class PackageListComponent extends ComponentBase implements OnInit {
         this.loadProducts();
         this.loadCategories();
         }
+    getImageUrl(filePath: string): string {
+        return `${environment.baseUrl}/${filePath}`;
+    }
 
     initializeColumns() {
         this.cols = [

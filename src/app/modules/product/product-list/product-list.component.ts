@@ -44,6 +44,7 @@ import { ToggleSwitchModule } from "primeng/toggleswitch";
 import { EditorModule } from 'primeng/editor';
 import { MultiLanguagePipe } from '../../../core/pipes/multi-language.pipe';
 import { SupportedLanguage } from '../../../interfaces/banner.interface';
+import { environment } from '../../../../environments/environment';
 
 export enum EnumProductVariant {
     SIZE = 'size',
@@ -173,6 +174,10 @@ export class ProductListComponent extends ComponentBase implements OnInit {
         private brandService: BrandService
     ) {
         super();
+    }
+
+    getImageUrl(filePath: string): string {
+        return `${environment.baseUrl}/${filePath}`;
     }
 
     get formControlImage(): FormControl {

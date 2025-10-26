@@ -27,6 +27,7 @@ import { UploadFilesComponent } from '../../../shared/components/fields/upload-f
 import { BaseResponse } from '../../../core/models/baseResponse';
 import { ComponentBase } from '../../../core/directives/component-base.directive';
 import { TextareaModule } from 'primeng/textarea';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-feature-list',
@@ -74,6 +75,10 @@ export class FeatureListComponent extends ComponentBase implements OnInit {
     this.loadFeatures();
     this.initForm();
   }
+
+  getImageUrl(filePath: string): string {
+    return `${environment.baseUrl}/${filePath}`;
+}
 
   initForm() {
     this.featureForm = this.fb.group({

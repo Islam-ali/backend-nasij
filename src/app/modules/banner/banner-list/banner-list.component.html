@@ -32,7 +32,7 @@
         <ng-template pTemplate="body" let-banner>
             <tr>
                 <td>
-                    <img [src]="banner.image.filePath" [alt]="banner.title | multiLanguage:currentLanguage()"
+                    <img [src]="getImageUrl(banner.image.filePath)" [alt]="banner.title | multiLanguage:currentLanguage()"
                         class="w-16 h-16 object-cover rounded-lg">
                 </td>
                 <td>

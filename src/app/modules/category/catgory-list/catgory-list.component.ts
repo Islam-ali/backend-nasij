@@ -33,6 +33,7 @@ import { ToggleSwitchModule } from 'primeng/toggleswitch';
 import { FallbackImgDirective } from '../../../core/directives/fallback-img.directive';
 import { MultiLanguagePipe } from '../../../core/pipes/multi-language.pipe';
 import { SupportedLanguage } from '../../../../app/interfaces/banner.interface';
+import { environment } from '../../../../environments/environment';
 
 interface Column {
   field: string;
@@ -117,6 +118,10 @@ export class CatgoryListComponent extends ComponentBase implements OnInit {
     this.loadCategories();
     this.listCategories();
   }
+
+  getImageUrl(filePath: string): string {
+    return `${environment.baseUrl}/${filePath}`;
+}
 
   buildForm() {
     this.categoryForm = this.fb.group({

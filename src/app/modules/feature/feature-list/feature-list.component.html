@@ -25,7 +25,7 @@
         <ng-template pTemplate="body" let-feature>
             <tr>
                 <td>
-                    <img [src]="feature.icon?.filePath" [alt]="feature.title?.en || feature.title?.ar" class="w-12 h-12 object-cover rounded-lg">
+                    <img [src]="getImageUrl(feature.icon?.filePath)" [alt]="feature.title?.en || feature.title?.ar" class="w-12 h-12 object-cover rounded-lg">
                 </td>
                 <td>
                     <div class="space-y-1">

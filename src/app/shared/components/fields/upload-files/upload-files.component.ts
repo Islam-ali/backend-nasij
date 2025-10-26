@@ -76,8 +76,6 @@ export class UploadFilesComponent extends ComponentBase implements OnChanges {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    console.log('ngOnChanges - index:', this.index, 'changes:', changes);
-    console.log(this.control.value);
     if (changes['filesServer'] && changes['filesServer'].currentValue) {
       // Convert to array if single object
       const filesArray = Array.isArray(this.filesServer) ? this.filesServer : [this.filesServer];
@@ -85,7 +83,7 @@ export class UploadFilesComponent extends ComponentBase implements OnChanges {
       this.selectedFiles = filesArray.map((file: Archived) => ({
         file: file,
         type: file.mimeType,
-        content: environment.baseUrl + file.filePath,
+        content: environment.baseUrl + '/' + file.filePath,
         iconClass: this.getFileIconClass(file.mimeType),
         size: this.formatBytes(file.fileSize),
         sizeBytes: file.fileSize,

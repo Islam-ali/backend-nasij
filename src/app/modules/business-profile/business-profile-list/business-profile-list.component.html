@@ -750,7 +750,7 @@
                 </p-card>
 
                 <!-- Legal Documents -->
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div class="grid grid-cols-1 gap-8">
                     <!-- Privacy Policy -->
                     <p-card styleClass="shadow-lg border-0 mb-4">
                         <ng-template pTemplate="header">
@@ -767,7 +767,7 @@
                         <ng-template pTemplate="content">
                             @if(!isEditMode()) {
                             <!-- View Mode - Enhanced Legal Document Display -->
-                            <div class="space-y-6">
+                            <div class="space-y-6 grid grid-cols-1 lg:grid-cols-2 gap-8">
                                 <!-- English Version -->
                                 <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-200">
                                     <div class="flex items-center gap-3 mb-4">
@@ -799,7 +799,7 @@
                             } @else {
                             <!-- Edit Mode -->
                             <div *ngIf="!showEditor() || !isEditMode()">
-                                <div class="space-y-6" formGroupName="privacyPolicy">
+                                <div class="space-y-6 grid grid-cols-1 lg:grid-cols-2 gap-8" formGroupName="privacyPolicy">
                                     <div>
                                         <h4 class="font-semibold text-gray-900 mb-3">English</h4>
                                         <div [innerHTML]="businessProfileForm.get('privacyPolicy.en')?.value | safe:'html'"
@@ -813,7 +813,7 @@
                                 </div>
                             </div>
                             <div *ngIf="showEditor() && isEditMode()">
-                                <div class="space-y-6" formGroupName="privacyPolicy">
+                                <div class="space-y-6 grid grid-cols-1 lg:grid-cols-2 gap-8" formGroupName="privacyPolicy">
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-2">English</label>
                                         <p-editor formControlName="en" [style]="{'height':'320px'}"
@@ -846,7 +846,7 @@
                         <ng-template pTemplate="content">
                             @if(!isEditMode()) {
                             <!-- View Mode - Enhanced Legal Document Display -->
-                            <div class="space-y-6">
+                            <div class="space-y-6 grid grid-cols-1 lg:grid-cols-2 gap-8">
                                 <!-- English Version -->
                                 <div class="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-6 border border-green-200">
                                     <div class="flex items-center gap-3 mb-4">
@@ -878,7 +878,7 @@
                             } @else {
                             <!-- Edit Mode -->
                             <div *ngIf="!showEditor() || !isEditMode()">
-                                <div class="space-y-6" formGroupName="termsOfService">
+                                <div class="space-y-6 grid grid-cols-1 lg:grid-cols-2 gap-8" formGroupName="termsOfService">
                                     <div>
                                         <h4 class="font-semibold text-gray-900 mb-3">English</h4>
                                         <div [innerHTML]="businessProfileForm.get('termsOfService.en')?.value | safe:'html'"
@@ -892,7 +892,7 @@
                                 </div>
                             </div>
                             <div *ngIf="showEditor() && isEditMode()">
-                                <div class="space-y-6" formGroupName="termsOfService">
+                                <div class="space-y-6 grid grid-cols-1 lg:grid-cols-2 gap-8" formGroupName="termsOfService">
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-2">English</label>
                                         <p-editor formControlName="en" [style]="{'height':'320px'}"
