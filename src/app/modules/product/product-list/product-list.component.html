@@ -494,7 +494,7 @@
                                                             <ng-template pTemplate="selectedItem" let-image>
                                                                 <div class="flex items-center gap-2">
                                                                     <img *ngIf="image.filePath" 
-                                                                        [src]="image.filePath"
+                                                                        [src]="getImageUrl(image.filePath)"
                                                                         [alt]="image.originalFileName"
                                                                         class="w-6 h-6 object-cover rounded border">
                                                                     <span class="truncate">{{ image.originalFileName }}</span>
@@ -503,7 +503,7 @@
                                                             <ng-template pTemplate="item" let-image>
                                                                 <div class="flex items-center gap-2">
                                                                     <img *ngIf="image.filePath" 
-                                                                        [src]="image.filePath"
+                                                                        [src]="getImageUrl(image.filePath)"
                                                                         [alt]="image.originalFileName"
                                                                         class="w-6 h-6 object-cover rounded border">
                                                                     <span class="truncate">{{ image.originalFileName }}</span>
