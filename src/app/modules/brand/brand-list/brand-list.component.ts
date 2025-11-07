@@ -107,9 +107,15 @@ export class BrandListComponent extends ComponentBase implements OnInit {
   buildForm() {
     this.brandForm = this.fb.group({
       _id: [null],
-      name: ['', Validators.required],
+      name: this.fb.group({
+        en: ['', Validators.required],
+        ar: ['', Validators.required]
+      }),
       slug: ['', Validators.required],
-      description: [''],
+      description: this.fb.group({
+        en: [''],
+        ar: ['']
+      }),
       logo: [null],
       website: [''],
       isActive: [true]
@@ -150,6 +156,22 @@ export class BrandListComponent extends ComponentBase implements OnInit {
   }
 
   editBrand(brand: IBrand) {
+    this.brandForm.reset(
+      {
+        name: {
+          en: '',
+          ar: '',
+        },
+        description: {
+          en: '',
+          ar: ''
+        },
+        slug: '',
+        logo: null,
+        website: '',
+        isActive: true,
+      }
+    );
     this.brandForm.patchValue({
       _id: brand._id,
       name: brand.name,

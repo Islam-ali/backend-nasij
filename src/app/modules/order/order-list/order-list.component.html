@@ -326,24 +326,6 @@
                 </div>
             </div>
 
-            <!-- Payment Image Display -->
-            <div class="bg-yellow-50 dark:bg-yellow-900/20 rounded-lg p-4"
-                *ngIf="orderForm.get('paymentMethod')?.value === 'vodafone_cash' && orderForm.get('paymentImage')?.value">
-                <div class="flex items-center gap-3 mb-3">
-                    <i class="pi pi-image text-yellow-600 dark:text-yellow-400"></i>
-                    <h4 class="font-semibold text-yellow-800 dark:text-yellow-200">Payment Screenshot</h4>
-                </div>
-                <div class="flex items-center gap-4">
-                    <img [src]="orderForm.get('paymentImage')?.value" alt="Payment Screenshot"
-                        class="w-24 h-24 object-cover rounded-lg border-2 border-yellow-200 dark:border-yellow-700 cursor-pointer"
-                        (click)="viewPaymentImage(orderForm.get('paymentImage')?.value)">
-                    <div class="text-sm text-yellow-700 dark:text-yellow-300">
-                        <p class="font-medium">Vodafone Cash Payment</p>
-                        <p class="text-xs">Click to view full size</p>
-                    </div>
-                </div>
-            </div>
-
 
             <!-- Shipping Address Section -->
             <div
@@ -814,7 +796,7 @@
                         </div>
 
                         <!-- Payment Image Upload -->
-                        @if(orderForm.get('paymentMethod')?.value === PaymentMethod.VODAFONE_CASH) {        
+                        @if(orderForm.get('paymentMethod')?.value === PaymentMethod.VODAFONE_CASH || orderForm.get('paymentMethod')?.value === PaymentMethod.DEPOSIT) {        
                         <div class="space-y-2">
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
                                 <i class="pi pi-image mr-2"></i>Payment Screenshot

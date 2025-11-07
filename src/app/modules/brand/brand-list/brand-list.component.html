@@ -32,16 +32,16 @@
                     <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
                 </th>
                 <th pSortableColumn="name">
-                    Name <p-sortIcon field="name"></p-sortIcon>
+                    Name 
                 </th>
                 <th pSortableColumn="slug">
-                    Slug <p-sortIcon field="slug"></p-sortIcon>
+                    Slug 
                 </th>
                 <th pSortableColumn="isActive">
-                    Status <p-sortIcon field="isActive"></p-sortIcon>
+                    Status 
                 </th>
                 <th pSortableColumn="productCount">
-                    Products <p-sortIcon field="productCount"></p-sortIcon>
+                    Products 
                 </th>
                 <th style="width: 10rem">Actions</th>
             </tr>
@@ -51,7 +51,7 @@
                 <td>
                     <p-tableCheckbox [value]="brand"></p-tableCheckbox>
                 </td>
-                <td>{{ brand.name }}</td>
+                <td>{{ brand.name.en + ' - ' + brand.name.ar }}</td>
                 <td>{{ brand.slug }}</td>
                 <td>
                     <p-tag [severity]="brand.isActive ? 'success' : 'danger'"
@@ -104,13 +104,21 @@
                 <label class="block text-sm font-medium text-gray-700 me-4" for="isActive">Active</label>
                 <p-toggleswitch id="isActive" formControlName="isActive" />
             </div>
-
+        <ng-container formGroupName="name">
             <div class="w-full">
-                <label for="name" class="block text-sm font-medium text-gray-700 mb-2">Name *</label>
-                <input id="name" class="w-full" type="text" pInputText formControlName="name"
+                <label for="nameEn" class="block text-sm font-medium text-gray-700 mb-2">Name (English) *</label>
+                <input id="nameEn" class="w-full" type="text" pInputText formControlName="en"
                     [ngClass]="{ 'p-invalid': submitted && brandForm.get('name')?.invalid }" />
                 <small class="p-error" *ngIf="submitted && brandForm.get('name')?.invalid">Name is required.</small>
             </div>
+
+            <div class="w-full">
+                <label for="nameAr" class="block text-sm font-medium text-gray-700 mb-2">Name (Arabic) *</label>
+                <input id="nameAr" class="w-full" type="text" pInputText formControlName="ar"
+                    [ngClass]="{ 'p-invalid': submitted && brandForm.get('name')?.invalid }" />
+                <small class="p-error" *ngIf="submitted && brandForm.get('name')?.invalid">Name is required.</small>
+            </div>
+        </ng-container>
 
             <div class="w-full">
                 <label for="slug" class="block text-sm font-medium text-gray-700 mb-2">Slug *</label>
@@ -119,11 +127,18 @@
                 <small class="p-error" *ngIf="submitted && brandForm.get('slug')?.invalid">Slug is required.</small>
             </div>
 
-            <div class="w-full">
-                <label for="description" class="block text-sm font-medium text-gray-700 mb-2">Description</label>
-                <textarea id="description" class="w-full" pInputTextarea formControlName="description"
-                    rows="3"></textarea>
-            </div>
+            <ng-container formGroupName="description"> 
+                <div class="w-full">
+                    <label for="descriptionEn" class="block text-sm font-medium text-gray-700 mb-2">Description (English) *</label>
+                    <textarea id="descriptionEn" class="w-full" pInputTextarea formControlName="en"
+                        rows="3"></textarea>
+                </div>
+                <div class="w-full">
+                    <label for="descriptionAr" class="block text-sm font-medium text-gray-700 mb-2">Description (Arabic) *</label>
+                    <textarea id="descriptionAr" class="w-full" pInputTextarea formControlName="ar"
+                        rows="3"></textarea>
+                </div>
+            </ng-container>
 
             <div class="w-full">
                 <label for="website" class="block text-sm font-medium text-gray-700 mb-2">Website</label>

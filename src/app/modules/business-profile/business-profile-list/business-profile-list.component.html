@@ -360,6 +360,39 @@
                     </ng-template>
                 </p-card>
 
+                <!-- Vodafone Cash Account Card -->
+                <p-card styleClass="shadow-lg border-0 mb-4">
+                    <ng-template pTemplate="header">
+                        <div
+                            class="flex items-center gap-3 p-4 bg-gradient-to-r from-green-600 to-teal-600 text-white rounded-t-lg">
+                            <i class="pi pi-phone text-2xl"></i>
+                            <h2 class="text-xl font-semibold m-0">Vodafone Cash Account</h2>
+                        </div>
+                    </ng-template>
+                    <ng-template pTemplate="content">
+                        @if(!isEditMode()) {
+                        <!-- View Mode - Enhanced Vodafone Cash Account Display -->
+                        <div class="space-y-6">
+                            <div class="bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl p-6 border border-purple-200">
+                                <div class="flex items-center gap-3 mb-4">
+                                    <div class="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
+                                        <i class="pi pi-phone text-purple-600"></i>
+                                    </div>
+                                    <h3 class="text-lg font-semibold text-gray-800">Vodafone Cash Account</h3>
+                                </div>
+                                <p class="text-gray-700 font-medium">{{ businessProfile?.vodafoneCashAccount || 'Not provided' }}</p>
+                            </div>
+                        </div>
+                        } @else {
+                        <div >
+                            <label for="vodafoneCashAccount" class="block text-sm font-medium text-gray-700 mb-2">Vodafone Cash Account *</label>
+                            <input id="vodafoneCashAccount" type="text" pInputText formControlName="vodafoneCashAccount" class="w-full"
+                                [readonly]="!isEditMode()" />
+                        </div>
+                        }
+                    </ng-template>
+                </p-card>
+
                 <!-- Social Media Card -->
                 <p-card styleClass="shadow-lg border-0 mb-4">
                     <ng-template pTemplate="header">

@@ -160,7 +160,8 @@ export class OrderListComponent extends ComponentBase implements OnInit {
 
     paymentMethodOptions = [
         { label: 'نقدي', value: PaymentMethod.CASH },
-        { label: 'فودافون كاش', value: PaymentMethod.VODAFONE_CASH }
+        { label: 'فودافون كاش', value: PaymentMethod.VODAFONE_CASH },
+        { label: 'دفعة مقدّمة', value: PaymentMethod.DEPOSIT }
     ];
 
     countryOptions = signal<ICountry[]>([]);

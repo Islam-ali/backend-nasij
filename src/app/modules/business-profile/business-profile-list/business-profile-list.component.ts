@@ -129,6 +129,7 @@ export class BusinessProfileListComponent extends ComponentBase implements OnIni
         }),
         mapLocation: ['']
       }),
+      vodafoneCashAccount: [''],
       privacyPolicy: this.fb.group({
         en: ['', [Validators.required, Validators.minLength(50)]],
         ar: ['', [Validators.required, Validators.minLength(50)]]
@@ -233,6 +234,7 @@ export class BusinessProfileListComponent extends ComponentBase implements OnIni
         address: profile.contactInfo.address,
         mapLocation: profile.contactInfo.mapLocation
       },
+      vodafoneCashAccount: profile.vodafoneCashAccount,
       privacyPolicy: {
         en: profile.privacyPolicy.en,
         ar: profile.privacyPolicy.ar
@@ -240,7 +242,8 @@ export class BusinessProfileListComponent extends ComponentBase implements OnIni
       termsOfService: {
         en: profile.termsOfService.en,
         ar: profile.termsOfService.ar
-      }
+      },
+      faq: profile.faq
     });
 
     // Update logo control

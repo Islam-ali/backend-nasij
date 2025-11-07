@@ -267,6 +267,7 @@
                             <div class="field w-full md:col-6">
                                 <label for="brand" class="font-semibold">Brand </label>
                                 <p-dropdown appendTo="body" id="brand" styleClass="w-full" formControlName="brand"
+                                    optionLabel="label" optionValue="value"
                                     [options]="brandOptions" placeholder="Select Brand"
                                     [class.ng-invalid]="submitted && productForm.get('brand')?.invalid">
                                 </p-dropdown>

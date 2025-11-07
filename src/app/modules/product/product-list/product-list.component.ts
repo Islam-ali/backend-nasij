@@ -394,7 +394,7 @@ export class ProductListComponent extends ComponentBase implements OnInit {
     loadCategories() {
         this.categoryService.listCategories().pipe(takeUntil(this.destroy$)).subscribe({
             next: (res: any) => {
-                this.categoryOptions = res.data.map((cat: any) => ({ label: cat.name.en, value: cat._id }));
+                this.categoryOptions = res.data.map((cat: any) => ({ label: cat.name.en + ' - ' + cat.name.ar, value: cat._id }));
             },
             error: () => this.messageService.add({
                 severity: 'error', summary: 'Error', detail: 'Failed to load categories', life: 1000
@@ -405,7 +405,7 @@ export class ProductListComponent extends ComponentBase implements OnInit {
     loadBrands() {
         this.brandService.listBrands().pipe(takeUntil(this.destroy$)).subscribe({
             next: (res: any) => {
-                this.brandOptions = res.data.map((brand: any) => ({ label: brand.name, value: brand._id }));
+                this.brandOptions = res.data.map((brand: any) => ({ label: brand.name.en + ' - ' + brand.name.ar, value: brand._id }));
             },
             error: () => this.messageService.add({
                 severity: 'error', summary: 'Error', detail: 'Failed to load brands', life: 1000
