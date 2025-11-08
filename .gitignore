@@ -38,6 +38,8 @@ testem.log
 /typings
 .vscode
 
+.zip
+
 # System files
 .DS_Store
 Thumbs.db
