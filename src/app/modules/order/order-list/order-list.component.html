@@ -323,6 +323,18 @@
                             placeholder="Select payment method" styleClass="w-full">
                         </p-dropdown>
                     </div>
+
+                    <div class="space-y-2">
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                            <i class="pi pi-flag mr-2"></i>Deposit Order
+                        </label>
+                        <div class="flex items-center gap-3">
+                            <p-checkbox formControlName="isDeposit" binary="true" inputId="isDepositToggle"></p-checkbox>
+                            <label for="isDepositToggle" class="text-sm text-gray-600 dark:text-gray-400">
+                                Mark this order as a deposit (partial payment)
+                            </label>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -796,7 +808,7 @@
                         </div>
 
                         <!-- Payment Image Upload -->
-                        @if(orderForm.get('paymentMethod')?.value === PaymentMethod.VODAFONE_CASH || orderForm.get('paymentMethod')?.value === PaymentMethod.DEPOSIT) {        
+                        @if(orderForm.get('paymentMethod')?.value === PaymentMethod.VODAFONE_CASH || orderForm.get('isDeposit')?.value) {        
                         <div class="space-y-2">
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
                                 <i class="pi pi-image mr-2"></i>Payment Screenshot

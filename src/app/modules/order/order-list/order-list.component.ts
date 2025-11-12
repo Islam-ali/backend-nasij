@@ -160,8 +160,7 @@ export class OrderListComponent extends ComponentBase implements OnInit {
 
     paymentMethodOptions = [
         { label: 'نقدي', value: PaymentMethod.CASH },
-        { label: 'فودافون كاش', value: PaymentMethod.VODAFONE_CASH },
-        { label: 'دفعة مقدّمة', value: PaymentMethod.DEPOSIT }
+        { label: 'فودافون كاش', value: PaymentMethod.VODAFONE_CASH }
     ];
 
     countryOptions = signal<ICountry[]>([]);
@@ -229,6 +228,7 @@ export class OrderListComponent extends ComponentBase implements OnInit {
             orderStatus: [OrderStatus.PENDING, Validators.required],
             paymentStatus: [PaymentStatus.PENDING, Validators.required],
             paymentMethod: [PaymentMethod.CASH, Validators.required],
+            isDeposit: [false],
             shippingAddress: this.fb.group({
                 fullName: ['', Validators.required],
                 phone: ['', Validators.required],
@@ -507,6 +507,7 @@ export class OrderListComponent extends ComponentBase implements OnInit {
             orderStatus: OrderStatus.PENDING,
             paymentStatus: PaymentStatus.PENDING,
             paymentMethod: PaymentMethod.CASH,
+            isDeposit: false,
             subtotal: 0,
             tax: 0,
             shippingCost: 0,
@@ -707,6 +708,7 @@ export class OrderListComponent extends ComponentBase implements OnInit {
 
     private cleanOrderData(data: any): any {
         const cleanedData = { ...data };
+        cleanedData.isDeposit = !!cleanedData.isDeposit;
         
         // Clean cashPayment object
         if (cleanedData.cashPayment && typeof cleanedData.cashPayment === 'object') {
