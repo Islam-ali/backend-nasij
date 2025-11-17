@@ -24,34 +24,50 @@ export class AppMenu {
                 label: 'Home',
                 items: [{ label: 'Dashboard', icon: 'pi pi-fw pi-home', routerLink: ['/'] }]
             },
+            { separator: true },
             {
-                label: 'Products',
+                label: 'Store Setup',
                 items: [
-                    { label: 'Business Profile', icon: 'pi pi-fw pi-box', routerLink: ['/business-profile'] },
+                    { label: 'Business Profile', icon: 'pi pi-fw pi-briefcase', routerLink: ['/business-profile'] },
                     { label: 'Hero Sections', icon: 'pi pi-fw pi-image', routerLink: ['/hero'] },
-                    { label: 'Featured Collections', icon: 'pi pi-fw pi-box', routerLink: ['/featured-collections'] },
-                    { label: 'Banners', icon: 'pi pi-fw pi-box', routerLink: ['/banners'] },
-                    { label: 'Features', icon: 'pi pi-fw pi-box', routerLink: ['/features'] },
-                    { label: 'Brands', icon: 'pi pi-fw pi-box', routerLink: ['/brands'] },
-                    { label: 'Categories', icon: 'pi pi-fw pi-box', routerLink: ['/categories'] },
+                    { label: 'Featured Collections', icon: 'pi pi-fw pi-star', routerLink: ['/featured-collections'] },
+                    { label: 'Banners', icon: 'pi pi-fw pi-megaphone', routerLink: ['/banners'] },
+                    { label: 'Features', icon: 'pi pi-fw pi-sliders-h', routerLink: ['/features'] }
+                ]
+            },
+            {
+                label: 'Catalog',
+                items: [
+                    { label: 'Brands', icon: 'pi pi-fw pi-tags', routerLink: ['/brands'] },
+                    { label: 'Categories', icon: 'pi pi-fw pi-th-large', routerLink: ['/categories'] },
                     { label: 'Products', icon: 'pi pi-fw pi-box', routerLink: ['/products'] },
-                    { label: 'Packages', icon: 'pi pi-fw pi-box', routerLink: ['/packages'] },
-                    { label: 'Orders', icon: 'pi pi-fw pi-box', routerLink: ['/orders'] },
-                    // { label: 'Stock', icon: 'pi pi-fw pi-box', routerLink: ['/inventory/stock'] },
-                    // { label: 'Expenses', icon: 'pi pi-fw pi-box', routerLink: ['/inventory/expenses'] },
-                    // { label: 'Reports', icon: 'pi pi-fw pi-box', routerLink: ['/inventory/reports'] },
-                    // { label: 'Stock Levels', icon: 'pi pi-fw pi-box', routerLink: ['/inventory/stock-levels'] },
-                    // { label: 'Revenue Management', icon: 'pi pi-fw pi-box', routerLink: ['/inventory/revenue-management'] },
-                    // { label: 'Quick Actions', icon: 'pi pi-fw pi-box', routerLink: ['/inventory/quick-actions'] },
-                    { label: 'Users', icon: 'pi pi-fw pi-box', routerLink: ['/users'] },
-                    { 
-                        label: 'Locations', 
-                        icon: 'pi pi-fw pi-globe', 
+                    { label: 'Packages', icon: 'pi pi-fw pi-shopping-bag', routerLink: ['/packages'] }
+                ]
+            },
+            {
+                label: 'Sales',
+                items: [
+                    { label: 'Orders', icon: 'pi pi-fw pi-shopping-cart', routerLink: ['/orders'] }
+                    // Future: inventory, revenue, etc.
+                ]
+            },
+            {
+                label: 'Customers',
+                items: [
+                    { label: 'Users', icon: 'pi pi-fw pi-users', routerLink: ['/users'] }
+                ]
+            },
+            {
+                label: 'Locations',
+                items: [
+                    {
+                        label: 'Manage Locations',
+                        icon: 'pi pi-fw pi-globe',
                         items: [
                             { label: 'Countries', icon: 'pi pi-fw pi-globe', routerLink: ['/locations/countries'] },
                             { label: 'States', icon: 'pi pi-fw pi-map', routerLink: ['/locations/states'] }
                         ]
-                    },
+                    }
                 ]
             },
             // {
