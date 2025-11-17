@@ -1,0 +1,361 @@
+<div class="statistics-dashboard">
+    <p-toast></p-toast>
+
+    <div class="dashboard-header">
+        <div class="header-content">
+            <div class="header-title">
+                <i class="pi pi-chart-line header-icon"></i>
+                <h1 class="m-0">Dashboard Statistics</h1>
+            </div>
+            <div class="header-actions">
+                <button pButton pRipple label="Recalculate All" icon="pi pi-calculator" 
+                    class="p-button-warning me-2" 
+                    (click)="recalculateStatistics()" 
+                    [disabled]="loading()"
+                    title="Recalculate all statistics from scratch (products soldCount, packages soldCount, customer statistics)"></button>
+                <button pButton pRipple label="Refresh" icon="pi pi-refresh" 
+                    class="p-button-primary refresh-btn" 
+                    (click)="refresh()" [disabled]="loading()"></button>
+            </div>
+        </div>
+    </div>
+
+    @if (loading()) {
+        <div class="grid">
+            @for (item of [1,2,3,4]; track item) {
+                <div class="col-12 md:col-6 lg:col-3">
+                    <p-skeleton height="150px"></p-skeleton>
+                </div>
+            }
+        </div>
+    } @else if (statistics()) {
+        @let stats = statistics()!;
+
+        <!-- Sales Cards -->
+        <div class="stats-grid mb-4">
+            <div class="stat-card revenue-card today">
+                <div class="stat-card-header">
+                    <i class="pi pi-calendar stat-icon"></i>
+                    <span class="stat-label">Today Sales</span>
+                </div>
+                <div class="stat-card-content">
+                    <h2 class="stat-value">{{ stats.revenue.today.revenue | currency }}</h2>
+                    <div class="stat-change">
+                        <!-- <p-tag [severity]="getChangeColor(stats.revenue.today.change)" 
+                            [value]="(stats.revenue.today.changePercent | number:'1.2-2') + '%'"
+                            class="change-tag">
+                            <i [class]="getChangeIcon(stats.revenue.today.change) + ' me-2'"></i>
+                        </p-tag> -->
+                    </div>
+                </div>
+            </div>
+            <div class="stat-card revenue-card month">
+                <div class="stat-card-header">
+                    <i class="pi pi-calendar-plus stat-icon"></i>
+                    <span class="stat-label">Month Sales</span>
+                </div>
+                <div class="stat-card-content">
+                    <h2 class="stat-value">{{ stats.revenue.month.revenue | currency }}</h2>
+                    <div class="stat-change">
+                        <!-- <p-tag [severity]="getChangeColor(stats.revenue.month.change)" 
+                            [value]="(stats.revenue.month.changePercent | number:'1.2-2') + '%'"
+                            class="change-tag">
+                            <i [class]="getChangeIcon(stats.revenue.month.change) + ' me-2'"></i>
+                        </p-tag> -->
+                    </div>
+                </div>
+            </div>
+            <div class="stat-card revenue-card year">
+                <div class="stat-card-header">
+                    <i class="pi pi-calendar-times stat-icon"></i>
+                    <span class="stat-label">Year Sales</span>
+                </div>
+                <div class="stat-card-content">
+                    <h2 class="stat-value">{{ stats.revenue.year.revenue | currency }}</h2>
+                    <div class="stat-change">
+                        <!-- <p-tag [severity]="getChangeColor(stats.revenue.year.change)" 
+                            [value]="(stats.revenue.year.changePercent | number:'1.2-2') + '%'"
+                            class="change-tag">
+                            <i [class]="getChangeIcon(stats.revenue.year.change) + ' me-2'"></i>
+                        </p-tag> -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Order Count Cards -->
+        <div class="stats-grid mb-4">
+            <div class="stat-card order-card">
+                <div class="stat-card-header">
+                    <i class="pi pi-shopping-cart stat-icon"></i>
+                    <span class="stat-label">Today Orders</span>
+                </div>
+                <div class="stat-card-content">
+                    <h2 class="stat-value">{{ stats.orderCount.today }}</h2>
+                </div>
+            </div>
+            <div class="stat-card order-card">
+                <div class="stat-card-header">
+                    <i class="pi pi-shopping-bag stat-icon"></i>
+                    <span class="stat-label">Month Orders</span>
+                </div>
+                <div class="stat-card-content">
+                    <h2 class="stat-value">{{ stats.orderCount.month }}</h2>
+                </div>
+            </div>
+            <div class="stat-card order-card pending">
+                <div class="stat-card-header">
+                    <i class="pi pi-clock stat-icon"></i>
+                    <span class="stat-label">Pending Orders</span>
+                </div>
+                <div class="stat-card-content">
+                    <h2 class="stat-value">{{ stats.orderCount.pending }}</h2>
+                </div>
+            </div>
+            <div class="stat-card order-card paid">
+                <div class="stat-card-header">
+                    <i class="pi pi-check-circle stat-icon"></i>
+                    <span class="stat-label">Paid Orders</span>
+                </div>
+                <div class="stat-card-content">
+                    <h2 class="stat-value">{{ stats.orderCount.paid }}</h2>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts -->
+        <div class="charts-grid mb-4">
+            <div class="chart-card">
+                <p-card class="chart-card-inner">
+                    <ng-template pTemplate="header">
+                        <div class="chart-header">
+                            <i class="pi pi-chart-bar chart-icon"></i>
+                            <h5 class="m-0">Sales Overview</h5>
+                        </div>
+                    </ng-template>
+                    <div class="chart-container">
+                        <p-chart type="bar" [data]="revenueChartData" [options]="chartOptions"></p-chart>
+                    </div>
+                </p-card>
+            </div>
+            <div class="chart-card">
+                <p-card class="chart-card-inner">
+                    <ng-template pTemplate="header">
+                        <div class="chart-header">
+                            <i class="pi pi-chart-line chart-icon"></i>
+                            <h5 class="m-0">Sales Trend (Last 7 Days)</h5>
+                        </div>
+                    </ng-template>
+                    <div class="chart-container">
+                        <p-chart type="line" [data]="salesTrendChartData" [options]="chartOptions"></p-chart>
+                    </div>
+                </p-card>
+            </div>
+        </div>
+
+        <div class="charts-grid mb-4">
+            <div class="chart-card">
+                <p-card class="chart-card-inner">
+                    <ng-template pTemplate="header">
+                        <div class="chart-header">
+                            <i class="pi pi-credit-card chart-icon"></i>
+                            <h5 class="m-0">Payment Methods</h5>
+                        </div>
+                    </ng-template>
+                    <div class="chart-container">
+                        <p-chart type="pie" [data]="paymentMethodsChartData" [options]="chartOptions"></p-chart>
+                    </div>
+                </p-card>
+            </div>
+            <div class="chart-card">
+                <p-card class="chart-card-inner">
+                    <ng-template pTemplate="header">
+                        <div class="chart-header">
+                            <i class="pi pi-dollar chart-icon"></i>
+                            <h5 class="m-0">Average Order Value</h5>
+                        </div>
+                    </ng-template>
+                    <div class="average-value-content">
+                        <div class="average-value-main">
+                            <label class="average-label">Average</label>
+                            <h3 class="average-value">{{ stats.averageOrderValue.averageOrderValue | currency }}</h3>
+                        </div>
+                        <div class="average-value-range">
+                            <div class="range-item">
+                                <label class="range-label">Min</label>
+                                <p class="range-value">{{ stats.averageOrderValue.minOrderValue | currency }}</p>
+                            </div>
+                            <div class="range-item">
+                                <label class="range-label">Max</label>
+                                <p class="range-value">{{ stats.averageOrderValue.maxOrderValue | currency }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </p-card>
+            </div>
+        </div>
+
+        <!-- Top Products -->
+        <div class="table-section mb-4">
+            <p-card class="table-card">
+                <ng-template pTemplate="header">
+                    <div class="table-header">
+                        <i class="pi pi-star table-icon"></i>
+                        <h5 class="m-0">Top Selling Products</h5>
+                    </div>
+                </ng-template>
+                <p-table [value]="stats.topProducts" [paginator]="true" [rows]="10" 
+                    styleClass="p-datatable-gridlines enhanced-table">
+                    <ng-template pTemplate="header">
+                        <tr>
+                            <th>Product</th>
+                            <th>Price</th>
+                            <th>Sold Count</th>
+                            <th>Total Revenue</th>
+                        </tr>
+                    </ng-template>
+                    <ng-template pTemplate="body" let-product>
+                        <tr>
+                            <td><strong>{{ product.name | multiLanguage }}</strong></td>
+                            <td>{{ product.price | currency }}</td>
+                            <td><span class="badge-count">{{ product.soldCount }}</span></td>
+                            <td><strong class="revenue-text">{{ product.totalRevenue | currency }}</strong></td>
+                        </tr>
+                    </ng-template>
+                </p-table>
+            </p-card>
+        </div>
+
+        <!-- Top Customers -->
+        <div class="customers-grid mb-4">
+            <div class="customer-card">
+                <p-card class="table-card">
+                    <ng-template pTemplate="header">
+                        <div class="table-header">
+                            <i class="pi pi-users table-icon"></i>
+                            <h5 class="m-0">Top Customers by Orders</h5>
+                        </div>
+                    </ng-template>
+                    <p-table [value]="stats.topCustomersByOrders" [paginator]="true" [rows]="5" 
+                        styleClass="p-datatable-gridlines enhanced-table">
+                        <ng-template pTemplate="header">
+                            <tr>
+                                <th>Name</th>
+                                <th>Phone</th>
+                                <th>Orders</th>
+                                <th>Total Amount</th>
+                            </tr>
+                        </ng-template>
+                        <ng-template pTemplate="body" let-customer>
+                            <tr>
+                                <td><strong>{{ customer.fullName || 'N/A' }}</strong></td>
+                                <td>{{ customer.phone }}</td>
+                                <td><span class="badge-count">{{ customer.orderCount }}</span></td>
+                                <td><strong class="revenue-text">{{ customer.totalAmount | currency }}</strong></td>
+                            </tr>
+                        </ng-template>
+                    </p-table>
+                </p-card>
+            </div>
+            <div class="customer-card">
+                <p-card class="table-card">
+                    <ng-template pTemplate="header">
+                        <div class="table-header">
+                            <i class="pi pi-wallet table-icon"></i>
+                            <h5 class="m-0">Top Customers by Amount</h5>
+                        </div>
+                    </ng-template>
+                    <p-table [value]="stats.topCustomersByAmount" [paginator]="true" [rows]="5" 
+                        styleClass="p-datatable-gridlines enhanced-table">
+                        <ng-template pTemplate="header">
+                            <tr>
+                                <th>Name</th>
+                                <th>Phone</th>
+                                <th>Orders</th>
+                                <th>Total Amount</th>
+                            </tr>
+                        </ng-template>
+                        <ng-template pTemplate="body" let-customer>
+                            <tr>
+                                <td><strong>{{ customer.fullName || 'N/A' }}</strong></td>
+                                <td>{{ customer.phone }}</td>
+                                <td><span class="badge-count">{{ customer.orderCount }}</span></td>
+                                <td><strong class="revenue-text">{{ customer.totalAmount | currency }}</strong></td>
+                            </tr>
+                        </ng-template>
+                    </p-table>
+                </p-card>
+            </div>
+        </div>
+
+        <!-- Top States -->
+        <div class="table-section mb-4">
+            <p-card class="table-card">
+                <ng-template pTemplate="header">
+                    <div class="table-header">
+                        <i class="pi pi-map-marker table-icon"></i>
+                        <h5 class="m-0">Top States by Sales</h5>
+                    </div>
+                </ng-template>
+                <p-table [value]="stats.topStates" [paginator]="true" [rows]="10" 
+                    styleClass="p-datatable-gridlines enhanced-table">
+                    <ng-template pTemplate="header">
+                        <tr>
+                            <th>State</th>
+                            <th>Orders</th>
+                            <th>Total Revenue</th>
+                        </tr>
+                    </ng-template>
+                    <ng-template pTemplate="body" let-state>
+                        <tr>
+                            <td><strong>{{ state.stateName | multiLanguage }}</strong></td>
+                            <td><span class="badge-count">{{ state.orderCount }}</span></td>
+                            <td><strong class="revenue-text">{{ state.totalRevenue | currency }}</strong></td>
+                        </tr>
+                    </ng-template>
+                </p-table>
+            </p-card>
+        </div>
+
+        <!-- Totals -->
+        <div class="stats-grid">
+            <div class="stat-card total-card customers">
+                <div class="stat-card-header">
+                    <i class="pi pi-users stat-icon"></i>
+                    <span class="stat-label">Total Customers</span>
+                </div>
+                <div class="stat-card-content">
+                    <h2 class="stat-value">{{ stats.totals.customers }}</h2>
+                </div>
+            </div>
+            <div class="stat-card total-card orders">
+                <div class="stat-card-header">
+                    <i class="pi pi-shopping-cart stat-icon"></i>
+                    <span class="stat-label">Total Orders</span>
+                </div>
+                <div class="stat-card-content">
+                    <h2 class="stat-value">{{ stats.totals.orders }}</h2>
+                </div>
+            </div>
+            <div class="stat-card total-card products">
+                <div class="stat-card-header">
+                    <i class="pi pi-box stat-icon"></i>
+                    <span class="stat-label">Total Products</span>
+                </div>
+                <div class="stat-card-content">
+                    <h2 class="stat-value">{{ stats.totals.products }}</h2>
+                </div>
+            </div>
+            <div class="stat-card total-card packages">
+                <div class="stat-card-header">
+                    <i class="pi pi-gift stat-icon"></i>
+                    <span class="stat-label">Total Packages</span>
+                </div>
+                <div class="stat-card-content">
+                    <h2 class="stat-value">{{ stats.totals.packages }}</h2>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+

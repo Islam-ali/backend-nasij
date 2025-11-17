@@ -1,14 +1,16 @@
 import { Routes } from '@angular/router';
 import { AppLayout } from './app/layout/component/app.layout';
+import { authGuard } from './app/core/guards/auth.guard';
 
 export const appRoutes: Routes = [
     {
         path: '',
         component: AppLayout,
+        canActivate: [authGuard],
         children: [
             {
                 path: '',
-                redirectTo: 'orders',
+                redirectTo: 'dashboard',
                 pathMatch: 'full'
             },
             { 
@@ -34,6 +36,10 @@ export const appRoutes: Routes = [
             {
                 path: 'orders',
                 loadComponent: () => import('./app/modules/order/order-list/order-list.component').then(m => m.OrderListComponent)
+            },
+            {
+                path: 'dashboard',
+                loadComponent: () => import('./app/modules/statistics/statistics-dashboard/statistics-dashboard.component').then(m => m.StatisticsDashboardComponent)
             },
             {
                 path: 'hero',

@@ -1,7 +1,7 @@
 
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { CheckboxModule } from 'primeng/checkbox';
 import { InputTextModule } from 'primeng/inputtext';
@@ -29,6 +29,7 @@ export class LoginComponent {
   constructor(
     private loginService: LoginService,
     private router: Router,
+    private route: ActivatedRoute,
     private messageService: MessageService) { }
 
   onSubmit() {
@@ -50,7 +51,9 @@ export class LoginComponent {
         //   }
         // })
 
-        this.router.navigate(['/']);
+        // Redirect to returnUrl if exists, otherwise go to dashboard
+        const returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/';
+        this.router.navigate([returnUrl]);
       },
       error: (error) => {
         // toast error
