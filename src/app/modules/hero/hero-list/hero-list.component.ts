@@ -26,7 +26,6 @@ import { TooltipModule } from 'primeng/tooltip';
 
 import { IHero } from '../../../interfaces/hero.interface';
 import { HeroService } from '../../../services/hero.service';
-import { FallbackImgDirective } from '../../../core/directives/fallback-img.directive';
 import { BaseResponse, pagination } from '../../../core/models/baseResponse';
 import { UploadFilesComponent } from '../../../shared/components/fields/upload-files/upload-files.component';
 import { ComponentBase } from '../../../core/directives/component-base.directive';
@@ -58,7 +57,6 @@ interface Column {
         InputIconModule,
         IconFieldModule,
         ConfirmDialogModule,
-        FallbackImgDirective,
         FormsModule,
         TextareaModule,
         UploadFilesComponent,

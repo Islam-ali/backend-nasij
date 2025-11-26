@@ -86,8 +86,7 @@ interface ExportColumn {
     PaginatorModule,
     CheckboxModule,
     FormsModule,
-    MultiLanguagePipe,
-    UploadFilesComponent
+    MultiLanguagePipe
 ],
     providers: [MessageService, ConfirmationService, OrderService, PackageService, UploadFilesService]  
 })

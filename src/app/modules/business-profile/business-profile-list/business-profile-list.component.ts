@@ -48,7 +48,6 @@ import { environment } from '../../../../environments/environment';
       EditorModule,
       ToggleButtonModule,
       TooltipModule,
-      FallbackImgDirective,
       UploadFilesComponent,
       SafePipe
     ],

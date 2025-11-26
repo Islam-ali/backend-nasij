@@ -30,7 +30,6 @@ import { UploadFilesComponent } from '../../../shared/components/fields/upload-f
 import { ComponentBase } from '../../../core/directives/component-base.directive';
 import { finalize, takeUntil, forkJoin } from 'rxjs';
 import { BaseResponse, pagination } from '../../../core/models/baseResponse';
-import { FallbackImgDirective } from '../../../core/directives/fallback-img.directive';
 
 interface Column {
   field: string;
@@ -62,7 +61,6 @@ interface Column {
     UploadFilesComponent,
     Paginator,
     ToggleSwitchModule,
-    FallbackImgDirective
 ],
   templateUrl: './brand-list.component.html',
   styleUrls: ['./brand-list.component.scss'],
