@@ -33,7 +33,8 @@ export class AppMenu {
                     { label: 'Hero Sections', icon: 'pi pi-fw pi-image', routerLink: ['/hero'] },
                     { label: 'Featured Collections', icon: 'pi pi-fw pi-star', routerLink: ['/featured-collections'] },
                     { label: 'Banners', icon: 'pi pi-fw pi-megaphone', routerLink: ['/banners'] },
-                    { label: 'Features', icon: 'pi pi-fw pi-sliders-h', routerLink: ['/features'] }
+                    { label: 'Features', icon: 'pi pi-fw pi-sliders-h', routerLink: ['/features'] },
+                    { label: 'Reviews', icon: 'pi pi-fw pi-star', routerLink: ['/reviews'] }
                 ]
             },
             {

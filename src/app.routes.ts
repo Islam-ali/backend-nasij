@@ -65,6 +65,10 @@ export const appRoutes: Routes = [
                 path: 'menu-links',
                 loadComponent: () => import('./app/modules/menu-link/menu-link-list/menu-link-list.component').then(m => m.MenuLinkListComponent)
             },
+            {
+                path: 'reviews',
+                loadComponent: () => import('./app/modules/review/review-list/review-list.component').then(m => m.ReviewListComponent)
+            },
             // {
             //     path: 'inventory',
             //     loadComponent: () => import('./app/modules/inventory/components/inventory-dashboard/inventory-dashboard.component').then(m => m.InventoryDashboardComponent)
