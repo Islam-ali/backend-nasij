@@ -773,11 +773,20 @@
                             </ng-container>
                         </div>
 
-                        <div class="field w-full">
+                        <div class="field w-full mb-4">
                             <label for="seoKeywords" class="font-semibold">SEO Keywords</label>
                             <p-chips id="seoKeywords" styleClass="w-full" formControlName="seoKeywords"
                                 placeholder="Add keywords">
                             </p-chips>
+                        </div>
+
+                        <!-- SEO Image -->
+                        <div class="field w-full">
+                            <label class="font-semibold">SEO Image</label>
+                            <p class="text-sm text-gray-600 mb-2">Upload an image for social media sharing (Open Graph, Twitter Card, etc.)</p>
+                            <app-upload-files [index]="2" [control]="formControlSeoImage"
+                                [filesServer]="productForm.get('seoImage')?.value" [multiple]="false" [accept]="'image/*'">
+                            </app-upload-files>
                         </div>
                     </ng-template>
                 </p-accordionTab>

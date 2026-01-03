@@ -140,7 +140,7 @@
           type="file"
           class="hidden"
           [multiple]="multiple"
-          [accept]="accept"
+          [accept]="accept || ''"
           (change)="onFilesSelected($event)"
           [disabled]="isUploading"
         />
@@ -148,7 +148,7 @@
     </div>
   
     <!-- Files List (Only show for multiple files) -->
-    <div *ngIf="multiple" class="flex flex-wrap p-2 gap-4 w-full max-h-[600px] overflow-y-auto relative grid md:grid-cols-2 lg:grid-cols-3 ">
+    <div *ngIf="multiple" class="p-2 gap-4 w-full max-h-[600px] overflow-y-auto relative grid md:grid-cols-2 lg:grid-cols-3">
       @for (file of selectedFiles; track file.id) {
         <div
           class="flex flex-col w-full relative p-3 border-solid border-[1px] rounded-lg transition-all duration-200"

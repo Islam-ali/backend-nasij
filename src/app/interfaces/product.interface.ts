@@ -49,6 +49,7 @@ export interface IProduct {
   seoTitle?: MultilingualText;
   seoDescription?: MultilingualText;
   seoKeywords?: string;
+  seoImage?: Archived;
   dimensions: {
     length: number;
     width: number;

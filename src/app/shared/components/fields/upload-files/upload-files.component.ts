@@ -229,39 +229,71 @@ export class UploadFilesComponent extends ComponentBase implements OnChanges {
   }
 
   getFileIconClass(type: string): string {
+    if (!type) return "pi pi-file text-gray-400";
+    
     type = type.toLowerCase();
-    if (type.includes("excel") || type.includes("spreadsheetml")) {
+    
+    // Office Documents
+    if (type.includes("excel") || type.includes("spreadsheetml") || type.includes("xls") || type.includes("xlsx") || type.includes("csv")) {
       return "pi pi-file-excel text-green-600";
+    } else if (type.includes("msword") || type.includes("wordprocessingml") || type.includes("doc") || type.includes("docx")) {
+      return "pi pi-file-word text-blue-600";
+    } else if (type.includes("powerpoint") || type.includes("presentationml") || type.includes("ppt") || type.includes("pptx")) {
+      return "pi pi-file text-orange-600";
     } else if (type.includes("pdf")) {
       return "pi pi-file-pdf text-red-600";
-    } else if (type.includes("image")) {
+    } 
+    // Media Files
+    else if (type.includes("image")) {
       return "pi pi-image text-blue-500";
-    } else if (type.includes("zip") || type.includes("compressed")) {
-      return "pi pi-folder text-yellow-600";
-    } else if (type.includes("msword") || type.includes("wordprocessingml")) {
-      return "pi pi-file-word text-blue-600";
-    } else if (type.includes("text")) {
-      return "pi pi-file text-gray-600";
-    } else if (type.includes("audio")) {
-      return "pi pi-volume-up text-purple-600";
     } else if (type.includes("video")) {
       return "pi pi-video text-indigo-600";
-    } else {
+    } else if (type.includes("audio")) {
+      return "pi pi-volume-up text-purple-600";
+    } 
+    // Archives
+    else if (type.includes("zip") || type.includes("compressed") || type.includes("rar") || type.includes("7z") || type.includes("tar") || type.includes("gz")) {
+      return "pi pi-folder text-yellow-600";
+    } 
+    // Code Files
+    else if (type.includes("javascript") || type.includes("js")) {
+      return "pi pi-file text-yellow-500";
+    } else if (type.includes("typescript") || type.includes("ts")) {
+      return "pi pi-file text-blue-500";
+    } else if (type.includes("json")) {
+      return "pi pi-file text-gray-600";
+    } else if (type.includes("xml") || type.includes("html") || type.includes("css")) {
+      return "pi pi-file text-orange-500";
+    } 
+    // Text Files
+    else if (type.includes("text") || type.includes("plain")) {
+      return "pi pi-file text-gray-600";
+    } 
+    // Database Files
+    else if (type.includes("sql") || type.includes("database")) {
+      return "pi pi-database text-blue-600";
+    }
+    // Default
+    else {
       return "pi pi-file text-gray-400";
     }
   }
 
   readFiles(files: FileWithProgress[]): void {
     files.forEach((fileObj) => {
-      if (fileObj.type.startsWith('image/') || fileObj.type.startsWith('video/') || fileObj.type.startsWith('audio/')) {
-        const reader = new FileReader();
-        reader.onload = (e: ProgressEvent<FileReader>) => {
-          if (e.target?.result) {
-            this.updateFileState(fileObj.id, { content: e.target.result as string });
-          }
-        };
-        reader.readAsDataURL(fileObj.file);
-      }
+      // Read all file types, not just image/video/audio
+      // This allows preview for any file type
+      const reader = new FileReader();
+      reader.onload = (e: ProgressEvent<FileReader>) => {
+        if (e.target?.result) {
+          this.updateFileState(fileObj.id, { content: e.target.result as string });
+        }
+      };
+      reader.onerror = () => {
+        // If reading fails (e.g., for very large files), just continue without content
+        console.warn(`Failed to read file: ${fileObj.name}`);
+      };
+      reader.readAsDataURL(fileObj.file);
     });
   }
 

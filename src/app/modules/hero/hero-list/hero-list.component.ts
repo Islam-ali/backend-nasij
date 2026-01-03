@@ -107,6 +107,10 @@ export class HeroListComponent extends ComponentBase implements OnInit {
         return this.heroForm?.get('image') as FormControl;
     }
 
+    get formControlVideo(): FormControl {
+        return this.heroForm?.get('video') as FormControl;
+    }
+
     ngOnInit() {
         this.buildForm();
         this.loadHeroes();
@@ -114,6 +118,7 @@ export class HeroListComponent extends ComponentBase implements OnInit {
             { field: 'title', header: 'Title' },
             { field: 'subTitle', header: 'Subtitle' },
             { field: 'image', header: 'Image' },
+            { field: 'video', header: 'Video' },
             { field: 'isAlways', header: 'Type' },
             { field: 'isActive', header: 'Status' },
             { field: 'actions', header: 'Actions' }
@@ -137,6 +142,7 @@ export class HeroListComponent extends ComponentBase implements OnInit {
             }),
             buttonLink: [''],
             image: [null],
+            video: [null],
             startDate: [null],
             endDate: [null],
             isAlways: [false, Validators.required],

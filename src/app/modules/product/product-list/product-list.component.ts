@@ -184,6 +184,10 @@ export class ProductListComponent extends ComponentBase implements OnInit {
         return this.productForm?.get('images') as FormControl;
     }
 
+    get formControlSeoImage(): FormControl {
+        return this.productForm?.get('seoImage') as FormControl;
+    }
+
     formControlImageVariant(variantIndex: number, attributeIndex: number): FormControl {
         return this.getAttribute(variantIndex)?.at(attributeIndex).get('image') as FormControl;
     }
@@ -281,6 +285,7 @@ export class ProductListComponent extends ComponentBase implements OnInit {
                 ar: ['', Validators.required]
             }),
             seoKeywords: [[]],
+            seoImage: [null],
             useVariantPrice: [false],
         });
     }
@@ -423,6 +428,7 @@ export class ProductListComponent extends ComponentBase implements OnInit {
             stock: 0,
             seoTitle: { en: '', ar: '' },
             seoDescription: { en: '', ar: '' },
+            seoImage: null,
             dimensions: { length: 0, width: 0, height: 0 }
         });
         this.productDialog = true;
@@ -458,7 +464,8 @@ export class ProductListComponent extends ComponentBase implements OnInit {
                 en: product.seoDescription?.en || product.seoDescription || '',
                 ar: product.seoDescription?.ar || product.seoDescription || ''
             },
-            seoKeywords: product.seoKeywords
+            seoKeywords: product.seoKeywords,
+            seoImage: (product as any).seoImage || null
         });
 
         this.productForm.get('category')?.setValue(product?.category?._id || null);
