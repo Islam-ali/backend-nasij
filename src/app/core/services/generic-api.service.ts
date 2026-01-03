@@ -36,9 +36,9 @@ export class GenericApiService<T> {
     return this.http.put<T>(endpoint, body, { params });
   }
 
-  Patch(endpoint: string, id: number | string, body: Partial<T>, queryParams?: Record<string, any>): Observable<T> {
+  Patch(endpoint: string, body: Partial<T>, queryParams?: Record<string, any>): Observable<T> {
     const params = toHttpParams(queryParams);
-    return this.http.patch<T>(`${endpoint}/${id}`, body, { params });
+    return this.http.patch<T>(`${endpoint}`, body, { params });
   }
 
   Delete(endpoint: string, id: number | string): Observable<T> {

@@ -393,6 +393,194 @@
                     </ng-template>
                 </p-card>
 
+                <!-- Paymob Payment Settings Card -->
+                <p-card styleClass="shadow-lg border-0 mb-4">
+                    <ng-template pTemplate="header">
+                        <div
+                            class="flex items-center gap-3 p-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-t-lg">
+                            <i class="pi pi-credit-card text-2xl"></i>
+                            <h2 class="text-xl font-semibold m-0">Paymob Payment Settings</h2>
+                        </div>
+                    </ng-template>
+                    <ng-template pTemplate="content">
+                        <div formGroupName="paymobSettings" class="space-y-6">
+                            <!-- Enable/Disable Toggle -->
+                            <div class="flex items-center justify-between p-4 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl border border-indigo-200">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center">
+                                        <i class="pi pi-power-off text-indigo-600"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-lg font-semibold text-gray-800">Enable Paymob Payments</h3>
+                                        <p class="text-sm text-gray-600">Use dashboard settings instead of environment variables</p>
+                                    </div>
+                                </div>
+                                <p-toggleButton 
+                                    formControlName="enabled"
+                                    [onLabel]="'Enabled'" 
+                                    [offLabel]="'Disabled'"
+                                    [onIcon]="'pi pi-check'" 
+                                    [offIcon]="'pi pi-times'"
+                                    styleClass="p-button-sm">
+                                </p-toggleButton>
+                            </div>
+
+                            @if(businessProfileForm.get('paymobSettings.enabled')?.value) {
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-gray-200">
+                                <!-- API Key -->
+                                <div class="md:col-span-2">
+                                    <label for="paymobApiKey" class="block text-sm font-semibold text-gray-700 mb-2">
+                                        API Key <span class="text-red-500">*</span>
+                                    </label>
+                                    <input 
+                                        id="paymobApiKey" 
+                                        type="password" 
+                                        pInputText 
+                                        formControlName="apiKey" 
+                                        class="w-full"
+                                        placeholder="Enter your Paymob API Key"
+                                        [readonly]="!isEditMode()" />
+                                    <small class="text-gray-500">Your Paymob API key from the dashboard</small>
+                                </div>
+
+                                <!-- Card Integration ID -->
+                                <div>
+                                    <label for="paymobIntegrationId" class="block text-sm font-semibold text-gray-700 mb-2">
+                                        Card Integration ID <span class="text-red-500">*</span>
+                                    </label>
+                                    <input 
+                                        id="paymobIntegrationId" 
+                                        type="text" 
+                                        pInputText 
+                                        formControlName="integrationId" 
+                                        class="w-full"
+                                        placeholder="e.g., 1234567"
+                                        [readonly]="!isEditMode()" />
+                                    <small class="text-gray-500">Integration ID for card payments</small>
+                                </div>
+
+                                <!-- Wallet Integration ID -->
+                                <div>
+                                    <label for="paymobWalletIntegrationId" class="block text-sm font-semibold text-gray-700 mb-2">
+                                        Wallet Integration ID
+                                    </label>
+                                    <input 
+                                        id="paymobWalletIntegrationId" 
+                                        type="text" 
+                                        pInputText 
+                                        formControlName="walletIntegrationId" 
+                                        class="w-full"
+                                        placeholder="e.g., 7654321"
+                                        [readonly]="!isEditMode()" />
+                                    <small class="text-gray-500">Integration ID for wallet payments (optional, will use Card ID if not provided)</small>
+                                </div>
+
+                                <!-- Iframe ID -->
+                                <div>
+                                    <label for="paymobIframeId" class="block text-sm font-semibold text-gray-700 mb-2">
+                                        Iframe ID <span class="text-red-500">*</span>
+                                    </label>
+                                    <input 
+                                        id="paymobIframeId" 
+                                        type="text" 
+                                        pInputText 
+                                        formControlName="iframeId" 
+                                        class="w-full"
+                                        placeholder="e.g., 12345"
+                                        [readonly]="!isEditMode()" />
+                                    <small class="text-gray-500">Iframe ID for card payment page</small>
+                                </div>
+
+                                <!-- HMAC Secret -->
+                                <div>
+                                    <label for="paymobHmacSecret" class="block text-sm font-semibold text-gray-700 mb-2">
+                                        HMAC Secret
+                                    </label>
+                                    <input 
+                                        id="paymobHmacSecret" 
+                                        type="password" 
+                                        pInputText 
+                                        formControlName="hmacSecret" 
+                                        class="w-full"
+                                        placeholder="Enter HMAC secret for webhook security"
+                                        [readonly]="!isEditMode()" />
+                                    <small class="text-gray-500">Secret key for webhook verification</small>
+                                </div>
+
+                                <!-- Callback URL -->
+                                <div>
+                                    <label for="paymobCallbackUrl" class="block text-sm font-semibold text-gray-700 mb-2">
+                                        Callback URL
+                                    </label>
+                                    <input 
+                                        id="paymobCallbackUrl" 
+                                        type="url" 
+                                        pInputText 
+                                        formControlName="callbackUrl" 
+                                        class="w-full"
+                                        placeholder="https://your-domain.com"
+                                        [readonly]="!isEditMode()" />
+                                    <small class="text-gray-500">Base URL for callbacks (optional, auto-generated if not provided)</small>
+                                </div>
+
+                                <!-- Webhook URL -->
+                                <div>
+                                    <label for="paymobWebhookUrl" class="block text-sm font-semibold text-gray-700 mb-2">
+                                        Webhook URL
+                                    </label>
+                                    <input 
+                                        id="paymobWebhookUrl" 
+                                        type="url" 
+                                        pInputText 
+                                        formControlName="webhookUrl" 
+                                        class="w-full"
+                                        placeholder="https://your-domain.com"
+                                        [readonly]="!isEditMode()" />
+                                    <small class="text-gray-500">Webhook URL for payment notifications (optional)</small>
+                                </div>
+
+                                <!-- Response Callback URL -->
+                                <div>
+                                    <label for="paymobResponseCallbackUrl" class="block text-sm font-semibold text-gray-700 mb-2">
+                                        Response Callback URL
+                                    </label>
+                                    <input 
+                                        id="paymobResponseCallbackUrl" 
+                                        type="url" 
+                                        pInputText 
+                                        formControlName="responseCallbackUrl" 
+                                        class="w-full"
+                                        placeholder="https://your-domain.com"
+                                        [readonly]="!isEditMode()" />
+                                    <small class="text-gray-500">URL for user redirect after payment (optional)</small>
+                                </div>
+                            </div>
+
+                            <!-- Info Box -->
+                            <div class="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                                <div class="flex items-start gap-3">
+                                    <i class="pi pi-info-circle text-blue-600 dark:text-blue-400 text-xl"></i>
+                                    <div class="flex-1">
+                                        <h4 class="font-semibold text-blue-900 dark:text-blue-100 mb-2">Important Notes</h4>
+                                        <ul class="text-sm text-blue-800 dark:text-blue-200 space-y-1 list-disc list-inside">
+                                            <li>When enabled, these settings will override environment variables</li>
+                                            <li>Make sure all required fields are filled before enabling</li>
+                                            <li>Wallet Integration ID is optional - Card ID will be used as fallback</li>
+                                            <li>Settings are saved automatically when you save the business profile</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            } @else {
+                            <div class="text-center py-8 bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
+                                <i class="pi pi-lock text-4xl text-gray-400 mb-4"></i>
+                                <p class="text-gray-600 dark:text-gray-400">Enable Paymob settings to configure payment gateway</p>
+                            </div>
+                            }
+                        </div>
+                    </ng-template>
+                </p-card>
+
                 <!-- Social Media Card -->
                 <p-card styleClass="shadow-lg border-0 mb-4">
                     <ng-template pTemplate="header">
@@ -664,7 +852,7 @@
                                 <div class="grid grid-cols-1 gap-6">
                                     <!-- Question -->
                                     <div formGroupName="question">
-                                        <label class="block text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                                        <label class="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-3">
                                             <i class="pi pi-question text-orange-600"></i>
                                             Question *
                                         </label>
@@ -706,7 +894,7 @@
 
                                     <!-- Answer -->
                                     <div formGroupName="answer">
-                                        <label class="block text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                                        <label class="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-3">
                                             <i class="pi pi-comment text-orange-600"></i>
                                             Answer *
                                         </label>

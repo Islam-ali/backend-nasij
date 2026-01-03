@@ -33,7 +33,7 @@ export class CountryService {
 
   // Update country
   updateCountry(id: string, country: Partial<ICountry>): Observable<BaseResponse<ICountry>> {
-    return this.genericApiService.Patch(this.apiUrl, id, country);
+    return this.genericApiService.Patch(this.apiUrl +`/${id}`, country);
   }
 
   // Delete country

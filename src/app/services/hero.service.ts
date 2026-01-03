@@ -49,7 +49,7 @@ export class HeroService {
 
   // Update hero
   updateHero(id: string, hero: Partial<IHero>): Observable<BaseResponse<IHero>> {
-    return this.genericApiService.Patch(`${this.apiUrl}`, id, this.commonService.removeNullUndefinedEmptyStringKeysAndId(hero));
+    return this.genericApiService.Patch(`${this.apiUrl +`/${id}`}`, this.commonService.removeNullUndefinedEmptyStringKeysAndId(hero));
   }
 
   // Delete hero

@@ -34,7 +34,7 @@ export class BrandService {
 
   // Update a brand
   updateBrand(id: string, brand: IBrand): Observable<BaseResponse<IBrand>> {
-    return this._genericApiService.Patch(this.apiUrl, id, this.commonService.removeNullUndefinedEmptyStringKeysAndId(brand));
+    return this._genericApiService.Patch(this.apiUrl+`/${id}`, this.commonService.removeNullUndefinedEmptyStringKeysAndId(brand));
   }
 
   // Delete a brand

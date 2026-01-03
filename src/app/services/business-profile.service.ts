@@ -39,7 +39,7 @@ export class BusinessProfileService {
 
   // Update a business profile
   updateBusinessProfile(id: string, businessProfile: IBusinessProfile): Observable<BaseResponse<IBusinessProfile>> {
-    return this._genericApiService.Patch(this.apiUrl, id, this.commonService.removeNullUndefinedEmptyStringKeysAndId(businessProfile));
+    return this._genericApiService.Patch(this.apiUrl+`/${id}`, this.commonService.removeNullUndefinedEmptyStringKeysAndId(businessProfile));
   }
 
   // Delete a business profile
@@ -57,5 +57,15 @@ export class BusinessProfileService {
     const formData = new FormData();
     formData.append('file', file);
     return this._genericApiService.Post(`${this.apiUrl}/upload-logo`, formData);
+  }
+
+  // Get Paymob settings
+  getPaymobSettings(): Observable<BaseResponse<any>> {
+    return this._genericApiService.Get(`${this.apiUrl}/paymob-settings`);
+  }
+
+  // Update Paymob settings
+  updatePaymobSettings(paymobSettings: any): Observable<BaseResponse<any>> {
+    return this._genericApiService.Patch(`${this.apiUrl}/paymob-settings`, paymobSettings);
   }
 } 

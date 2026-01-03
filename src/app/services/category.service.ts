@@ -34,7 +34,7 @@ export class CategoryService {
 
   // Update a category
   updateCategory(id: string, category: ICategory): Observable<BaseResponse<ICategory>> {
-    return this._genericApiService.Patch(this.apiUrl, id, this.commonService.removeNullUndefinedEmptyStringKeysAndId(category));
+    return this._genericApiService.Patch(this.apiUrl +`/${id}`, this.commonService.removeNullUndefinedEmptyStringKeysAndId(category));
   }
 
   // Delete a category

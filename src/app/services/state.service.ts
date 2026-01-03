@@ -42,7 +42,7 @@ export class StateService {
 
   // Update state
   updateState(id: string, state: Partial<IState>): Observable<BaseResponse<IState>> {
-    return this.genericApiService.Patch(this.apiUrl, id, state);
+    return this.genericApiService.Patch(this.apiUrl +`/${id}`, state);
   }
 
   // Delete state

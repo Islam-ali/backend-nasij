@@ -39,8 +39,7 @@ export class UsersService {
 
   updateUser(id: string, userData: UpdateUserDto): Observable<BaseResponse<User>> {
     return this.genericApiService.Patch(
-      this.apiUrl, 
-      id, 
+      this.apiUrl +`/${id}`, 
       this.commonService.removeNullUndefinedEmptyStringKeysAndId(userData)
     );
   }
@@ -50,11 +49,11 @@ export class UsersService {
   }
 
   updateUserStatus(id: string, isActive: boolean): Observable<BaseResponse<any>> {
-    return this.genericApiService.Patch(this.apiUrl, id, { isActive });
+    return this.genericApiService.Patch(this.apiUrl +`/${id}`, { isActive });
   }
 
   updateUserRole(id: string, role: string): Observable<BaseResponse<any>> {
-    return this.genericApiService.Patch(this.apiUrl, id, { role });
+    return this.genericApiService.Patch(this.apiUrl +`/${id}`, { role });
   }
 
   searchUsers(searchTerm: string): Observable<BaseResponse<User[]>> {

@@ -47,8 +47,7 @@ export class PackageService {
 
   updatePackage(id: string, packageData: UpdatePackageDto): Observable<BaseResponse<IPackage>> {
     return this.genericApiService.Patch(
-      this.apiUrl, 
-      id, 
+      this.apiUrl +`/${id}`, 
       this.commonService.removeNullUndefinedEmptyStringKeysAndId(packageData)
     );
   }
@@ -66,7 +65,7 @@ export class PackageService {
   }
 
   updatePackageStatus(id: string, isActive: boolean): Observable<BaseResponse<any>> {
-    return this.genericApiService.Patch(this.apiUrl, id, { isActive });
+    return this.genericApiService.Patch(this.apiUrl +`/${id}`, { isActive });
   }
 
   searchPackages(searchTerm: string): Observable<BaseResponse<IPackage[]>> {

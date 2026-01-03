@@ -21,6 +21,18 @@ export interface IFAQ {
   answer: MultilingualText;
 }
 
+export interface IPaymobSettings {
+  apiKey?: string;
+  integrationId?: string;
+  walletIntegrationId?: string;
+  iframeId?: string;
+  hmacSecret?: string;
+  callbackUrl?: string;
+  webhookUrl?: string;
+  responseCallbackUrl?: string;
+  enabled: boolean;
+}
+
 export interface IBusinessProfile {
   _id: string;
   logo_dark?: Archived;
@@ -32,6 +44,7 @@ export interface IBusinessProfile {
   privacyPolicy: MultilingualText;
   termsOfService: MultilingualText;
   vodafoneCashAccount: string;
+  paymobSettings?: IPaymobSettings;
   faq: IFAQ[];
   createdAt: Date;
   updatedAt: Date;

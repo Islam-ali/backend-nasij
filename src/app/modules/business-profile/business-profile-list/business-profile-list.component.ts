@@ -129,6 +129,17 @@ export class BusinessProfileListComponent extends ComponentBase implements OnIni
         mapLocation: ['']
       }),
       vodafoneCashAccount: [''],
+      paymobSettings: this.fb.group({
+        enabled: [false],
+        apiKey: [''],
+        integrationId: [''],
+        walletIntegrationId: [''],
+        iframeId: [''],
+        hmacSecret: [''],
+        callbackUrl: [''],
+        webhookUrl: [''],
+        responseCallbackUrl: ['']
+      }),
       privacyPolicy: this.fb.group({
         en: ['', [Validators.required, Validators.minLength(50)]],
         ar: ['', [Validators.required, Validators.minLength(50)]]
@@ -234,6 +245,17 @@ export class BusinessProfileListComponent extends ComponentBase implements OnIni
         mapLocation: profile.contactInfo.mapLocation
       },
       vodafoneCashAccount: profile.vodafoneCashAccount,
+      paymobSettings: profile.paymobSettings || {
+        enabled: false,
+        apiKey: '',
+        integrationId: '',
+        walletIntegrationId: '',
+        iframeId: '',
+        hmacSecret: '',
+        callbackUrl: '',
+        webhookUrl: '',
+        responseCallbackUrl: ''
+      },
       privacyPolicy: {
         en: profile.privacyPolicy.en,
         ar: profile.privacyPolicy.ar

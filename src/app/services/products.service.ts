@@ -34,7 +34,7 @@ export class ProductsService {
   }
 
   updateProduct(id: string, product: IProduct): Observable<BaseResponse<IProduct>> {
-    return this.genericApiService.Patch(`${this.apiUrl}`, id ,this.commonService.removeNullUndefinedEmptyStringKeysAndId(product));
+    return this.genericApiService.Patch(`${this.apiUrl +`/${id}`}`, this.commonService.removeNullUndefinedEmptyStringKeysAndId(product));
   }
 
   deleteProduct(id: string): Observable<BaseResponse<any>> {
