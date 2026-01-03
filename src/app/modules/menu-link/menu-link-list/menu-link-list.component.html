@@ -1,0 +1,240 @@
+<div class="card">
+    <p-toast></p-toast>
+    <p-confirmDialog></p-confirmDialog>
+
+    <p-toolbar styleClass="mb-4 gap-2">
+        <ng-template pTemplate="left">
+            <button pButton pRipple label="New Menu Link" icon="pi pi-plus" class="p-button-success"
+                (click)="openNew()"></button>
+        </ng-template>
+    </p-toolbar>
+
+    <p-table #dt [value]="menuLinks()" [globalFilterFields]="['key','title']" [tableStyle]="{'min-width': '75rem'}" 
+        [rowHover]="true" dataKey="_id" [loading]="loading()" styleClass="p-datatable-gridlines">
+        <ng-template pTemplate="caption">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <i class="pi pi-link text-2xl text-blue-600"></i>
+                    <h5 class="m-0 text-xl font-semibold text-gray-800">Manage Menu Links</h5>
+                </div>
+                <p-iconField iconPosition="left" class="ml-auto">
+                    <p-inputIcon>
+                        <i class="pi pi-search"></i>
+                    </p-inputIcon>
+                    <input pInputText type="text" (input)="onGlobalFilter(dt, $event)" placeholder="Search..."
+                        class="w-full sm:w-auto" />
+                </p-iconField>
+            </div>
+        </ng-template>
+        <ng-template pTemplate="header">
+            <tr>
+                <th pSortableColumn="key">Key <p-sortIcon field="key"></p-sortIcon></th>
+                <th pSortableColumn="title">Title <p-sortIcon field="title"></p-sortIcon></th>
+                <th pSortableColumn="type">Type <p-sortIcon field="type"></p-sortIcon></th>
+                <th pSortableColumn="status">Status <p-sortIcon field="status"></p-sortIcon></th>
+                <th pSortableColumn="order">Order <p-sortIcon field="order"></p-sortIcon></th>
+                <th>Actions</th>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-menuLink>
+            <tr>
+                <td>
+                    <code class="text-sm bg-gray-100 px-2 py-1 rounded">{{menuLink.key}}</code>
+                </td>
+                <td>
+                    <div class="space-y-1">
+                        <div class="font-semibold text-gray-900" dir="ltr">{{menuLink.title?.en || '-'}}</div>
+                        <div class="text-sm text-gray-600" dir="rtl">{{menuLink.title?.ar || '-'}}</div>
+                    </div>
+                </td>
+                <td>
+                    <p-tag [value]="menuLink.type === 'text' ? 'Text' : 'Dropdown'"
+                        [severity]="getTypeSeverity(menuLink.type)"></p-tag>
+                </td>
+                <td>
+                    <p-tag [value]="menuLink.status === 'active' ? 'Active' : 'Inactive'"
+                        [severity]="getSeverity(menuLink.status)"></p-tag>
+                </td>
+                <td>{{menuLink.order}}</td>
+                <td>
+                    <div class="flex items-center justify-center gap-2">
+                        <button pButton pRipple icon="pi pi-pencil" class="p-button-rounded p-button-success"
+                            (click)="editMenuLink(menuLink)" pTooltip="Edit Menu Link" tooltipPosition="top"></button>
+                        <button pButton pRipple icon="pi pi-trash" class="p-button-rounded p-button-warn"
+                            (click)="deleteMenuLink(menuLink)" pTooltip="Delete Menu Link" tooltipPosition="top"></button>
+                    </div>
+                </td>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="emptymessage">
+            <tr>
+                <td colspan="6" class="text-center p-4">No menu links found.</td>
+            </tr>
+        </ng-template>
+    </p-table>
+</div>
+
+<!-- Menu Link Dialog -->
+<p-dialog [(visible)]="menuLinkDialog" [style]="{width: '70rem'}" [breakpoints]="{'1199px': '85vw', '575px': '95vw'}"
+    header="Menu Link Details" [modal]="true" styleClass="p-fluid">
+    <ng-template pTemplate="content">
+        <form [formGroup]="menuLinkForm" class="space-y-6">
+            <!-- Basic Information -->
+            <div class="bg-gray-50 p-4 rounded-lg">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                    <i class="pi pi-info-circle mr-2 text-blue-600"></i>
+                    Basic Information
+                </h3>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div class="field">
+                        <label for="key" class="font-bold text-gray-700">Key *</label>
+                        <input id="key" pInputText type="text" formControlName="key" 
+                            placeholder="e.g., home, services, categories" class="w-full" />
+                        <small *ngIf="submitted && menuLinkForm.get('key')?.invalid" class="p-error">
+                            Key is required and must contain only lowercase letters, numbers, hyphens, or underscores.
+                        </small>
+                    </div>
+
+                    <div class="field">
+                        <label for="type" class="font-bold text-gray-700">Type *</label>
+                        <p-dropdown id="type" formControlName="type" [options]="typeOptions"
+                            optionLabel="label" optionValue="value" placeholder="Select type" class="w-full"></p-dropdown>
+                        <small *ngIf="submitted && menuLinkForm.get('type')?.invalid" class="p-error">
+                            Type is required.
+                        </small>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div class="field">
+                        <label for="status" class="font-bold text-gray-700">Status</label>
+                        <p-dropdown id="status" formControlName="status" [options]="statusOptions"
+                            optionLabel="label" optionValue="value" class="w-full"></p-dropdown>
+                    </div>
+
+                    <div class="field">
+                        <label for="order" class="font-bold text-gray-700">Order *</label>
+                        <p-inputNumber id="order" formControlName="order" [min]="0" class="w-full"></p-inputNumber>
+                        <small *ngIf="submitted && menuLinkForm.get('order')?.invalid" class="p-error">
+                            Order is required.
+                        </small>
+                    </div>
+                </div>
+
+                <!-- Title -->
+                <div class="field mb-4">
+                    <label class="font-bold text-gray-700 mb-3 block">Title *</label>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4" formGroupName="title">
+                        <div>
+                            <label for="titleEn" class="block text-sm text-gray-600 mb-1">English</label>
+                            <input id="titleEn" pInputText type="text" formControlName="en" required
+                                placeholder="Enter title in English" class="w-full" dir="ltr" />
+                            <small *ngIf="submitted && menuLinkForm.get('title.en')?.invalid" class="p-error">
+                                English title is required.
+                            </small>
+                        </div>
+                        <div>
+                            <label for="titleAr" class="block text-sm text-gray-600 mb-1">العربية</label>
+                            <input id="titleAr" pInputText type="text" formControlName="ar" required
+                                placeholder="أدخل العنوان بالعربية" class="w-full" dir="rtl" />
+                            <small *ngIf="submitted && menuLinkForm.get('title.ar')?.invalid" class="p-error">
+                                Arabic title is required.
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Text Link Configuration -->
+            <div class="bg-blue-50 p-4 rounded-lg" *ngIf="getType === 'text'">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                    <i class="pi pi-link mr-2 text-blue-600"></i>
+                    Text Link Configuration
+                </h3>
+                <div class="field">
+                    <label for="url" class="font-bold text-gray-700">URL *</label>
+                    <input id="url" pInputText type="text" formControlName="url"
+                        placeholder="e.g., /, /services, /about" class="w-full" />
+                    <small *ngIf="submitted && menuLinkForm.get('url')?.invalid" class="p-error">
+                        URL is required for text links.
+                    </small>
+                </div>
+            </div>
+
+            <!-- Dropdown Configuration -->
+            <div class="bg-green-50 p-4 rounded-lg" *ngIf="getType === 'dropdown'">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                    <i class="pi pi-list mr-2 text-green-600"></i>
+                    Dropdown Configuration
+                </h3>
+                <ng-container formGroupName="dropdownConfig">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div class="field">
+                            <label for="apiUrl" class="font-bold text-gray-700">API URL *</label>
+                            <input id="apiUrl" pInputText type="text" formControlName="apiUrl"
+                                placeholder="e.g., /api/categories" class="w-full" />
+                            <small *ngIf="submitted && menuLinkForm.get('dropdownConfig.apiUrl')?.invalid" class="p-error">
+                                API URL is required.
+                            </small>
+                        </div>
+                        <div class="field">
+                            <label for="method" class="font-bold text-gray-700">Method</label>
+                            <p-dropdown id="method" formControlName="method" [options]="methodOptions"
+                                optionLabel="label" optionValue="value" class="w-full"></p-dropdown>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div class="field">
+                            <label for="valueField" class="font-bold text-gray-700">Value Field *</label>
+                            <input id="valueField" pInputText type="text" formControlName="valueField"
+                                placeholder="e.g., id, _id" class="w-full" />
+                            <small *ngIf="submitted && menuLinkForm.get('dropdownConfig.valueField')?.invalid" class="p-error">
+                                Value field is required.
+                            </small>
+                        </div>
+                        <div class="field">
+                            <label for="urlTemplate" class="font-bold text-gray-700">URL Template *</label>
+                            <input id="urlTemplate" pInputText type="text" formControlName="urlTemplate"
+                                placeholder="e.g., /category/{id}" class="w-full" />
+                            <small *ngIf="submitted && menuLinkForm.get('dropdownConfig.urlTemplate')?.invalid" class="p-error">
+                                URL template is required.
+                            </small>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label class="font-bold text-gray-700 mb-3 block">Label Fields *</label>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4" formGroupName="labelField">
+                            <div>
+                                <label for="labelFieldEn" class="block text-sm text-gray-600 mb-1">English Field</label>
+                                <input id="labelFieldEn" pInputText type="text" formControlName="en"
+                                    placeholder="e.g., nameEn" class="w-full" dir="ltr" />
+                                <small *ngIf="submitted && menuLinkForm.get('dropdownConfig.labelField.en')?.invalid" class="p-error">
+                                    English label field is required.
+                                </small>
+                            </div>
+                            <div>
+                                <label for="labelFieldAr" class="block text-sm text-gray-600 mb-1">Arabic Field</label>
+                                <input id="labelFieldAr" pInputText type="text" formControlName="ar"
+                                    placeholder="e.g., nameAr" class="w-full" dir="ltr" />
+                                <small *ngIf="submitted && menuLinkForm.get('dropdownConfig.labelField.ar')?.invalid" class="p-error">
+                                    Arabic label field is required.
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </ng-container>
+            </div>
+        </form>
+    </ng-template>
+    <ng-template pTemplate="footer">
+        <div class="flex justify-end gap-2">
+            <p-button label="Cancel" severity="danger" icon="pi pi-times" (click)="hideDialog()"></p-button>
+            <p-button label="Save" type="submit" severity="success" icon="pi pi-check" [disabled]="menuLinkForm.invalid"
+                (click)="saveMenuLink()"></p-button>
+        </div>
+    </ng-template>
+</p-dialog>
+

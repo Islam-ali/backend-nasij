@@ -29,6 +29,7 @@ export class AppMenu {
                 label: 'Store Setup',
                 items: [
                     { label: 'Business Profile', icon: 'pi pi-fw pi-briefcase', routerLink: ['/business-profile'] },
+                    { label: 'Menu Links', icon: 'pi pi-fw pi-link', routerLink: ['/menu-links'] },
                     { label: 'Hero Sections', icon: 'pi pi-fw pi-image', routerLink: ['/hero'] },
                     { label: 'Featured Collections', icon: 'pi pi-fw pi-star', routerLink: ['/featured-collections'] },
                     { label: 'Banners', icon: 'pi pi-fw pi-megaphone', routerLink: ['/banners'] },
