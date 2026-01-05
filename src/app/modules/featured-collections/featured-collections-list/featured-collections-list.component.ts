@@ -32,6 +32,7 @@ import { BaseResponse } from '../../../core/models/baseResponse';
 import { TextareaModule } from 'primeng/textarea';
 import { UploadFilesComponent } from '../../../shared/components/fields/upload-files/upload-files.component';
 import { DropdownModule } from 'primeng/dropdown';
+import { InputNumberModule } from 'primeng/inputnumber';
 import { ICategory } from '../../../interfaces/category.interface';
 import { IBrand } from '../../../interfaces/brand.interface';
 import { IPackage } from '../../../interfaces/package.interface';
@@ -68,7 +69,8 @@ interface Column {
     CardModule,
     DividerModule,
     UploadFilesComponent,
-    DropdownModule
+    DropdownModule,
+    InputNumberModule
   ],
   templateUrl: './featured-collections-list.component.html',
   styleUrls: ['./featured-collections-list.component.scss'],
@@ -78,6 +80,40 @@ export class FeaturedCollectionsListComponent extends ComponentBase implements O
   featuredCollectionForm!: FormGroup;
   featuredCollectionDialog = false;
   submitted = false;
+
+  // Alignment Options
+  justifyContentOptions = [
+    { label: 'Center', value: 'center' },
+    { label: 'Start', value: 'start' },
+    { label: 'End', value: 'end' },
+    { label: 'Space Between', value: 'between' },
+    { label: 'Space Around', value: 'around' },
+    { label: 'Space Evenly', value: 'evenly' }
+  ];
+
+  alignItemsOptions = [
+    { label: 'Stretch', value: 'stretch' },
+    { label: 'Center', value: 'center' },
+    { label: 'Start', value: 'start' },
+    { label: 'End', value: 'end' }
+  ];
+
+  heightModeOptions = [
+    { label: 'Auto (Content Based)', value: 'auto' },
+    { label: 'Fixed Height', value: 'fixed' },
+    { label: 'Minimum Height', value: 'min' },
+    { label: 'Maximum Height', value: 'max' },
+    { label: 'Aspect Ratio', value: 'aspect-ratio' }
+  ];
+
+  aspectRatioOptions = [
+    { label: '16:9 (Widescreen)', value: '16/9' },
+    { label: '4:3 (Standard)', value: '4/3' },
+    { label: '1:1 (Square)', value: '1/1' },
+    { label: '21:9 (Ultrawide)', value: '21/9' },
+    { label: '3:2 (Photo)', value: '3/2' },
+    { label: '2:1 (Panoramic)', value: '2/1' }
+  ];
   selectedFeaturedCollections: IFeaturedCollection[] = [];
   loading = signal(false);
   featuredCollections = signal<IFeaturedCollection[]>([]);
@@ -141,12 +177,42 @@ export class FeaturedCollectionsListComponent extends ComponentBase implements O
         ar: ['', [Validators.required, Validators.minLength(10)]]
       }),
       isActive: [true],
-      collections: this.fb.array([])
+      collections: this.fb.array([]),
+      gridConfig: this.fb.group({
+        gridCols: this.fb.group({
+          sm: [1, [Validators.required, Validators.min(1), Validators.max(12)]],
+          md: [2, [Validators.min(1), Validators.max(12)]],
+          lg: [3, [Validators.min(1), Validators.max(12)]],
+          xl: [4, [Validators.min(1), Validators.max(12)]]
+        }),
+        colSpans: this.fb.array([]),
+        justifyContent: ['center'],
+        alignItems: ['stretch'],
+        heightMode: ['min'],
+        height: ['400px'],
+        aspectRatio: ['']
+      })
     });
   }
 
   get collectionsArray(): FormArray {
     return this.featuredCollectionForm.get('collections') as FormArray;
+  }
+
+  get gridConfigGroup(): FormGroup {
+    return this.featuredCollectionForm.get('gridConfig') as FormGroup;
+  }
+
+  get gridColsGroup(): FormGroup {
+    return this.gridConfigGroup?.get('gridCols') as FormGroup;
+  }
+
+  get colSpansArray(): FormArray {
+    return this.gridConfigGroup?.get('colSpans') as FormArray;
+  }
+
+  getColSpanGroup(index: number): FormGroup {
+    return this.colSpansArray.at(index) as FormGroup;
   }
 
   addCollection() {
@@ -173,6 +239,15 @@ export class FeaturedCollectionsListComponent extends ComponentBase implements O
     // Add the collection group first
     this.collectionsArray.push(collectionGroup);
     
+    // Add default responsive colSpan to colSpans array
+    const defaultColSpan = this.fb.group({
+      sm: [1, [Validators.required, Validators.min(1), Validators.max(12)]],
+      md: [2, [Validators.min(1), Validators.max(12)]],
+      lg: [2, [Validators.min(1), Validators.max(12)]],
+      xl: [2, [Validators.min(1), Validators.max(12)]]
+    });
+    this.colSpansArray.push(defaultColSpan);
+    
     // Add a unique identifier to the collection group
     const currentIndex = this.collectionsArray.length - 1;
     (collectionGroup as any).collectionIndex = currentIndex;
@@ -192,6 +267,10 @@ export class FeaturedCollectionsListComponent extends ComponentBase implements O
 
   removeCollection(index: number) {
     this.collectionsArray.removeAt(index);
+    // Remove corresponding colSpan
+    if (this.colSpansArray.length > index) {
+      this.colSpansArray.removeAt(index);
+    }
     // Update the collectionIndex for all remaining collections
     this.collectionsArray.controls.forEach((control, i) => {
       (control as any).collectionIndex = i;
@@ -368,6 +447,21 @@ export class FeaturedCollectionsListComponent extends ComponentBase implements O
     this.submitted = false;
     this.featuredCollectionDialog = true;
     this.collectionsArray.clear();
+    this.colSpansArray.clear();
+    // Set default grid config
+    this.gridConfigGroup.patchValue({
+      gridCols: {
+        sm: 1,
+        md: 2,
+        lg: 3,
+        xl: 4
+      },
+      justifyContent: 'center',
+      alignItems: 'stretch',
+      heightMode: 'min',
+      height: '400px',
+      aspectRatio: ''
+    });
     this.addCollection(); // Add at least one collection
   }
 
@@ -375,6 +469,8 @@ export class FeaturedCollectionsListComponent extends ComponentBase implements O
     this.featuredCollectionForm.reset();
     // Clear and populate collections array
     this.collectionsArray.clear();
+    this.colSpansArray.clear();
+    
     featuredCollection.collections.forEach((collection, index) => {
       const collectionGroup = this.fb.group({
         title: this.fb.group({
@@ -399,6 +495,16 @@ export class FeaturedCollectionsListComponent extends ComponentBase implements O
       // Add the collection group first
       this.collectionsArray.push(collectionGroup);
       
+      // Add corresponding responsive colSpan
+      const colSpan = featuredCollection.gridConfig?.colSpans?.[index] || { sm: 1, md: 2, lg: 2, xl: 2 };
+      const colSpanGroup = this.fb.group({
+        sm: [colSpan.sm || 1, [Validators.required, Validators.min(1), Validators.max(12)]],
+        md: [colSpan.md || 2, [Validators.min(1), Validators.max(12)]],
+        lg: [colSpan.lg || 2, [Validators.min(1), Validators.max(12)]],
+        xl: [colSpan.xl || 2, [Validators.min(1), Validators.max(12)]]
+      });
+      this.colSpansArray.push(colSpanGroup);
+      
       // Add a unique identifier to the collection group
       (collectionGroup as any).collectionIndex = index;
       
@@ -419,7 +525,15 @@ export class FeaturedCollectionsListComponent extends ComponentBase implements O
       sectionSubtitle: featuredCollection.sectionSubtitle,
       sectionTitle: featuredCollection.sectionTitle,
       description: featuredCollection.description,
-      isActive: featuredCollection.isActive
+      isActive: featuredCollection.isActive,
+      gridConfig: {
+        gridCols: featuredCollection.gridConfig?.gridCols || { sm: 1, md: 2, lg: 3, xl: 4 },
+        justifyContent: featuredCollection.gridConfig?.justifyContent || 'center',
+        alignItems: featuredCollection.gridConfig?.alignItems || 'stretch',
+        heightMode: featuredCollection.gridConfig?.heightMode || 'min',
+        height: featuredCollection.gridConfig?.height || '400px',
+        aspectRatio: featuredCollection.gridConfig?.aspectRatio || ''
+      }
     });
     
     this.collectionsArray.controls.forEach((control, i) => {
