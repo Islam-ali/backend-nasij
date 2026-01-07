@@ -54,6 +54,10 @@ export const appRoutes: Routes = [
                 loadComponent: () => import('./app/modules/featured-collections/featured-collections-list/featured-collections-list.component').then(m => m.FeaturedCollectionsListComponent)
             },
             {
+                path: 'product-features',
+                loadComponent: () => import('./app/modules/product-features/product-features-list/product-features-list.component').then(m => m.ProductFeaturesListComponent)
+            },
+            {
                 path: 'banners',
                 loadComponent: () => import('./app/modules/banner/banner-list/banner-list.component').then(m => m.BannerListComponent)
             },

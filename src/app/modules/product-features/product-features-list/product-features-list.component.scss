@@ -1,0 +1,12 @@
+:host ::ng-deep {
+  .p-dialog {
+    .p-dialog-content {
+      padding-top: 0;
+    }
+  }
+  
+  .p-tag {
+    font-size: 0.875rem;
+  }
+}
+

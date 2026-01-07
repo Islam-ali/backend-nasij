@@ -1,8 +1,8 @@
 export const environment = {
   production: false,
   development: true,
-  baseUrl: 'http://localhost:3000',
-  apiUrl: 'http://localhost:3000/api/v1', 
+  baseUrl: 'http://localhost:3001',
+  apiUrl: 'http://localhost:3001/api/v1', 
   appName: 'Online Store Admin (Dev)',
   version: '1.0.0',
   // Development specific settings

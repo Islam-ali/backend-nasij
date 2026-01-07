@@ -33,6 +33,9 @@ import { TextareaModule } from 'primeng/textarea';
 import { UploadFilesComponent } from '../../../shared/components/fields/upload-files/upload-files.component';
 import { DropdownModule } from 'primeng/dropdown';
 import { InputNumberModule } from 'primeng/inputnumber';
+import { AccordionModule } from 'primeng/accordion';
+import { TabViewModule } from 'primeng/tabview';
+import { PanelModule } from 'primeng/panel';
 import { ICategory } from '../../../interfaces/category.interface';
 import { IBrand } from '../../../interfaces/brand.interface';
 import { IPackage } from '../../../interfaces/package.interface';
@@ -70,7 +73,10 @@ interface Column {
     DividerModule,
     UploadFilesComponent,
     DropdownModule,
-    InputNumberModule
+    InputNumberModule,
+    AccordionModule,
+    TabViewModule,
+    PanelModule
   ],
   templateUrl: './featured-collections-list.component.html',
   styleUrls: ['./featured-collections-list.component.scss'],
@@ -117,17 +123,11 @@ export class FeaturedCollectionsListComponent extends ComponentBase implements O
   selectedFeaturedCollections: IFeaturedCollection[] = [];
   loading = signal(false);
   featuredCollections = signal<IFeaturedCollection[]>([]);
-  queryParams = signal<any[]>([]);
-  selectedQueryParams = signal<any>(null);
+  expandedCollectionIndex = signal<number | null>(null);
   categories = signal<ICategory[]>([]);
   brands = signal<IBrand[]>([]);
   packages = signal<IPackage[]>([]);
-  selectedQueryParamValues = signal<{ [key: number]: any[] }>({});
   products = signal<IProduct[]>([]);
-  listOfRoutes = signal<string[]>([
-    '/shop',
-    '/packages'
-  ]);
   @ViewChild('dt') dt: Table | undefined;
   
   cols: Column[] = [
@@ -155,7 +155,6 @@ export class FeaturedCollectionsListComponent extends ComponentBase implements O
   ngOnInit() {
     this.initForm();
     this.loadFeaturedCollections();
-    this.loadQueryParams();
     this.loadCategories();
     this.loadProducts();
     this.loadBrands();
@@ -190,7 +189,10 @@ export class FeaturedCollectionsListComponent extends ComponentBase implements O
         alignItems: ['stretch'],
         heightMode: ['min'],
         height: ['400px'],
-        aspectRatio: ['']
+        aspectRatio: [''],
+        width: [''],
+        parentCustomStyle: [''], // Changed to string (textarea)
+        itemsCustomStyle: this.fb.array([])
       })
     });
   }
@@ -212,8 +214,35 @@ export class FeaturedCollectionsListComponent extends ComponentBase implements O
   }
 
   getColSpanGroup(index: number): FormGroup {
+    if (index < 0 || index >= this.colSpansArray.length) {
+      console.error(`Invalid index for colSpan: ${index}. Array length: ${this.colSpansArray.length}`);
+      // Return a default group to prevent errors
+      return this.fb.group({
+        sm: [1],
+        md: [2],
+        lg: [2],
+        xl: [2]
+      });
+    }
     return this.colSpansArray.at(index) as FormGroup;
   }
+
+  get itemsCustomStyleArray(): FormArray {
+    return this.gridConfigGroup?.get('itemsCustomStyle') as FormArray;
+  }
+
+  get parentCustomStyleControl(): FormControl {
+    return this.gridConfigGroup?.get('parentCustomStyle') as FormControl;
+  }
+
+  getItemCustomStyleControl(index: number): FormControl {
+    if (index < 0 || index >= this.itemsCustomStyleArray.length) {
+      console.error(`Invalid index for item custom style: ${index}. Array length: ${this.itemsCustomStyleArray.length}`);
+      return this.fb.control('');
+    }
+    return this.itemsCustomStyleArray.at(index) as FormControl;
+  }
+
 
   addCollection() {
     const collectionGroup = this.fb.group({
@@ -230,51 +259,69 @@ export class FeaturedCollectionsListComponent extends ComponentBase implements O
         en: ['', [Validators.required, Validators.minLength(2)]],
         ar: ['', [Validators.required, Validators.minLength(2)]]
       }),
-      buttonLink: ['', [Validators.required]],
-      queryParamName: [null],
-      queryParamValue: [null],
-      queryParams: [{}]
+      buttonLink: ['', [Validators.required]]
     });
     
-    // Add the collection group first
-    this.collectionsArray.push(collectionGroup);
-    
-    // Add default responsive colSpan to colSpans array
+    // Add default responsive colSpan first
     const defaultColSpan = this.fb.group({
       sm: [1, [Validators.required, Validators.min(1), Validators.max(12)]],
       md: [2, [Validators.min(1), Validators.max(12)]],
       lg: [2, [Validators.min(1), Validators.max(12)]],
       xl: [2, [Validators.min(1), Validators.max(12)]]
     });
-    this.colSpansArray.push(defaultColSpan);
     
-    // Add a unique identifier to the collection group
+    // Add default item custom style (textarea)
+    const defaultItemStyle = this.fb.control('');
+    
+    // Add all related items together to maintain synchronization
+    this.colSpansArray.push(defaultColSpan);
+    this.itemsCustomStyleArray.push(defaultItemStyle);
+    this.collectionsArray.push(collectionGroup);
+    
+    // Set collection index after adding
     const currentIndex = this.collectionsArray.length - 1;
     (collectionGroup as any).collectionIndex = currentIndex;
     
-    // Then set up the image control monitoring with the correct index
-    const imageControl = collectionGroup.get('image');
-    if (imageControl) {
-      // Use a closure to capture the current index
-      (() => {
-        const index = currentIndex;
-        imageControl.valueChanges.pipe(takeUntil(this.destroy$)).subscribe(value => {
-          console.log(`Image changed for collection ${index}:`, value);
-        });
-      })();
-    }
+    // Expand the newly added collection
+    this.expandedCollectionIndex.set(currentIndex);
+    
+    // Mark form as touched to trigger validation
+    collectionGroup.markAllAsTouched();
   }
 
   removeCollection(index: number) {
-    this.collectionsArray.removeAt(index);
-    // Remove corresponding colSpan
+    // Validate index
+    if (index < 0 || index >= this.collectionsArray.length) {
+      console.error(`Invalid index: ${index}. Array length: ${this.collectionsArray.length}`);
+      return;
+    }
+
+    // Remove from all arrays simultaneously to maintain synchronization
+    // This ensures that all related data (collections, colSpans, itemsCustomStyle) stay aligned
+    if (this.collectionsArray.length > index) {
+      this.collectionsArray.removeAt(index);
+    }
+    
     if (this.colSpansArray.length > index) {
       this.colSpansArray.removeAt(index);
     }
-    // Update the collectionIndex for all remaining collections
-    this.collectionsArray.controls.forEach((control, i) => {
-      (control as any).collectionIndex = i;
-    });
+    
+    if (this.itemsCustomStyleArray.length > index) {
+      this.itemsCustomStyleArray.removeAt(index);
+    }
+
+    // Mark form as touched to trigger validation
+    this.collectionsArray.markAsTouched();
+    
+    // Reset expanded index if the removed collection was expanded
+    if (this.expandedCollectionIndex() === index) {
+      this.expandedCollectionIndex.set(null);
+    } else if (this.expandedCollectionIndex() !== null && this.expandedCollectionIndex()! > index) {
+      // Adjust expanded index if a collection before it was removed
+      this.expandedCollectionIndex.set(this.expandedCollectionIndex()! - 1);
+    }
+
+    console.log(this.collectionsArray.value);
   }
   getControlImage(index: number): FormControl {
     const control = this.collectionsArray.at(index).get('image') as FormControl;
@@ -284,7 +331,17 @@ export class FeaturedCollectionsListComponent extends ComponentBase implements O
     }
     return control;
   }
-  trackByFn(index: number, item: any): number {
+  trackByFn(index: number, item: AbstractControl): any {
+    // Use a unique identifier if available, otherwise use index
+    const control = item as FormGroup;
+    if (control && (control as any).collectionIndex !== undefined) {
+      return (control as any).collectionIndex;
+    }
+    // Fallback: use the control itself as the track key
+    return control || index;
+  }
+
+  trackByIndex(index: number): number {
     return index;
   }
 
@@ -301,14 +358,6 @@ export class FeaturedCollectionsListComponent extends ComponentBase implements O
     return this.collectionsArray.controls.findIndex(control => control === collectionGroup);
   }
 
-  loadQueryParams() {
-    this.queryParams.set([
-      { name: 'category', value: 'category' },
-      { name: 'brand', value: 'brand' },
-      { name: 'product', value: 'product' },
-      { name: 'package', value: 'package' }
-    ]);
-  }
   loadProducts() {
     this.productService.getProductsList()
       .pipe(takeUntil(this.destroy$))
@@ -355,70 +404,6 @@ export class FeaturedCollectionsListComponent extends ComponentBase implements O
       });
   }
 
-  onQueryParamsChange(event: any, collectionIndex: number) {
-    const selectedParam = event.value;
-    if (selectedParam) {
-      this.updateQueryParamValues(selectedParam, collectionIndex);
-    } else {
-      const currentValues = this.selectedQueryParamValues();
-      delete currentValues[collectionIndex];
-      this.selectedQueryParamValues.set({ ...currentValues });
-    }
-  }
-
-  updateQueryParamValues(selectedParam: string, collectionIndex: number) {
-    let values: any[] = [];
-    
-    switch (selectedParam) {
-      case 'category':
-        values = this.categories().map(cat => ({ name: cat.name.en + ' - ' + cat.name.ar, value: cat._id }));
-        break;
-      case 'brand':
-        values = this.brands().map(brand => ({ name: brand.name, value: brand._id }));
-        break;
-      case 'product':
-        values = this.products().map(product => ({ name: product.name.en + ' - ' + product.name.ar, value: product._id }));
-        break;
-      case 'package':
-        values = this.packages().map(pkg => ({ name: pkg.name.en + ' - ' + pkg.name.ar, value: pkg._id }));
-        break;
-      default:
-        values = [];
-    }
-    
-    const currentValues = this.selectedQueryParamValues();
-    currentValues[collectionIndex] = values;
-    this.selectedQueryParamValues.set({ ...currentValues });
-  }
-
-  onQueryParamValueChange(event: any, collectionIndex: number) {
-    const selectedValue = event.value;
-    const collectionGroup = this.collectionsArray.at(collectionIndex);
-    const selectedParam = collectionGroup.get('queryParamName')?.value;
-    
-    if (selectedParam && selectedValue) {
-      const currentQueryParams = collectionGroup.get('queryParams')?.value || {};
-      currentQueryParams[selectedParam] = selectedValue;
-      collectionGroup.get('queryParams')?.setValue(currentQueryParams);
-      collectionGroup.get('queryParamName')?.setValue(null);
-      collectionGroup.get('queryParamValue')?.setValue(null);
-    }
-  }
-
-  removeQueryParam(collectionIndex: number, paramKey: string) {
-    const collectionGroup = this.collectionsArray.at(collectionIndex);
-    const currentQueryParams = collectionGroup.get('queryParams')?.value || {};
-    delete currentQueryParams[paramKey];
-    collectionGroup.get('queryParams')?.setValue(currentQueryParams);
-  }
-
-  getQueryParamsKeys(queryParams: any): string[] {
-    if (!queryParams || typeof queryParams !== 'object') {
-      return [];
-    }
-    return Object.keys(queryParams);
-  }
-
   loadFeaturedCollections() {
     this.loading.set(true);
     this.featuredCollectionsService.getFeaturedCollections()
@@ -448,6 +433,8 @@ export class FeaturedCollectionsListComponent extends ComponentBase implements O
     this.featuredCollectionDialog = true;
     this.collectionsArray.clear();
     this.colSpansArray.clear();
+    this.itemsCustomStyleArray.clear();
+    this.parentCustomStyleControl.reset();
     // Set default grid config
     this.gridConfigGroup.patchValue({
       gridCols: {
@@ -460,18 +447,26 @@ export class FeaturedCollectionsListComponent extends ComponentBase implements O
       alignItems: 'stretch',
       heightMode: 'min',
       height: '400px',
-      aspectRatio: ''
+      aspectRatio: '',
+      width: '',
+      parentCustomStyle: '',
+      itemsCustomStyle: []
     });
     this.addCollection(); // Add at least one collection
   }
 
   editFeaturedCollection(featuredCollection: IFeaturedCollection) {
     this.featuredCollectionForm.reset();
-    // Clear and populate collections array
+    // Clear all arrays to ensure clean state
     this.collectionsArray.clear();
     this.colSpansArray.clear();
+    this.itemsCustomStyleArray.clear();
+    this.parentCustomStyleControl.reset();
+    this.expandedCollectionIndex.set(null);
     
+    // Populate collections array with proper synchronization
     featuredCollection.collections.forEach((collection, index) => {
+      // Create collection group
       const collectionGroup = this.fb.group({
         title: this.fb.group({
           en: [collection.title?.en || ''],
@@ -481,21 +476,15 @@ export class FeaturedCollectionsListComponent extends ComponentBase implements O
           en: [collection.description?.en || ''],
           ar: [collection.description?.ar || '']
         }),
-        image: [collection.image],
+        image: [collection.image || null, collection.image ? [] : [Validators.required]],
         buttonText: this.fb.group({
           en: [collection.buttonText?.en || ''],
           ar: [collection.buttonText?.ar || '']
         }),
-        buttonLink: [collection.buttonLink],
-        queryParamName: [null],
-        queryParamValue: [null],
-        queryParams: [collection.queryParams || {}]
+        buttonLink: [collection.buttonLink || '']
       });
       
-      // Add the collection group first
-      this.collectionsArray.push(collectionGroup);
-      
-      // Add corresponding responsive colSpan
+      // Create corresponding colSpan group
       const colSpan = featuredCollection.gridConfig?.colSpans?.[index] || { sm: 1, md: 2, lg: 2, xl: 2 };
       const colSpanGroup = this.fb.group({
         sm: [colSpan.sm || 1, [Validators.required, Validators.min(1), Validators.max(12)]],
@@ -503,23 +492,34 @@ export class FeaturedCollectionsListComponent extends ComponentBase implements O
         lg: [colSpan.lg || 2, [Validators.min(1), Validators.max(12)]],
         xl: [colSpan.xl || 2, [Validators.min(1), Validators.max(12)]]
       });
+      
+      // Create corresponding item custom style control
+      const itemStyle = featuredCollection.gridConfig?.itemsCustomStyle?.[index] || {};
+      const itemStyleText = this.objectToCssText(itemStyle);
+      const itemStyleControl = this.fb.control(itemStyleText);
+      
+      // Add all related items together to maintain synchronization
       this.colSpansArray.push(colSpanGroup);
+      this.itemsCustomStyleArray.push(itemStyleControl);
+      this.collectionsArray.push(collectionGroup);
       
-      // Add a unique identifier to the collection group
+      // Set collection index after adding
       (collectionGroup as any).collectionIndex = index;
-      
-      // Then set up the image control monitoring with the correct index
-      const imageControl = collectionGroup.get('image');
-      if (imageControl) {
-        // Use a closure to capture the current index
-        (() => {
-          const currentIndex = index;
-          imageControl.valueChanges.pipe(takeUntil(this.destroy$)).subscribe(value => {
-            console.log(`Image changed for existing collection ${currentIndex}:`, value);
-          });
-        })();
-      }
     });
+
+    // Set parent custom style - handle both string and object (for backward compatibility)
+    const parentCustomStyleControl = this.gridConfigGroup.get('parentCustomStyle') as FormControl;
+    if (featuredCollection.gridConfig?.parentCustomStyle) {
+      if (typeof featuredCollection.gridConfig.parentCustomStyle === 'string') {
+        parentCustomStyleControl.setValue(featuredCollection.gridConfig.parentCustomStyle);
+      } else {
+        // If it's an object (old format), convert to string
+        const cssText = this.objectToCssText(featuredCollection.gridConfig.parentCustomStyle);
+        parentCustomStyleControl.setValue(cssText);
+      }
+    } else {
+      parentCustomStyleControl.setValue('');
+    }
 
     this.featuredCollectionForm.patchValue({
       sectionSubtitle: featuredCollection.sectionSubtitle,
@@ -532,7 +532,14 @@ export class FeaturedCollectionsListComponent extends ComponentBase implements O
         alignItems: featuredCollection.gridConfig?.alignItems || 'stretch',
         heightMode: featuredCollection.gridConfig?.heightMode || 'min',
         height: featuredCollection.gridConfig?.height || '400px',
-        aspectRatio: featuredCollection.gridConfig?.aspectRatio || ''
+        aspectRatio: featuredCollection.gridConfig?.aspectRatio || '',
+        width: featuredCollection.gridConfig?.width || '',
+        parentCustomStyle: featuredCollection.gridConfig?.parentCustomStyle 
+          ? (typeof featuredCollection.gridConfig.parentCustomStyle === 'string' 
+              ? featuredCollection.gridConfig.parentCustomStyle 
+              : this.objectToCssText(featuredCollection.gridConfig.parentCustomStyle))
+          : '',
+        itemsCustomStyle: featuredCollection.gridConfig?.itemsCustomStyle ? featuredCollection.gridConfig.itemsCustomStyle.map((itemStyle: any) => this.objectToCssText(itemStyle)) : []
       }
     });
     
@@ -540,8 +547,8 @@ export class FeaturedCollectionsListComponent extends ComponentBase implements O
       (control as any).collectionIndex = i;
     });
     console.log(this.featuredCollectionForm.value);
-    debugger;
     this.selectedFeaturedCollections = [featuredCollection];
+    console.log(this.selectedFeaturedCollections);
     this.featuredCollectionDialog = true;
   }
 
@@ -614,17 +621,113 @@ export class FeaturedCollectionsListComponent extends ComponentBase implements O
 
   saveFeaturedCollection() {
     this.submitted = true;
-    console.log(this.featuredCollectionForm.value);
+    console.log('Form value before processing:', this.featuredCollectionForm.value);
     if (this.featuredCollectionForm.valid && this.collectionsArray.length > 0) {
-      const formData = this.featuredCollectionForm.value;
-      formData.collections = formData.collections.map((collection: any) => {
-        delete collection.queryParamName;
-        delete collection.queryParamValue;
-        return collection;
-      });
+      // Build formData from FormControls directly to ensure we get the latest values
+      const formData: any = {
+        sectionSubtitle: this.featuredCollectionForm.get('sectionSubtitle')?.value,
+        sectionTitle: this.featuredCollectionForm.get('sectionTitle')?.value,
+        description: this.featuredCollectionForm.get('description')?.value,
+        isActive: this.featuredCollectionForm.get('isActive')?.value,
+        collections: [],
+        gridConfig: this.featuredCollectionForm.get('gridConfig')?.value || {}
+      };
+      
+      const existingCollections = this.selectedFeaturedCollections.length > 0
+        ? this.selectedFeaturedCollections[0].collections
+        : [];
+
+      // Process collections directly from FormArray to ensure images are properly included
+      for (let i = 0; i < this.collectionsArray.length; i++) {
+        const collectionControl = this.collectionsArray.at(i);
+        const imageControl = collectionControl.get('image');
+        const imageValue = imageControl?.value;
+        const originalIndex = (collectionControl as any).collectionIndex;
+        
+        // Log for debugging
+        console.log(`Collection ${i} image value:`, imageValue);
+        console.log(`Collection ${i} full control value:`, collectionControl.value);
+
+        // Determine final image value:
+        // - If imageControl has a value, use it.
+        // - If it's null/undefined but this is an existing collection, fall back to the original image.
+        let finalImage = imageValue;
+        if ((finalImage === null || finalImage === undefined) && existingCollections && originalIndex !== undefined && originalIndex !== null) {
+          const existing = existingCollections[originalIndex];
+          if (existing && existing.image) {
+            finalImage = existing.image;
+          }
+        }
+        
+        // Build collection object from FormControl values
+        const collection = {
+          title: collectionControl.get('title')?.value || {},
+          description: collectionControl.get('description')?.value || {},
+          image: finalImage !== undefined && finalImage !== null ? finalImage : null,
+          buttonText: collectionControl.get('buttonText')?.value || {},
+          buttonLink: collectionControl.get('buttonLink')?.value || ''
+        };
+        
+        console.log(`Processed collection ${i}:`, collection);
+        formData.collections.push(collection);
+      }
+      
+      console.log('Collections array length:', this.collectionsArray.length);
+      console.log('FormData collections length:', formData.collections.length);
+      console.log('Final formData before processing gridConfig:', JSON.stringify(formData, null, 2));
+      
+      // Handle parentCustomStyle - keep as string, trim and set to undefined if empty
+      if (formData.gridConfig?.parentCustomStyle) {
+        if (typeof formData.gridConfig.parentCustomStyle === 'string') {
+          const cssText = formData.gridConfig.parentCustomStyle.trim();
+          formData.gridConfig.parentCustomStyle = cssText || undefined;
+        } else {
+          // If it's an object (for backward compatibility), convert to string
+          formData.gridConfig.parentCustomStyle = this.objectToCssText(formData.gridConfig.parentCustomStyle) || undefined;
+        }
+      } else {
+        formData.gridConfig.parentCustomStyle = undefined;
+      }
+      
+      // Process colSpans directly from FormArray
+      const colSpans: any[] = [];
+      for (let i = 0; i < this.colSpansArray.length; i++) {
+        const colSpanControl = this.colSpansArray.at(i);
+        colSpans.push(colSpanControl.value);
+      }
+      formData.gridConfig.colSpans = colSpans.length > 0 ? colSpans : undefined;
+      
+      // Convert itemsCustomStyle FormArray (strings) to array of objects
+      const itemsStyles: Record<string, string>[] = [];
+      for (let i = 0; i < this.itemsCustomStyleArray.length; i++) {
+        const itemStyleControl = this.itemsCustomStyleArray.at(i);
+        const itemStyleText = itemStyleControl.value;
+        if (typeof itemStyleText === 'string' && itemStyleText.trim()) {
+          const style = this.cssTextToObject(itemStyleText);
+          if (Object.keys(style).length > 0) {
+            itemsStyles.push(style);
+          } else {
+            itemsStyles.push({});
+          }
+        } else {
+          itemsStyles.push({});
+        }
+      }
+      formData.gridConfig.itemsCustomStyle = itemsStyles.length > 0 ? itemsStyles : undefined;
+      
+      // Handle width field - set to undefined if empty
+      if (formData.gridConfig) {
+        if (formData.gridConfig.width && typeof formData.gridConfig.width === 'string') {
+          const widthValue = formData.gridConfig.width.trim();
+          formData.gridConfig.width = widthValue || undefined;
+        } else if (!formData.gridConfig.width) {
+          formData.gridConfig.width = undefined;
+        }
+      }
       if (this.selectedFeaturedCollections.length > 0) {
         // Update existing featured collection
         const featuredCollection = this.selectedFeaturedCollections[0];
+        console.log(formData);
         this.featuredCollectionsService.updateFeaturedCollection(featuredCollection._id, formData)
           .pipe(takeUntil(this.destroy$))
           .subscribe({
@@ -719,4 +822,232 @@ export class FeaturedCollectionsListComponent extends ComponentBase implements O
   getStatusValue(isActive: boolean): string {
     return isActive ? 'Active' : 'Inactive';
   }
+
+  // Convert CSS text to object
+  cssTextToObject(cssText: string): Record<string, string> {
+    const result: Record<string, string> = {};
+    if (!cssText || !cssText.trim()) {
+      return result;
+    }
+    
+    // Split by semicolon and process each property
+    const lines = cssText.split(';').map(line => line.trim()).filter(line => line);
+    
+    lines.forEach(line => {
+      const colonIndex = line.indexOf(':');
+      if (colonIndex > 0) {
+        const key = line.substring(0, colonIndex).trim();
+        const value = line.substring(colonIndex + 1).trim();
+        if (key && value) {
+          result[key] = value;
+        }
+      }
+    });
+    
+    return result;
+  }
+
+  // Convert object to CSS text
+  objectToCssText(obj: Record<string, string>): string {
+    if (!obj || Object.keys(obj).length === 0) {
+      return '';
+    }
+    
+    return Object.keys(obj)
+      .map(key => `${key}: ${obj[key]}`)
+      .join('; ');
+  }
+
+  // Preview helper methods
+  getPreviewGridClasses(): string {
+    const gridCols = this.gridConfigGroup?.get('gridCols')?.value || { sm: 1, md: 2, lg: 3, xl: 4 };
+    const classes: string[] = [];
+    if (gridCols.sm) classes.push(`grid-cols-${gridCols.sm}`);
+    if (gridCols.md) classes.push(`md:grid-cols-${gridCols.md}`);
+    if (gridCols.lg) classes.push(`lg:grid-cols-${gridCols.lg}`);
+    if (gridCols.xl) classes.push(`xl:grid-cols-${gridCols.xl}`);
+    return classes.join(' ');
+  }
+
+  getPreviewColSpanClasses(index: number): string {
+    if (index < 0 || index >= this.colSpansArray.length) {
+      return 'col-span-1 md:col-span-2 lg:col-span-2 xl:col-span-2';
+    }
+    const colSpans = this.colSpansArray?.at(index)?.value || { sm: 1, md: 2, lg: 2, xl: 2 };
+    const classes: string[] = [];
+    if (colSpans.sm) classes.push(`col-span-${colSpans.sm}`);
+    if (colSpans.md) classes.push(`md:col-span-${colSpans.md}`);
+    if (colSpans.lg) classes.push(`lg:col-span-${colSpans.lg}`);
+    if (colSpans.xl) classes.push(`xl:col-span-${colSpans.xl}`);
+    return classes.join(' ');
+  }
+
+  getPreviewJustifyContentClass(): string {
+    const justifyContent = this.gridConfigGroup?.get('justifyContent')?.value || 'center';
+    const map: { [key: string]: string } = {
+      'center': 'justify-center',
+      'start': 'justify-start',
+      'end': 'justify-end',
+      'between': 'justify-between',
+      'around': 'justify-around',
+      'evenly': 'justify-evenly'
+    };
+    return map[justifyContent] || 'justify-center';
+  }
+
+  getPreviewAlignItemsClass(): string {
+    const alignItems = this.gridConfigGroup?.get('alignItems')?.value || 'stretch';
+    const map: { [key: string]: string } = {
+      'center': 'items-center',
+      'start': 'items-start',
+      'end': 'items-end',
+      'stretch': 'items-stretch'
+    };
+    return map[alignItems] || 'items-stretch';
+  }
+
+  getPreviewParentStyle(): { [key: string]: string } {
+    const styles: { [key: string]: string } = {};
+    const width = this.gridConfigGroup?.get('width')?.value;
+    
+    if (width && width.trim()) {
+      styles['width'] = width.trim();
+    }
+    
+    return styles;
+  }
+
+  getPreviewParentClass(): string {
+    const parentCustomStyle = this.gridConfigGroup?.get('parentCustomStyle')?.value;
+    
+    if (parentCustomStyle) {
+      if (typeof parentCustomStyle === 'string' && parentCustomStyle.trim()) {
+        return parentCustomStyle.trim();
+      } else if (typeof parentCustomStyle === 'object') {
+        // Backward compatibility: if it's an object, convert to string
+        return this.objectToCssText(parentCustomStyle);
+      }
+    }
+    
+    return '';
+  }
+
+  getPreviewHeightStyle(): { [key: string]: string } {
+    const styles: { [key: string]: string } = {};
+    const gridConfig = this.gridConfigGroup?.value;
+    
+    if (!gridConfig) return { 'min-height': '400px' };
+    
+    const mode = gridConfig.heightMode || 'min';
+    const height = gridConfig.height || '400px';
+    const aspectRatio = gridConfig.aspectRatio;
+
+    switch (mode) {
+      case 'fixed':
+        styles['height'] = height;
+        break;
+      case 'min':
+        styles['min-height'] = height;
+        break;
+      case 'max':
+        styles['max-height'] = height;
+        break;
+      case 'aspect-ratio':
+        if (aspectRatio) {
+          styles['aspect-ratio'] = aspectRatio;
+        } else {
+          styles['min-height'] = height;
+        }
+        break;
+      case 'auto':
+      default:
+        styles['min-height'] = height;
+        break;
+    }
+
+    return styles;
+  }
+
+  getPreviewItemStyle(index: number): { [key: string]: string } {
+    const styles: { [key: string]: string } = {};
+    const gridConfig = this.gridConfigGroup?.value;
+    
+    // Apply height style
+    const heightStyle = this.getPreviewHeightStyle();
+    Object.assign(styles, heightStyle);
+    
+    return styles;
+  }
+
+  getPreviewItemClass(index: number): string {
+    if (index >= 0 && index < this.itemsCustomStyleArray.length) {
+      const itemsCustomStyle = this.itemsCustomStyleArray?.at(index)?.value;
+      if (itemsCustomStyle) {
+        if (typeof itemsCustomStyle === 'string' && itemsCustomStyle.trim()) {
+          return itemsCustomStyle.trim();
+        } else if (typeof itemsCustomStyle === 'object') {
+          // Backward compatibility: if it's an object, convert to string
+          return this.objectToCssText(itemsCustomStyle);
+        }
+      }
+    }
+    return '';
+  }
+
+  getPreviewItemContainerClasses(index: number): string {
+    const classes: string[] = [];
+    
+    classes.push(this.getPreviewColSpanClasses(index));
+    
+    const itemClass = this.getPreviewItemClass(index);
+    if (itemClass) {
+      classes.push(itemClass);
+    }
+    
+    return classes.filter(c => c).join(' ');
+  }
+
+  getPreviewGridWrapperClass(): string {
+    return 'flex justify-center';
+  }
+
+  getPreviewGridContainerClass(): string {
+    const width = this.gridConfigGroup?.get('width')?.value;
+    
+    const classes: string[] = [];
+    
+    if (!width || !width.trim()) {
+      classes.push('max-w-[1922px]');
+    }
+    
+    classes.push('mx-auto');
+    
+    return classes.join(' ');
+  }
+
+  getPreviewImageUrl(collectionGroup: AbstractControl): string | null {
+    const imageValue = collectionGroup.get('image')?.value;
+    if (!imageValue) return null;
+    
+    // If it's an object with filePath
+    if (typeof imageValue === 'object' && imageValue.filePath) {
+      return imageValue.filePath;
+    }
+    
+    // If it's a string URL
+    if (typeof imageValue === 'string') {
+      return imageValue;
+    }
+    
+    return null;
+  }
+
+  getPreviewImageAlt(collectionGroup: AbstractControl): string {
+    const imageValue = collectionGroup.get('image')?.value;
+    if (imageValue && typeof imageValue === 'object' && imageValue.fileName) {
+      return imageValue.fileName;
+    }
+    return 'Collection image';
+  }
+
 } 

@@ -1,0 +1,353 @@
+<div class="card">
+  <p-toast></p-toast>
+  <p-confirmDialog></p-confirmDialog>
+
+  <!-- Toolbar -->
+  <div class="mb-4 flex justify-between items-center">
+    <h2 class="text-2xl font-bold">Product Features</h2>
+    <p-button
+      label="New Feature"
+      icon="pi pi-plus"
+      severity="success"
+      (click)="openNew()">
+    </p-button>
+  </div>
+
+  <!-- Features Table -->
+  <p-table
+    [value]="features"
+    [tableStyle]="{ 'min-width': '50rem' }"
+    [paginator]="true"
+    [rows]="10"
+    [showCurrentPageReport]="true"
+    currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries"
+    [rowsPerPageOptions]="[10, 25, 50]">
+    
+    <ng-template pTemplate="header">
+      <tr>
+        <th>Order</th>
+        <th>Title (EN)</th>
+        <th>Title (AR)</th>
+        <th>Limit</th>
+        <th>Filters</th>
+        <th>Status</th>
+        <th>Actions</th>
+      </tr>
+    </ng-template>
+    
+    <ng-template pTemplate="body" let-feature>
+      <tr>
+        <td>{{ feature.displayOrder || '-' }}</td>
+        <td>{{ feature.title.en }}</td>
+        <td>{{ feature.title.ar || '-' }}</td>
+        <td>{{ feature.limit }}</td>
+        <td>
+          <span class="p-tag p-tag-info">{{ feature.filters?.length || 0 }} filter(s)</span>
+        </td>
+        <td>
+          <span [class]="'p-tag ' + (feature.isActive ? 'p-tag-success' : 'p-tag-danger')">
+            {{ feature.isActive ? 'Active' : 'Inactive' }}
+          </span>
+        </td>
+        <td>
+          <p-button
+            icon="pi pi-pencil"
+            severity="info"
+            [text]="true"
+            [rounded]="true"
+            (click)="editFeature(feature)">
+          </p-button>
+          <p-button
+            icon="pi pi-trash"
+            severity="danger"
+            [text]="true"
+            [rounded]="true"
+            (click)="deleteFeature(feature)">
+          </p-button>
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+
+  <!-- Feature Dialog -->
+  <p-dialog
+    [(visible)]="featureDialog"
+    [style]="{ width: '90vw', maxWidth: '1200px' }"
+    [modal]="true"
+    [header]="selectedFeature ? 'Edit Feature' : 'New Feature'"
+    styleClass="p-fluid">
+    
+    <form [formGroup]="featureForm" class="p-4">
+      <div class="grid">
+        <!-- Title Section -->
+        <div class="col-12 md:col-6" formGroupName="title">
+          <label for="titleEn" class="block mb-2 font-medium">Title (English) *</label>
+          <input
+            id="titleEn"
+            type="text"
+            pInputText
+            formControlName="en"
+            placeholder="e.g., Best Sellers" />
+          <small class="p-error" *ngIf="submitted && featureForm.get('title.en')?.errors?.['required']">
+            Title (English) is required
+          </small>
+        </div>
+
+        <div class="col-12 md:col-6" formGroupName="title">
+          <label for="titleAr" class="block mb-2 font-medium">Title (Arabic)</label>
+          <input
+            id="titleAr"
+            type="text"
+            pInputText
+            formControlName="ar"
+            placeholder="مثال: الأكثر مبيعاً" />
+        </div>
+
+        <!-- Description Section -->
+        <div class="col-12 md:col-6" formGroupName="description">
+          <label for="descEn" class="block mb-2 font-medium">Description (English)</label>
+          <textarea
+            id="descEn"
+            pInputTextarea
+            [rows]="3"
+            formControlName="en"
+            placeholder="e.g., Our most popular products"></textarea>
+        </div>
+
+        <div class="col-12 md:col-6" formGroupName="description">
+          <label for="descAr" class="block mb-2 font-medium">Description (Arabic)</label>
+          <textarea
+            id="descAr"
+            pInputTextarea
+            [rows]="3"
+            formControlName="ar"
+            placeholder="مثال: منتجاتنا الأكثر شعبية"></textarea>
+        </div>
+
+        <!-- Limit -->
+        <div class="col-12 md:col-4">
+          <label for="limit" class="block mb-2 font-medium">Number of Products *</label>
+          <p-inputNumber
+            id="limit"
+            formControlName="limit"
+            [min]="1"
+            [showButtons]="true"
+            placeholder="10">
+          </p-inputNumber>
+          <small class="p-error" *ngIf="submitted && featureForm.get('limit')?.errors?.['required']">
+            Limit is required
+          </small>
+        </div>
+
+        <!-- Display Order -->
+        <div class="col-12 md:col-4">
+          <label for="displayOrder" class="block mb-2 font-medium">Display Order</label>
+          <p-inputNumber
+            id="displayOrder"
+            formControlName="displayOrder"
+            [showButtons]="true"
+            placeholder="1">
+          </p-inputNumber>
+        </div>
+
+        <!-- Is Active -->
+        <div class="col-12 md:col-4">
+          <label for="isActive" class="block mb-2 font-medium">Active</label>
+          <p-toggleSwitch id="isActive" formControlName="isActive"></p-toggleSwitch>
+        </div>
+      </div>
+
+      <!-- Sorting -->
+      <div class="mt-4">
+        <h3 class="text-lg font-semibold mb-3">Sorting</h3>
+        <div class="grid" formGroupName="sorting">
+          <div class="col-12 md:col-6">
+            <label for="sortField" class="block mb-2 font-medium">Sort By *</label>
+            <p-dropdown
+              id="sortField"
+              formControlName="field"
+              [options]="sortFieldOptions"
+              optionLabel="label"
+              optionValue="value"
+              placeholder="Select field">
+            </p-dropdown>
+          </div>
+          <div class="col-12 md:col-6">
+            <label for="sortOrder" class="block mb-2 font-medium">Order *</label>
+            <p-dropdown
+              id="sortOrder"
+              formControlName="order"
+              [options]="sortOrderOptions"
+              optionLabel="label"
+              optionValue="value"
+              placeholder="Select order">
+            </p-dropdown>
+          </div>
+        </div>
+      </div>
+
+      <!-- Dynamic Filters -->
+      <div class="mt-4">
+        <div class="flex justify-content-between align-items-center mb-3">
+          <h3 class="text-lg font-semibold">Dynamic Filters</h3>
+          <p-button
+            label="Add Filter"
+            icon="pi pi-plus"
+            severity="secondary"
+            size="small"
+            (click)="addFilter()">
+          </p-button>
+        </div>
+
+        <div formArrayName="filters">
+          @for (filter of filtersArray.controls; track $index; let i = $index) {
+            <div [formGroupName]="i" class="grid p-3 mb-3 border-1 border-round surface-border">
+              <div class="col-12 md:col-4">
+                <label class="block mb-2 font-medium">Field *</label>
+                <p-dropdown
+                  formControlName="field"
+                  [options]="filterFieldOptions"
+                  optionLabel="label"
+                  optionValue="value"
+                  placeholder="Select field"
+                  [style]="{'width': '100%'}">
+                </p-dropdown>
+              </div>
+
+              <div class="col-12 md:col-3">
+                <label class="block mb-2 font-medium">Operator *</label>
+                <p-dropdown
+                  formControlName="operator"
+                  [options]="operatorOptions"
+                  optionLabel="label"
+                  optionValue="value"
+                  placeholder="Select operator"
+                  [style]="{'width': '100%'}">
+                </p-dropdown>
+              </div>
+
+              <div class="col-12 md:col-4">
+                <label class="block mb-2 font-medium">Value</label>
+                
+                <!-- Category Dropdown -->
+                @if (getFieldType(i) === 'category') {
+                  <p-dropdown
+                    formControlName="value"
+                    [options]="getCategoryOptions()"
+                    optionLabel="label"
+                    optionValue="value"
+                    placeholder="Select Category"
+                    [filter]="true"
+                    [style]="{'width': '100%'}">
+                  </p-dropdown>
+                }
+                
+                <!-- Brand Dropdown -->
+                @else if (getFieldType(i) === 'brand') {
+                  <p-dropdown
+                    formControlName="value"
+                    [options]="getBrandOptions()"
+                    optionLabel="label"
+                    optionValue="value"
+                    placeholder="Select Brand"
+                    [filter]="true"
+                    [style]="{'width': '100%'}">
+                  </p-dropdown>
+                }
+                
+                <!-- Boolean Dropdown -->
+                @else if (getFieldType(i) === 'boolean') {
+                  <p-dropdown
+                    formControlName="value"
+                    [options]="getBooleanOptions()"
+                    optionLabel="label"
+                    optionValue="value"
+                    placeholder="Select Value"
+                    [style]="{'width': '100%'}">
+                  </p-dropdown>
+                }
+                
+                <!-- Text Input (Default) -->
+                @else {
+                  <input
+                    type="text"
+                    pInputText
+                    formControlName="value"
+                    placeholder="e.g., 507f1f77bcf86cd799439011"
+                    class="w-full" />
+                  <small class="text-500">For 'in' operator, use comma-separated values</small>
+                }
+              </div>
+
+              <div class="col-12 md:col-1 flex align-items-end">
+                <p-button
+                  icon="pi pi-trash"
+                  severity="danger"
+                  [text]="true"
+                  [rounded]="true"
+                  (click)="removeFilter(i)">
+                </p-button>
+              </div>
+            </div>
+          }
+          @empty {
+            <p class="text-500 text-center p-3">No filters added. Click "Add Filter" to create one.</p>
+          }
+        </div>
+      </div>
+
+      <!-- Preview Button -->
+      <div class="mt-4 flex justify-content-center">
+        <p-button
+          label="Preview Products"
+          icon="pi pi-eye"
+          severity="help"
+          (click)="previewFeature()"
+          [disabled]="featureForm.invalid">
+        </p-button>
+      </div>
+
+      <!-- Preview Results -->
+      @if (showPreview) {
+        <div class="mt-4 p-4 border-1 border-round surface-border">
+          <h3 class="text-lg font-semibold mb-3">Preview Results ({{ previewProducts.length }} products)</h3>
+          @if (previewProducts.length > 0) {
+            <div class="grid">
+              @for (product of previewProducts; track product._id) {
+                <div class="col-12 md:col-3">
+                  <div class="border-1 border-round p-2">
+                    <img
+                      [src]="getImageUrl(product.images[0].filePath)"
+                      [alt]="product.name.en"
+                      class="w-full border-round mb-2"
+                      style="height: 150px; object-fit: cover;" />
+                    <p class="font-semibold text-sm mb-1">{{ product.name.en }}</p>
+                    <p class="text-primary font-bold">{{ product.price | currency:'USD' }}</p>
+                  </div>
+                </div>
+              }
+            </div>
+          } @else {
+            <p class="text-center text-500">No products found with current filters</p>
+          }
+        </div>
+      }
+    </form>
+
+    <ng-template pTemplate="footer">
+      <p-button
+        label="Cancel"
+        icon="pi pi-times"
+        [text]="true"
+        (click)="hideDialog()">
+      </p-button>
+      <p-button
+        label="Save"
+        icon="pi pi-check"
+        (click)="saveFeature()">
+      </p-button>
+    </ng-template>
+  </p-dialog>
+</div>
+
+

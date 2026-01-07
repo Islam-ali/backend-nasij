@@ -33,7 +33,7 @@ export interface IProduct {
   discountPrice?: number;
   category: ICategory;
   brand: IBrand;
-  images: string[];
+  images: Archived[];
   variants: ProductVariant[];
   stock: number;
   status: ProductStatus;

@@ -16,6 +16,9 @@ export interface IGridConfig {
   heightMode?: 'auto' | 'fixed' | 'min' | 'max' | 'aspect-ratio';
   height?: string;
   aspectRatio?: string;
+  width?: string;
+  parentCustomStyle?: string;
+  itemsCustomStyle?: Record<string, string>[];
 }
 
 export interface ICollectionItem {

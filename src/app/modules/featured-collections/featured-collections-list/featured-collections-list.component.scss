@@ -15,23 +15,23 @@
     border: none;
     padding: 0;
   }
-  
-  .p-datatable-thead > tr > th {
+
+  .p-datatable-thead>tr>th {
     background: #f8fafc;
     border-color: #e2e8f0;
     font-weight: 600;
     color: #374151;
     padding: 1rem;
   }
-  
-  .p-datatable-tbody > tr {
+
+  .p-datatable-tbody>tr {
     transition: all 0.2s ease;
-    
+
     &:hover {
       background: #f1f5f9;
     }
-    
-    > td {
+
+    >td {
       padding: 1rem;
       border-color: #e2e8f0;
     }
@@ -44,18 +44,18 @@
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
     border-radius: 1rem 1rem 0 0;
-    
+
     .p-dialog-title {
       font-weight: 600;
     }
   }
-  
+
   .p-dialog-content {
     padding: 2rem;
     max-height: 70vh;
     overflow-y: auto;
   }
-  
+
   .p-dialog-footer {
     background: #f8fafc;
     border-top: 1px solid #e2e8f0;
@@ -76,18 +76,18 @@
   border-radius: 0.75rem;
   padding: 1.5rem;
   transition: all 0.3s ease;
-  
+
   &:hover {
     border-color: #667eea;
     box-shadow: 0 4px 12px rgba(102, 126, 234, 0.1);
   }
-  
+
   .collection-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 1rem;
-    
+
     h4 {
       margin: 0;
       color: #374151;
@@ -103,12 +103,12 @@
   border: 2px solid #e2e8f0;
   transition: all 0.2s ease;
   padding: 0.75rem;
-  
+
   &:focus {
     border-color: #667eea;
     box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
   }
-  
+
   &.ng-invalid.ng-touched {
     border-color: #ef4444;
     box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
@@ -120,16 +120,16 @@
   border-radius: 0.5rem;
   font-weight: 600;
   transition: all 0.2s ease;
-  
+
   &:hover {
     transform: translateY(-1px);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   }
-  
+
   &.p-button-outlined {
     border-width: 2px;
   }
-  
+
   &.p-button-sm {
     padding: 0.5rem 1rem;
     font-size: 0.875rem;
@@ -140,12 +140,12 @@
 ::ng-deep .p-togglebutton {
   border-radius: 0.5rem;
   border: 2px solid #667eea;
-  
+
   &.p-highlight {
     background: #667eea;
     border-color: #667eea;
   }
-  
+
   &:hover {
     transform: translateY(-1px);
     box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
@@ -165,7 +165,7 @@
   background: transparent;
   border: none;
   padding: 0 0 1.5rem 0;
-  
+
   .p-toolbar-group-left,
   .p-toolbar-group-right {
     gap: 0.5rem;
@@ -175,7 +175,7 @@
 // Search input styles
 ::ng-deep .p-input-icon-left {
   position: relative;
-  
+
   i {
     position: absolute;
     left: 0.75rem;
@@ -183,13 +183,13 @@
     transform: translateY(-50%);
     color: #6b7280;
   }
-  
+
   input {
     padding-left: 2.5rem;
     border-radius: 0.5rem;
     border: 2px solid #e2e8f0;
     transition: all 0.2s ease;
-    
+
     &:focus {
       border-color: #667eea;
       box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
@@ -201,19 +201,19 @@
 .empty-state {
   text-align: center;
   padding: 3rem 1rem;
-  
+
   i {
     font-size: 3rem;
     color: #9ca3af;
     margin-bottom: 1rem;
   }
-  
+
   h3 {
     color: #374151;
     font-weight: 600;
     margin-bottom: 0.5rem;
   }
-  
+
   p {
     color: #6b7280;
     margin-bottom: 1.5rem;
@@ -225,24 +225,25 @@
   .card {
     padding: 1rem;
   }
-  
+
   ::ng-deep .p-dialog {
     .p-dialog-content {
       padding: 1rem;
     }
-    
+
     .p-dialog-footer {
       padding: 1rem;
     }
   }
-  
+
   .collection-item {
     padding: 1rem;
   }
-  
+
   ::ng-deep .p-datatable {
-    .p-datatable-thead > tr > th,
-    .p-datatable-tbody > tr > td {
+
+    .p-datatable-thead>tr>th,
+    .p-datatable-tbody>tr>td {
       padding: 0.75rem 0.5rem;
     }
   }
@@ -254,9 +255,19 @@
 }
 
 @keyframes shake {
-  0%, 100% { transform: translateX(0); }
-  25% { transform: translateX(-5px); }
-  75% { transform: translateX(5px); }
+
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+
+  25% {
+    transform: translateX(-5px);
+  }
+
+  75% {
+    transform: translateX(5px);
+  }
 }
 
 // Loading spinner styles
@@ -274,7 +285,7 @@
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     border: none;
   }
-  
+
   .p-toast-message-content {
     padding: 1rem 1.5rem;
   }
@@ -286,9 +297,10 @@
     border-radius: 1rem;
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
   }
-  
+
   .p-confirmdialog-message {
     font-size: 1rem;
     line-height: 1.6;
   }
-} 
+}
+
