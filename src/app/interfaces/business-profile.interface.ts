@@ -45,6 +45,7 @@ export interface IBusinessProfile {
   termsOfService: MultilingualText;
   vodafoneCashAccount: string;
   paymobSettings?: IPaymobSettings;
+  primaryColor?: string;
   faq: IFAQ[];
   createdAt: Date;
   updatedAt: Date;

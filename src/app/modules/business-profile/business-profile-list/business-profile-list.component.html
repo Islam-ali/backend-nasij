@@ -1,40 +1,120 @@
 <div class="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-8">
     <div class="w-full mx-auto px-4">
         <p-toast></p-toast>
+        <p-confirmDialog></p-confirmDialog>
 
         <!-- Header -->
-        <div class="mb-8">
-            <div class="flex justify-between items-center">
-                <div>
-                    <h1 class="text-3xl font-bold text-gray-900">Business Profile</h1>
+        <div class="mb-8 sticky top-0 z-10 bg-gradient-to-br from-gray-50 to-gray-100 pb-4">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div class="flex-1">
+                    <div class="flex items-center gap-3">
+                        <h1 class="text-3xl font-bold text-gray-900">Business Profile</h1>
+                        @if (hasUnsavedChanges()) {
+                        <p-chip label="Unsaved Changes" icon="pi pi-exclamation-circle" styleClass="bg-orange-100 text-orange-800"></p-chip>
+                        }
+                    </div>
                     <p class="mt-2 text-gray-600">Manage your business information and settings</p>
+                    
+                    <!-- Progress Bar (only in edit mode) -->
+                    @if (isEditMode()) {
+                    <div class="mt-3">
+                        <div class="flex items-center gap-3">
+                            <div class="flex-1 bg-gray-200 rounded-full h-2 overflow-hidden">
+                                <div 
+                                    class="bg-gradient-to-r from-blue-500 to-purple-500 h-full transition-all duration-500"
+                                    [style.width.%]="formProgress()">
+                                </div>
+                            </div>
+                            <span class="text-sm font-semibold text-gray-700 min-w-[45px]">{{ formProgress() }}%</span>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-1">Form completion progress</p>
+                    </div>
+                    }
                 </div>
-                <div class="flex gap-3">
-                    <p-toggleButton [ngModel]="isEditMode()" (onChange)="toggleEditMode()" [onLabel]="'Edit Mode'"
-                        [offLabel]="'View Mode'" [onIcon]="'pi pi-pencil'" [offIcon]="'pi pi-eye'"
-                        styleClass="p-button-outlined"></p-toggleButton>
-                    <p-button *ngIf="isEditMode()" label="Save Changes" icon="pi pi-check"
-                        (onClick)="saveBusinessProfile()" [loading]="saving()" [disabled]="businessProfileForm.invalid"
-                        styleClass="p-button-success"></p-button>
+                
+                <div class="flex gap-3 flex-wrap">
+                    <p-button 
+                        *ngIf="!isEditMode()" 
+                        label="Edit Profile" 
+                        icon="pi pi-pencil"
+                        (onClick)="toggleEditMode()" 
+                        styleClass="p-button-outlined">
+                    </p-button>
+                    
+                    @if (isEditMode()) {
+                    <p-button 
+                        label="Cancel" 
+                        icon="pi pi-times"
+                        (onClick)="toggleEditMode()" 
+                        styleClass="p-button-outlined p-button-secondary">
+                    </p-button>
+                    <p-button 
+                        label="Save Changes" 
+                        icon="pi pi-check"
+                        (onClick)="saveBusinessProfile()" 
+                        [loading]="saving()" 
+                        [disabled]="saving()"
+                        severity="success"
+                        [styleClass]="businessProfileForm.invalid ? 'p-button-warning' : ''"
+                        [pTooltip]="businessProfileForm.invalid ? 'Some fields are incomplete, but you can still save' : 'Save all changes to your business profile'"
+                        tooltipPosition="bottom">
+                    </p-button>
+                    }
                 </div>
             </div>
         </div>
 
-        <!-- Loading State -->
-        <div *ngIf="loading()" class="flex justify-center items-center py-12">
-            <p-progressSpinner></p-progressSpinner>
+        <!-- Loading State with Skeleton -->
+        @if (loading()) {
+        <div class="space-y-6">
+            <!-- Basic Information Skeleton -->
+            <p-card styleClass="shadow-lg border-0">
+                <ng-template pTemplate="header">
+                    <div class="p-4 bg-gradient-to-r from-blue-600 to-purple-600">
+                        <p-skeleton width="200px" height="1.5rem"></p-skeleton>
+                    </div>
+                </ng-template>
+                <ng-template pTemplate="content">
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                        <div>
+                            <p-skeleton width="100%" height="200px" borderRadius="16px"></p-skeleton>
+                        </div>
+                        <div class="lg:col-span-2 space-y-4">
+                            <p-skeleton width="100%" height="60px" borderRadius="8px"></p-skeleton>
+                            <p-skeleton width="100%" height="120px" borderRadius="8px"></p-skeleton>
+                        </div>
+                    </div>
+                </ng-template>
+            </p-card>
+            
+            <!-- More Skeletons -->
+            <p-card styleClass="shadow-lg border-0">
+                <ng-template pTemplate="content">
+                    <p-skeleton width="100%" height="200px" borderRadius="8px"></p-skeleton>
+                </ng-template>
+            </p-card>
         </div>
+        }
 
         <!-- Content -->
         <div *ngIf="!loading()" class="space-y-8">
             <form [formGroup]="businessProfileForm">
                 <!-- Basic Information Card -->
-                <p-card styleClass="shadow-lg border-0 mb-4 mb-4">
+                <p-card styleClass="shadow-lg border-0 mb-4">
                     <ng-template pTemplate="header">
                         <div
-                            class="flex items-center gap-3 p-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-t-lg">
-                            <i class="pi pi-building text-2xl"></i>
-                            <h2 class="text-xl font-semibold m-0">Basic Information</h2>
+                            class="flex items-center justify-between p-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-t-lg">
+                            <div class="flex items-center gap-3">
+                                <i class="pi pi-building text-2xl"></i>
+                                <h2 class="text-xl font-semibold m-0">Basic Information</h2>
+                            </div>
+                            @if (isEditMode()) {
+                            <p-chip 
+                                [label]="getSectionProgress('basic') + '%'" 
+                                icon="pi pi-check-circle"
+                                [styleClass]="getSectionProgress('basic') === 100 ? 'bg-green-100 text-green-800' : 'bg-white/20 text-white'">
+                            </p-chip>
+                            }
                         </div>
                     </ng-template>
                     <ng-template pTemplate="content">
@@ -180,11 +260,29 @@
                                     <label class="block text-sm font-medium text-gray-700 mb-2">Business Name *</label>
                                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4" formGroupName="name">
                                         <div>
-                                            <label for="nameEn" class="block text-xs text-gray-600 mb-1">English</label>
-                                            <input id="nameEn" type="text" pInputText formControlName="en" class="w-full" dir="ltr"
-                                                [class.ng-invalid]="businessProfileForm.get('name.en')?.invalid && businessProfileForm.get('name.en')?.touched"
-                                                [readonly]="!isEditMode()" placeholder="Enter business name in English" dir="ltr" />
-                                            <small *ngIf="getFieldError('name', 'en')" class="text-red-500">{{ getFieldError('name', 'en') }}</small>
+                                            <label for="nameEn" class="text-xs text-gray-600 mb-1 flex items-center gap-2">
+                                                English
+                                                @if (isFieldValid('name', 'en')) {
+                                                <i class="pi pi-check-circle text-green-500 text-sm"></i>
+                                                }
+                                            </label>
+                                            <input 
+                                                id="nameEn" 
+                                                type="text" 
+                                                pInputText 
+                                                formControlName="en" 
+                                                class="w-full" 
+                                                dir="ltr"
+                                                [class.p-invalid]="isFieldInvalid('name', 'en')"
+                                                [class.border-green-500]="isFieldValid('name', 'en')"
+                                                [readonly]="!isEditMode()" 
+                                                placeholder="Enter business name in English" />
+                                            @if (isFieldInvalid('name', 'en')) {
+                                            <small class="text-red-500 flex items-center gap-1 mt-1">
+                                                <i class="pi pi-exclamation-circle text-xs"></i>
+                                                {{ getFieldError('name', 'en') }}
+                                            </small>
+                                            }
                                         </div>
                                         <div>
                                             <label for="nameAr" class="block text-xs text-gray-600 mb-1">العربية</label>
@@ -224,13 +322,154 @@
                     </ng-template>
                 </p-card>
 
+                <!-- Branding Settings Card -->
+                <p-card styleClass="shadow-lg border-0 mb-4">
+                    <ng-template pTemplate="header">
+                        <div
+                            class="flex items-center gap-3 p-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-t-lg">
+                            <i class="pi pi-palette text-2xl"></i>
+                            <h2 class="text-xl font-semibold m-0">Branding Settings</h2>
+                        </div>
+                    </ng-template>
+                    <ng-template pTemplate="content">
+                        @if(!isEditMode()) {
+                        <!-- View Mode - Color Display -->
+                        <div class="bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl p-6 border border-purple-200">
+                            <div class="flex items-start gap-4">
+                                <div class="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                    <i class="pi pi-palette text-purple-600"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <h3 class="text-lg font-semibold text-gray-800 mb-3">Primary Brand Color</h3>
+                                    <div class="flex items-center gap-4">
+                                        <div class="w-24 h-24 rounded-xl shadow-md border-4 border-white"
+                                            [style.backgroundColor]="businessProfile?.primaryColor || '#3B82F6'">
+                                        </div>
+                                        <div class="flex-1">
+                                            <div class="bg-white rounded-lg p-4 border border-gray-200">
+                                                <p class="text-sm text-gray-600 mb-1">HEX Color Code</p>
+                                                <p class="text-2xl font-bold text-gray-900 font-mono">
+                                                    {{ businessProfile?.primaryColor || '#3B82F6' }}
+                                                </p>
+                                            </div>
+                                            <div class="mt-3 bg-gradient-to-r rounded-lg p-4 text-white"
+                                                [style.backgroundImage]="'linear-gradient(135deg, ' + (businessProfile?.primaryColor || '#3B82F6') + ' 0%, ' + adjustColorBrightness(businessProfile?.primaryColor || '#3B82F6', -30) + ' 100%)'">
+                                                <p class="text-sm font-medium">Gradient Preview</p>
+                                            </div>
+                                            <!-- Color Shades Preview -->
+                                            <div class="mt-4 bg-white rounded-lg p-4 border border-gray-200">
+                                                <p class="text-sm font-medium text-gray-700 mb-3">Color Shades (50-900)</p>
+                                                <div class="grid grid-cols-5 gap-2">
+                                                    <div *ngFor="let shade of [50, 100, 200, 300, 400, 500, 600, 700, 800, 900]" 
+                                                         class="text-center">
+                                                        <div class="w-full h-12 rounded-md border border-gray-200 mb-1"
+                                                            [style.backgroundColor]="generateShade(businessProfile?.primaryColor || '#976735', shade)">
+                                                        </div>
+                                                        <span class="text-xs text-gray-600 font-mono">{{ shade }}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        } @else {
+                        <!-- Edit Mode - Color Picker -->
+                        <div class="bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl p-6 border border-purple-200">
+                            <div class="flex items-start gap-4">
+                                <div class="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                    <i class="pi pi-palette text-purple-600"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <label class="block text-lg font-semibold text-gray-800 mb-4">
+                                        Primary Brand Color
+                                    </label>
+                                    <div class="flex items-center gap-6">
+                                        <div class="flex flex-col items-center gap-2">
+                                            <div class="w-24 h-24 rounded-xl shadow-lg border-4 border-white flex items-center justify-center cursor-pointer hover:shadow-xl transition-shadow"
+                                                [style.backgroundColor]="businessProfileForm.get('primaryColor')?.value || '#3B82F6'">
+                                                <p-colorPicker 
+                                                    formControlName="primaryColor"
+                                                    [inline]="false"
+                                                    [appendTo]="'body'"
+                                                    [style]="{'width': '100%', 'height': '100%', 'opacity': '0', 'position': 'absolute', 'cursor': 'pointer'}">
+                                                </p-colorPicker>
+                                                <i class="pi pi-palette text-white text-2xl drop-shadow-lg"></i>
+                                            </div>
+                                            <small class="text-gray-600 text-center font-medium">Click to change</small>
+                                        </div>
+                                        <div class="flex-1 space-y-4">
+                                            <div class="bg-white rounded-lg p-4 border border-gray-200">
+                                                <p class="text-sm text-gray-600 mb-2 font-medium">Selected Color</p>
+                                                <div class="flex items-center gap-3">
+                                                    <div class="w-12 h-12 rounded-lg shadow-md border-2 border-gray-200"
+                                                        [style.backgroundColor]="businessProfileForm.get('primaryColor')?.value || '#3B82F6'">
+                                                    </div>
+                                                    <input 
+                                                        type="text" 
+                                                        pInputText 
+                                                        formControlName="primaryColor"
+                                                        class="flex-1 font-mono text-lg font-bold uppercase"
+                                                        placeholder="#3B82F6"
+                                                        maxlength="7"
+                                                        pattern="^#[A-Fa-f0-9]{6}$">
+                                                </div>
+                                            </div>
+                                            <div class="bg-gradient-to-r rounded-lg p-4 text-white min-h-[80px] flex items-center justify-center"
+                                                [style.backgroundImage]="'linear-gradient(135deg, ' + (businessProfileForm.get('primaryColor')?.value || '#3B82F6') + ' 0%, ' + adjustColorBrightness(businessProfileForm.get('primaryColor')?.value || '#3B82F6', -30) + ' 100%)'">
+                                                <div class="text-center">
+                                                    <p class="text-sm font-medium opacity-90 mb-1">Gradient Preview</p>
+                                                    <p class="text-xs opacity-75">This gradient will be used across your website</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                            <!-- Color Shades Preview -->
+                                            <div class="mt-4 bg-white rounded-lg p-4 border border-gray-200">
+                                                <p class="text-sm font-medium text-gray-700 mb-3">Color Shades (50-900)</p>
+                                                <div class="grid grid-cols-5 gap-2">
+                                                    <div *ngFor="let shade of [50, 100, 200, 300, 400, 500, 600, 700, 800, 900]" 
+                                                         class="text-center">
+                                                        <div class="w-full h-12 rounded-md border border-gray-200 mb-1"
+                                                            [style.backgroundColor]="generateShade(businessProfileForm.get('primaryColor')?.value || '#976735', shade)">
+                                                        </div>
+                                                        <span class="text-xs text-gray-600 font-mono">{{ shade }}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                                        <div class="flex items-start gap-3">
+                                            <i class="pi pi-info-circle text-blue-600 text-lg"></i>
+                                            <div class="flex-1 text-sm text-blue-800">
+                                                <p class="font-medium mb-1">About Primary Color</p>
+                                                <p>This color will be used as the main brand color across your website. The system will automatically generate 10 shades (50-900) from light to dark for consistent theming.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        }
+                    </ng-template>
+                </p-card>
+
                 <!-- Contact Information Card -->
                 <p-card styleClass="shadow-lg border-0 mb-4">
                     <ng-template pTemplate="header">
                         <div
-                            class="flex items-center gap-3 p-4 bg-gradient-to-r from-green-600 to-teal-600 text-white rounded-t-lg">
-                            <i class="pi pi-phone text-2xl"></i>
-                            <h2 class="text-xl font-semibold m-0">Contact Information</h2>
+                            class="flex items-center justify-between p-4 bg-gradient-to-r from-green-600 to-teal-600 text-white rounded-t-lg">
+                            <div class="flex items-center gap-3">
+                                <i class="pi pi-phone text-2xl"></i>
+                                <h2 class="text-xl font-semibold m-0">Contact Information</h2>
+                            </div>
+                            @if (isEditMode()) {
+                            <p-chip 
+                                [label]="getSectionProgress('contact') + '%'" 
+                                icon="pi pi-check-circle"
+                                [styleClass]="getSectionProgress('contact') === 100 ? 'bg-green-100 text-green-800' : 'bg-white/20 text-white'">
+                            </p-chip>
+                            }
                         </div>
                     </ng-template>
                     <ng-template pTemplate="content">
@@ -311,21 +550,63 @@
                         <!-- Edit Mode - Form Fields -->
                         <div formGroupName="contactInfo" class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
-                                <label for="email" class="block text-sm font-medium text-gray-700 mb-2">Email *</label>
-                                <input id="email" type="email" pInputText formControlName="email" class="w-full"
-                                    [class.ng-invalid]="businessProfileForm.get('contactInfo.email')?.invalid && businessProfileForm.get('contactInfo.email')?.touched"
-                                    [readonly]="!isEditMode()" />
-                                <small *ngIf="getFieldError('contactInfo.email')" class="text-red-500">{{
-                                    getFieldError('contactInfo.email') }}</small>
+                                <label for="email" class="text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                                    Email *
+                                    @if (isFieldValid('contactInfo.email')) {
+                                    <i class="pi pi-check-circle text-green-500 text-sm"></i>
+                                    }
+                                </label>
+                                <div class="p-inputgroup">
+                                    <span class="p-inputgroup-addon">
+                                        <i class="pi pi-envelope"></i>
+                                    </span>
+                                    <input 
+                                        id="email" 
+                                        type="email" 
+                                        pInputText 
+                                        formControlName="email" 
+                                        class="w-full"
+                                        [class.p-invalid]="isFieldInvalid('contactInfo.email')"
+                                        [class.border-green-500]="isFieldValid('contactInfo.email')"
+                                        [readonly]="!isEditMode()"
+                                        placeholder="your@email.com" />
+                                </div>
+                                @if (isFieldInvalid('contactInfo.email')) {
+                                <small class="text-red-500 flex items-center gap-1 mt-1">
+                                    <i class="pi pi-exclamation-circle text-xs"></i>
+                                    {{ getFieldError('contactInfo.email') }}
+                                </small>
+                                }
                             </div>
 
                             <div>
-                                <label for="phone" class="block text-sm font-medium text-gray-700 mb-2">Phone *</label>
-                                <input id="phone" type="tel" pInputText formControlName="phone" class="w-full"
-                                    [class.ng-invalid]="businessProfileForm.get('contactInfo.phone')?.invalid && businessProfileForm.get('contactInfo.phone')?.touched"
-                                    [readonly]="!isEditMode()" />
-                                <small *ngIf="getFieldError('contactInfo.phone')" class="text-red-500">{{
-                                    getFieldError('contactInfo.phone') }}</small>
+                                <label for="phone" class="text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                                    Phone *
+                                    @if (isFieldValid('contactInfo.phone')) {
+                                    <i class="pi pi-check-circle text-green-500 text-sm"></i>
+                                    }
+                                </label>
+                                <div class="p-inputgroup">
+                                    <span class="p-inputgroup-addon">
+                                        <i class="pi pi-phone"></i>
+                                    </span>
+                                    <input 
+                                        id="phone" 
+                                        type="tel" 
+                                        pInputText 
+                                        formControlName="phone" 
+                                        class="w-full"
+                                        [class.p-invalid]="isFieldInvalid('contactInfo.phone')"
+                                        [class.border-green-500]="isFieldValid('contactInfo.phone')"
+                                        [readonly]="!isEditMode()"
+                                        placeholder="+1 (555) 000-0000" />
+                                </div>
+                                @if (isFieldInvalid('contactInfo.phone')) {
+                                <small class="text-red-500 flex items-center gap-1 mt-1">
+                                    <i class="pi pi-exclamation-circle text-xs"></i>
+                                    {{ getFieldError('contactInfo.phone') }}
+                                </small>
+                                }
                             </div>
 
                             <div class="md:col-span-2">
