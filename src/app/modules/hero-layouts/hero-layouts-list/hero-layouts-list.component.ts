@@ -81,7 +81,7 @@ export class HeroLayoutsListComponent implements OnInit {
 
   initForm(): void {
     this.heroLayoutForm = this.fb.group({
-      name: ['', [Validators.minLength(3)]],
+      name: [''],
       sectionTitle: this.fb.group({
         en: [''],
         ar: ['']
@@ -94,8 +94,8 @@ export class HeroLayoutsListComponent implements OnInit {
         en: [''],
         ar: ['']
       }),
-      items: this.fb.array([], [Validators.required, Validators.minLength(1)]),
-      gridConfig: [null, Validators.required],
+      items: this.fb.array([]),
+      gridConfig: [null],
       isActive: [true],
       displayOrder: [0],
       tags: [[]]
@@ -171,19 +171,19 @@ export class HeroLayoutsListComponent implements OnInit {
   createItemGroup(item?: any): FormGroup {
     return this.fb.group({
       title: this.fb.group({
-        en: [item?.title?.en || '', Validators.required],
-        ar: [item?.title?.ar || '', Validators.required]
+        en: [item?.title?.en || ''],
+        ar: [item?.title?.ar || '']
       }),
       description: this.fb.group({
-        en: [item?.description?.en || '', Validators.required],
-        ar: [item?.description?.ar || '', Validators.required]
+        en: [item?.description?.en || ''],
+        ar: [item?.description?.ar || '']
       }),
-      image: [item?.image || null, Validators.required],
+      image: [item?.image || null],
       buttonText: this.fb.group({
-        en: [item?.buttonText?.en || '', Validators.required],
-        ar: [item?.buttonText?.ar || '', Validators.required]
+        en: [item?.buttonText?.en || ''],
+        ar: [item?.buttonText?.ar || '']
       }),
-      buttonLink: [item?.buttonLink || '', Validators.required],
+      buttonLink: [item?.buttonLink || ''],
       queryParams: [item?.queryParams || null]
     });
   }
@@ -198,15 +198,6 @@ export class HeroLayoutsListComponent implements OnInit {
 
   saveHeroLayout(): void {
     this.submitted = true;
-
-    if (this.heroLayoutForm.invalid) {
-      this.messageService.add({
-        severity: 'warn',
-        summary: 'Warning',
-        detail: 'Please fill all required fields'
-      });
-      return;
-    }
 
     const heroLayoutData = this.heroLayoutForm.value;
 

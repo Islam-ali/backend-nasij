@@ -139,8 +139,6 @@
                                 <input id="name" pInputText type="text" formControlName="name" 
                                        placeholder="e.g., home-hero, category-showcase" 
                                        class="w-full" />
-                                <small *ngIf="submitted && heroLayoutForm.get('name')?.invalid" 
-                                       class="text-red-500">Name must be at least 3 characters</small>
                             </div>
 
                             <!-- Section Title -->
@@ -237,9 +235,9 @@
                                         
                                         <!-- Image Upload -->
                                         <div class="field bg-blue-50 p-4 rounded-lg border-2 border-blue-200">
-                                            <label class="block text-base font-semibold text-gray-800 mb-3 flex items-center">
+                                            <label class="flex items-center text-base font-semibold text-gray-800 mb-3">
                                                 <i class="pi pi-image mr-2 text-blue-600"></i>
-                                                Image Upload * (Required)
+                                                Image Upload (Optional)
                                             </label>
                                             <p class="text-sm text-gray-600 mb-3">
                                                 Click the area below or drag and drop an image
@@ -251,16 +249,11 @@
                                                 [filesServer]="item.get('image')?.value"
                                                 [accept]="'image/*'">
                                             </app-upload-files>
-                                            <small *ngIf="submitted && item.get('image')?.invalid" 
-                                                   class="text-red-500 font-bold flex items-center mt-2">
-                                                <i class="pi pi-exclamation-triangle mr-2"></i>
-                                                Image is required - Please upload an image
-                                            </small>
                                         </div>
 
                                         <!-- Title -->
                                         <div class="field">
-                                            <label class="block text-sm font-medium text-gray-700 mb-2">Title *</label>
+                                            <label class="block text-sm font-medium text-gray-700 mb-2">Title (Optional)</label>
                                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4" [formGroupName]="'title'">
                                                 <input pInputText type="text" formControlName="en" 
                                                        placeholder="English title" dir="ltr" />
@@ -271,7 +264,7 @@
 
                                         <!-- Description -->
                                         <div class="field">
-                                            <label class="block text-sm font-medium text-gray-700 mb-2">Description *</label>
+                                            <label class="block text-sm font-medium text-gray-700 mb-2">Description (Optional)</label>
                                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4" [formGroupName]="'description'">
                                                 <textarea pInputTextarea formControlName="en" [rows]="2" 
                                                           placeholder="English description" dir="ltr"></textarea>
@@ -283,7 +276,7 @@
                                         <!-- Button Text & Link -->
                                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                             <div class="field">
-                                                <label class="block text-sm font-medium text-gray-700 mb-2">Button Text *</label>
+                                                <label class="block text-sm font-medium text-gray-700 mb-2">Button Text (Optional)</label>
                                                 <div class="grid grid-cols-2 gap-2" [formGroupName]="'buttonText'">
                                                     <input pInputText type="text" formControlName="en" 
                                                            placeholder="Shop Now" dir="ltr" />
@@ -292,7 +285,7 @@
                                                 </div>
                                             </div>
                                             <div class="field">
-                                                <label class="block text-sm font-medium text-gray-700 mb-2">Button Link *</label>
+                                                <label class="block text-sm font-medium text-gray-700 mb-2">Button Link (Optional)</label>
                                                 <input pInputText type="text" formControlName="buttonLink" 
                                                        placeholder="/products" class="w-full" />
                                             </div>

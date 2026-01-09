@@ -30,3 +30,4 @@ export interface IHeroLayout {
   updatedAt?: Date;
 }
 
+
