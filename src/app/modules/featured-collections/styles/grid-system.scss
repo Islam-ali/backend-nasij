@@ -1,0 +1,164 @@
+// ═══════════════════════════════════════════════════════════
+// 🎨 DYNAMIC GRID SYSTEM STYLES
+// ═══════════════════════════════════════════════════════════
+
+// Grid Container
+.collections-interactive-grid {
+  display: grid;
+  width: 100%;
+  min-height: 400px;
+  
+  // Responsive columns via CSS variables
+  --grid-cols-sm: 1;
+  --grid-cols-md: 2;
+  --grid-cols-lg: 4;
+  --grid-cols-xl: 6;
+  
+  --grid-gap: 1rem;
+  
+  grid-template-columns: repeat(var(--grid-cols-sm), 1fr);
+  gap: var(--grid-gap);
+  
+  @media (min-width: 768px) {
+    grid-template-columns: repeat(var(--grid-cols-md), 1fr);
+  }
+  
+  @media (min-width: 1024px) {
+    grid-template-columns: repeat(var(--grid-cols-lg), 1fr);
+  }
+  
+  @media (min-width: 1280px) {
+    grid-template-columns: repeat(var(--grid-cols-xl), 1fr);
+  }
+}
+
+// Grid Item
+.collection-grid-item {
+  position: relative;
+  min-height: 200px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  
+  // Col span via CSS variables
+  --col-span-sm: 1;
+  --col-span-md: 1;
+  --col-span-lg: 1;
+  --col-span-xl: 1;
+  
+  grid-column: span var(--col-span-sm);
+  
+  @media (min-width: 768px) {
+    grid-column: span var(--col-span-md);
+  }
+  
+  @media (min-width: 1024px) {
+    grid-column: span var(--col-span-lg);
+  }
+  
+  @media (min-width: 1280px) {
+    grid-column: span var(--col-span-xl);
+  }
+  
+  // Hover effect
+  &:hover {
+    transform: translateY(-2px);
+    z-index: 10;
+  }
+  
+  // Drag state
+  &.cdk-drag-preview {
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    transform: rotate(2deg) scale(1.05);
+    opacity: 0.9;
+    z-index: 1000;
+  }
+  
+  &.cdk-drag-placeholder {
+    opacity: 0.3;
+    background: rgba(0, 0, 0, 0.1);
+    border: 2px dashed #667eea;
+    border-radius: 12px;
+  }
+}
+
+// Resize Handle Styles
+.resize-handle {
+  position: absolute;
+  z-index: 1000;
+  pointer-events: auto;
+  user-select: none;
+  touch-action: none;
+  
+  // Base styles
+  width: 16px;
+  height: 16px;
+  background: #667eea;
+  border-radius: 4px 0 0 0;
+  opacity: 0;
+  transition: opacity 0.2s, transform 0.2s;
+  
+  // Show on hover
+  .collection-grid-item:hover & {
+    opacity: 1;
+  }
+  
+  // Hover effect
+  &:hover {
+    background: #5a67d8;
+    transform: scale(1.2);
+  }
+  
+  // Active state
+  &:active {
+    transform: scale(0.9);
+  }
+  
+  // Mode-specific cursors
+  &.resize-handle-horizontal {
+    cursor: ew-resize;
+    bottom: 0;
+    right: 0;
+  }
+  
+  &.resize-handle-vertical {
+    cursor: ns-resize;
+    bottom: 0;
+    right: 0;
+  }
+  
+  &.resize-handle-both {
+    cursor: nwse-resize;
+    bottom: 0;
+    right: 0;
+  }
+}
+
+// Global resize state
+body.resizing-active {
+  cursor: nwse-resize !important;
+  user-select: none !important;
+  
+  * {
+    cursor: nwse-resize !important;
+    user-select: none !important;
+  }
+}
+
+// Responsive adjustments
+@media (max-width: 640px) {
+  .collections-interactive-grid {
+    min-height: 300px;
+  }
+  
+  .collection-grid-item {
+    min-height: 150px;
+  }
+  
+  .resize-handle {
+    width: 20px;
+    height: 20px;
+  }
+}
+
+
+
+

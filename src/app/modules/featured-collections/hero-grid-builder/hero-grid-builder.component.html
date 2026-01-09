@@ -1,0 +1,291 @@
+<div class="hero-grid-builder" [formGroup]="heroGridForm">
+  
+  <!-- Top Toolbar: Device Switcher -->
+  <div class="builder-toolbar">
+    <div class="device-switcher">
+      @for (bp of breakpoints; track bp.name) {
+        <button
+          type="button"
+          pButton
+          [icon]="bp.icon"
+          [label]="bp.label"
+          [class.active]="bp.active"
+          [pTooltip]="bp.minWidth"
+          tooltipPosition="bottom"
+          (click)="switchBreakpoint(bp.name)"
+          class="p-button-outlined device-btn"
+        ></button>
+      }
+    </div>
+    
+    <div class="view-info">
+      <span class="text-sm text-gray-400">
+        <i class="pi pi-eye"></i>
+        Viewing: {{ activeBreakpoint() | uppercase }}
+      </span>
+    </div>
+  </div>
+
+  <!-- Main Layout: 3 Columns -->
+  <div class="builder-layout">
+    
+    <!-- LEFT PANEL: Layout Engine -->
+    <div class="left-panel">
+      <div class="panel-header">
+        <i class="pi pi-cog"></i>
+        <h3>Layout Engine</h3>
+      </div>
+
+      <div class="panel-content">
+        
+        <!-- Grid Gap -->
+        <div class="control-group">
+          <label class="control-label">
+            <i class="pi pi-th-large"></i>
+            Grid Gap
+            <span class="control-value">{{ heroGridForm.get('gap')?.value }}px</span>
+          </label>
+          <p-slider
+            formControlName="gap"
+            [min]="0"
+            [max]="96"
+            [step]="4"
+            class="w-full"
+          ></p-slider>
+          <small class="text-gray-400">{{ getGapTailwindClass() }}</small>
+        </div>
+
+        <!-- Columns -->
+        <div class="control-group">
+          <label class="control-label">
+            <i class="pi pi-bars"></i>
+            Columns
+            <span class="control-value">{{ getCurrentColumns() }} cols</span>
+          </label>
+          <div class="button-group">
+            @for (opt of columnOptions; track opt.value) {
+              <button
+                type="button"
+                pButton
+                [label]="opt.label"
+                [class.active]="getCurrentColumns() === opt.value"
+                (click)="setColumns(opt.value)"
+                class="p-button-outlined col-btn"
+              ></button>
+            }
+          </div>
+        </div>
+
+        <!-- Row Height -->
+        <div class="control-group">
+          <label class="control-label">
+            <i class="pi pi-arrows-v"></i>
+            Row Height
+          </label>
+          <input
+            pInputText
+            [formControl]="$any(heroGridForm.get('rowHeight.' + activeBreakpoint()))"
+            placeholder="e.g., auto, 200px, minmax(220px,1fr)"
+            class="w-full"
+          />
+          <div class="preset-buttons">
+            @for (preset of rowHeightPresets; track preset.value) {
+              <button
+                type="button"
+                pButton
+                [label]="preset.label"
+                (click)="$any(heroGridForm.get('rowHeight.' + activeBreakpoint())).setValue(preset.value)"
+                class="p-button-text p-button-sm preset-btn"
+              ></button>
+            }
+          </div>
+        </div>
+
+        <!-- Rows (Optional) -->
+        <div class="control-group">
+          <label class="control-label">
+            <i class="pi pi-align-justify"></i>
+            Rows (Optional)
+          </label>
+          <p-inputNumber
+            [formControl]="$any(heroGridForm.get('rows.' + activeBreakpoint()))"
+            [min]="1"
+            [max]="12"
+            [showButtons]="true"
+            buttonLayout="horizontal"
+            placeholder="Auto"
+            class="w-full"
+          ></p-inputNumber>
+          <small class="text-gray-400">Leave empty for auto layout</small>
+        </div>
+
+        <!-- Layers -->
+        <div class="control-group layers-section">
+          <label class="control-label">
+            <i class="pi pi-layer"></i>
+            Layers
+            <span class="control-value">{{ itemsArray.length }} items</span>
+          </label>
+          
+          <div
+            cdkDropList
+            (cdkDropListDropped)="onItemsReorder($event)"
+            class="layers-list"
+          >
+            @for (item of itemsArray.controls; track $index; let i = $index) {
+              <div
+                cdkDrag
+                class="layer-item"
+                [class.selected]="selectedItemIndex() === i"
+                (click)="selectItem(i)"
+              >
+                <i class="pi pi-bars drag-handle" cdkDragHandle></i>
+                <span class="layer-name">Item {{ i + 1 }}</span>
+                <span class="layer-info">
+                  <i class="pi pi-arrows-h"></i> {{ getItemColSpan(i) }}
+                  <i class="pi pi-arrows-v"></i> {{ getItemRowSpan(i) }}
+                </span>
+              </div>
+            }
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- CENTER: Visual Grid Preview -->
+    <div class="center-canvas">
+      <div class="canvas-header">
+        <i class="pi pi-th-large"></i>
+        <h3>Grid Preview</h3>
+        <span class="canvas-info">
+          {{ getCurrentColumns() }} × {{ getCurrentRows() || 'Auto' }} Grid
+        </span>
+      </div>
+
+      <div class="canvas-viewport">
+        <div class="grid-container" [ngStyle]="getGridStyle()">
+          @for (item of itemsArray.controls; track $index; let i = $index) {
+            <div
+              class="grid-item"
+              [ngStyle]="getItemStyle(i)"
+              (click)="selectItem(i)"
+            >
+              <div class="grid-item-content">
+                <div class="grid-item-header">
+                  <i class="pi pi-image"></i>
+                  <span>Item {{ i + 1 }}</span>
+                </div>
+                <div class="grid-item-badge">
+                  <span>{{ getItemColSpan(i) }}×{{ getItemRowSpan(i) }}</span>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT PANEL: Item Configuration -->
+    <div class="right-panel">
+      <div class="panel-header">
+        <i class="pi pi-sliders-h"></i>
+        <h3>Dimensions</h3>
+      </div>
+
+      @if (selectedItemIndex() !== null) {
+        <div class="panel-content" [formGroup]="getItemGroup(selectedItemIndex()!)">
+          
+          <!-- Breakpoint Override Info -->
+          <div class="breakpoint-info">
+            <i class="pi pi-info-circle"></i>
+            <span>Configuring for: <strong>{{ activeBreakpoint() | uppercase }}</strong></span>
+          </div>
+
+          <!-- Col Span -->
+          <div class="dimension-group">
+            <label class="dimension-label">
+              <i class="pi pi-arrows-h"></i>
+              COL SPAN
+            </label>
+            <p-inputNumber
+              [formControl]="$any(getItemGroup(selectedItemIndex()!).get('colSpan.' + activeBreakpoint()))"
+              [min]="1"
+              [max]="getCurrentColumns()"
+              [showButtons]="true"
+              buttonLayout="horizontal"
+              class="w-full dimension-input"
+            ></p-inputNumber>
+          </div>
+
+          <!-- Row Span -->
+          <div class="dimension-group">
+            <label class="dimension-label">
+              <i class="pi pi-arrows-v"></i>
+              ROW SPAN
+            </label>
+            <p-inputNumber
+              [formControl]="$any(getItemGroup(selectedItemIndex()!).get('rowSpan.' + activeBreakpoint()))"
+              [min]="1"
+              [max]="12"
+              [showButtons]="true"
+              buttonLayout="horizontal"
+              class="w-full dimension-input"
+            ></p-inputNumber>
+          </div>
+
+          <!-- Custom Class -->
+          <div class="dimension-group">
+            <label class="dimension-label">
+              <i class="pi pi-code"></i>
+              CUSTOM CLASS
+            </label>
+            <input
+              pInputText
+              formControlName="customClass"
+              placeholder="e.g., bg-gradient-to-r from-blue-500"
+              class="w-full"
+            />
+            <small class="text-gray-400">Tailwind CSS classes</small>
+          </div>
+
+          <!-- Display on Breakpoints -->
+          <div class="dimension-group">
+            <label class="dimension-label">
+              <i class="pi pi-eye"></i>
+              DISPLAY ON BREAKPOINTS
+            </label>
+            <div class="breakpoint-toggles">
+              @for (bp of breakpoints; track bp.name) {
+                <div class="breakpoint-toggle">
+                  <i [class]="bp.icon"></i>
+                  <span>{{ bp.label }}</span>
+                  <!-- Could add visibility toggle here -->
+                </div>
+              }
+            </div>
+          </div>
+
+          <!-- Computed CSS Preview -->
+          <div class="computed-css">
+            <label class="dimension-label">
+              <i class="pi pi-file-code"></i>
+              COMPUTED CSS ({{ activeBreakpoint() | uppercase }})
+            </label>
+            <pre class="css-preview">.grid-item-{{ selectedItemIndex()! + 1 }} {{'{'}}<br>  grid-column: span {{ getItemColSpan(selectedItemIndex()!) }};<br>  grid-row: span {{ getItemRowSpan(selectedItemIndex()!) }};<br>{{'}'}}</pre>
+          </div>
+
+        </div>
+      } @else {
+        <div class="panel-content empty-state">
+          <i class="pi pi-inbox"></i>
+          <p>Select a grid item to configure its dimensions</p>
+        </div>
+      }
+    </div>
+
+  </div>
+
+</div>
+
+

@@ -1,0 +1,166 @@
+<!-- ============================================ -->
+<!-- IMPROVED UX VERSION - Grid Settings Tab  -->
+<!-- ============================================ -->
+
+<p-tabPanel header="Layout Style" leftIcon="pi pi-th-large">
+    <div formGroupName="gridConfig" class="space-y-6">
+        
+        <!-- ✨ Grid Presets - Visual Selection -->
+        <div>
+            <h3 class="text-lg font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                <i class="pi pi-layout text-primary-600"></i>
+                Choose Your Layout Style
+            </h3>
+            <p class="text-sm text-gray-600 mb-4">Select a layout that works best for your content</p>
+            
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                @for(preset of gridPresets; track preset.id) {
+                <div 
+                    class="preset-card border-2 rounded-xl p-4 cursor-pointer transition-all duration-200 hover:shadow-lg"
+                    [class.border-primary-500]="getCurrentPreset() === preset.id"
+                    [class.bg-primary-50]="getCurrentPreset() === preset.id"
+                    [class.border-gray-200]="getCurrentPreset() !== preset.id"
+                    [class.hover:border-primary-300]="getCurrentPreset() !== preset.id"
+                    (click)="applyGridPreset(preset.id)">
+                    
+                    <!-- Preview Icon -->
+                    <div class="flex justify-center items-center h-16 mb-3">
+                        <i [class]="'pi ' + preset.icon + ' text-4xl'"
+                           [class.text-primary-600]="getCurrentPreset() === preset.id"
+                           [class.text-gray-400]="getCurrentPreset() !== preset.id"></i>
+                    </div>
+                    
+                    <!-- Name -->
+                    <h4 class="font-semibold text-center mb-1"
+                        [class.text-primary-700]="getCurrentPreset() === preset.id"
+                        [class.text-gray-900]="getCurrentPreset() !== preset.id">
+                        {{ preset.name }}
+                    </h4>
+                    
+                    <!-- Description -->
+                    <p class="text-xs text-center text-gray-500">
+                        {{ preset.description }}
+                    </p>
+                    
+                    <!-- Selected Badge -->
+                    @if(getCurrentPreset() === preset.id) {
+                    <div class="mt-2 flex justify-center">
+                        <span class="inline-flex items-center gap-1 px-2 py-1 bg-primary-100 text-primary-700 rounded-full text-xs font-medium">
+                            <i class="pi pi-check text-xs"></i>
+                            Selected
+                        </span>
+                    </div>
+                    }
+                </div>
+                }
+            </div>
+        </div>
+
+        <!-- Divider -->
+        <p-divider></p-divider>
+
+        <!-- ✨ Alignment Options - Simplified -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            
+            <!-- Horizontal Alignment -->
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                    <i class="pi pi-arrows-h text-primary-600"></i>
+                    Horizontal Alignment
+                </label>
+                <p class="text-xs text-gray-500 mb-3">How items are positioned horizontally</p>
+                
+                <div class="grid grid-cols-3 gap-2">
+                    @for(option of justifyContentOptions; track option.value) {
+                    <div 
+                        class="align-option border-2 rounded-lg p-3 cursor-pointer text-center transition-all"
+                        [class.border-primary-500]="gridConfigGroup.get('justifyContent')?.value === option.value"
+                        [class.bg-primary-50]="gridConfigGroup.get('justifyContent')?.value === option.value"
+                        [class.border-gray-200]="gridConfigGroup.get('justifyContent')?.value !== option.value"
+                        (click)="gridConfigGroup.get('justifyContent')?.setValue(option.value)">
+                        <i class="pi text-xl mb-1 block"
+                           [class.pi-align-center]="option.value === 'center'"
+                           [class.pi-align-left]="option.value === 'start'"
+                           [class.pi-align-right]="option.value === 'end'"
+                           [class.pi-arrows-h]="option.value === 'between' || option.value === 'around' || option.value === 'evenly'"
+                           [class.text-primary-600]="gridConfigGroup.get('justifyContent')?.value === option.value"></i>
+                        <span class="text-xs font-medium">{{ option.label }}</span>
+                    </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Vertical Alignment -->
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                    <i class="pi pi-arrows-v text-primary-600"></i>
+                    Vertical Alignment
+                </label>
+                <p class="text-xs text-gray-500 mb-3">How items are positioned vertically</p>
+                
+                <div class="grid grid-cols-2 gap-2">
+                    @for(option of alignItemsOptions; track option.value) {
+                    <div 
+                        class="align-option border-2 rounded-lg p-3 cursor-pointer text-center transition-all"
+                        [class.border-primary-500]="gridConfigGroup.get('alignItems')?.value === option.value"
+                        [class.bg-primary-50]="gridConfigGroup.get('alignItems')?.value === option.value"
+                        [class.border-gray-200]="gridConfigGroup.get('alignItems')?.value !== option.value"
+                        (click)="gridConfigGroup.get('alignItems')?.setValue(option.value)">
+                        <i class="pi pi-arrows-v text-xl mb-1 block"
+                           [class.text-primary-600]="gridConfigGroup.get('alignItems')?.value === option.value"></i>
+                        <span class="text-xs font-medium">{{ option.label }}</span>
+                    </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Divider -->
+        <p-divider></p-divider>
+
+        <!-- ✨ Advanced Options (Collapsed by default) -->
+        <p-accordion>
+            <p-accordionTab header="Advanced Options">
+                <div class="space-y-4">
+                    
+                    <!-- Height Mode -->
+                    <div>
+                        <label for="heightMode" class="block text-sm font-medium text-gray-700 mb-2">Height Mode</label>
+                        <p-dropdown id="heightMode" formControlName="heightMode" [options]="heightModeOptions" 
+                            optionLabel="label" optionValue="value" [style]="{'width': '100%'}" placeholder="Select">
+                        </p-dropdown>
+                        
+                        @if(gridConfigGroup.get('heightMode')?.value && ['fixed', 'min', 'max'].includes(gridConfigGroup.get('heightMode')?.value)) {
+                        <div class="mt-3">
+                            <input pInputText type="text" formControlName="height" 
+                                placeholder="e.g., 400px" class="w-full" />
+                            <small class="text-gray-500 text-xs mt-1 block">Enter height value (e.g., 400px, 50vh)</small>
+                        </div>
+                        }
+                        
+                        @if(gridConfigGroup.get('heightMode')?.value === 'aspect-ratio') {
+                        <div class="mt-3">
+                            <p-dropdown formControlName="aspectRatio" [options]="aspectRatioOptions" 
+                                optionLabel="label" optionValue="value" [style]="{'width': '100%'}" 
+                                [showClear]="true" placeholder="Select aspect ratio">
+                            </p-dropdown>
+                        </div>
+                        }
+                    </div>
+
+                    <!-- Container Width -->
+                    <div>
+                        <label for="width" class="block text-sm font-medium text-gray-700 mb-2">Container Width</label>
+                        <input id="width" pInputText type="text" formControlName="width" 
+                            placeholder="e.g., 1200px, 80%, 100vw" class="w-full" />
+                        <small class="text-gray-500 text-xs mt-1 block">Leave empty for full width</small>
+                    </div>
+                </div>
+            </p-accordionTab>
+        </p-accordion>
+    </div>
+</p-tabPanel>
+
+
+
+

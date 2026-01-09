@@ -89,12 +89,46 @@
     </p-table>
 
     <!-- Featured Collection Dialog -->
-    <p-dialog [(visible)]="featuredCollectionDialog" [style]="{width: '95vw', maxWidth: '1400px'}" [modal]="true"
-        [draggable]="false" [resizable]="false" [closable]="true"
-        header="{{ selectedFeaturedCollections.length > 0 ? 'Edit' : 'New' }} Featured Collection"
-        styleClass="featured-collection-dialog">
+    <p-dialog [(visible)]="featuredCollectionDialog" [style]="{width: '100vw', maxWidth: '100vw', height: '100vh'}" [modal]="true"
+        [draggable]="false" [resizable]="true" [closable]="true"
+        [showHeader]="false"
+        styleClass="featured-collection-dialog-pro">
         @if(featuredCollectionDialog) {
-        <form [formGroup]="featuredCollectionForm" class="space-y-4">
+        
+        <!-- Professional Header -->
+        <div class="dialog-header-pro">
+            <div class="header-content">
+                <div class="header-left">
+                    <div class="header-icon-gradient">
+                        <i class="pi {{ selectedFeaturedCollections.length > 0 ? 'pi-pencil' : 'pi-sparkles' }}"></i>
+                    </div>
+                    <div class="header-text">
+                        <h2 class="header-title">
+                            {{ selectedFeaturedCollections.length > 0 ? 'Edit Featured Collection' : 'Create New Featured Collection' }}
+                        </h2>
+                        <p class="header-subtitle">
+                            {{ selectedFeaturedCollections.length > 0 ? 'Update your collection settings' : 'Design a beautiful collection showcase' }}
+                        </p>
+                    </div>
+                </div>
+                <div class="header-right">
+                    @if(collectionsArray.length > 0) {
+                    <div class="progress-badge-pro">
+                        <i class="pi pi-check-circle"></i>
+                        <span>{{ collectionsArray.length }} {{ collectionsArray.length === 1 ? 'Item' : 'Items' }}</span>
+                    </div>
+                    }
+                    <p-button icon="pi pi-times" 
+                              (onClick)="featuredCollectionDialog = false" 
+                              styleClass="p-button-text p-button-rounded p-button-lg"
+                              pTooltip="Close dialog (Esc)"
+                              tooltipPosition="left">
+                    </p-button>
+                </div>
+            </div>
+        </div>
+        
+        <form [formGroup]="featuredCollectionForm" class="space-y-4 dialog-form-content-pro">
             <!-- Tabs for better organization -->
             <p-tabView>
                 <!-- Basic Information Tab -->
@@ -166,108 +200,570 @@
                 </div>
                 </p-tabPanel>
                 
-                <!-- Grid Configuration Tab -->
-                <p-tabPanel header="Grid Settings" leftIcon="pi pi-th-large">
-                <div formGroupName="gridConfig" class="space-y-4">
-                        <!-- Grid Columns -->
+                <!-- Grid Configuration Tab - IMPROVED UX -->
+                <p-tabPanel header="Layout Style" leftIcon="pi pi-th-large">
+                    <div formGroupName="gridConfig" class="space-y-6">
+                        
+                        <!-- ✨ Grid Presets - Visual Selection -->
                     <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Grid Columns *</label>
-                        <div formGroupName="gridCols" class="grid grid-cols-2 md:grid-cols-4 gap-3">
-                            <div>
-                                    <label for="gridColsSm" class="block text-xs text-gray-600 mb-1">Mobile *</label>
-                                <p-inputNumber id="gridColsSm" formControlName="sm" [min]="1" [max]="12" [showButtons]="true" [style]="{'width': '100%'}" placeholder="1"></p-inputNumber>
+                            <h3 class="text-lg font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                                <i class="pi pi-layout text-primary-600"></i>
+                                Choose Your Layout Style
+                            </h3>
+                            <p class="text-sm text-gray-600 mb-4">Select a layout that works best for your content</p>
+                            
+                    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                        @for(preset of gridPresets; track preset.id; let i = $index) {
+                        <div 
+                            class="preset-card-pro"
+                            [class.preset-active]="getCurrentPreset() === preset.id"
+                            [style.animation-delay]="i * 0.1 + 's'"
+                            (click)="applyGridPreset(preset.id)"
+                            [pTooltip]="'Click to apply: ' + preset.description"
+                            tooltipPosition="top">
+                            
+                            <!-- Preview Icon with Animation -->
+                            <div class="preset-icon-container">
+                                <div class="preset-icon-bg"></div>
+                                <i [class]="'pi ' + preset.icon + ' preset-icon'"></i>
+                                @if(getCurrentPreset() === preset.id) {
+                                <div class="preset-check-mark">
+                                    <i class="pi pi-check"></i>
                             </div>
-                            <div>
-                                    <label for="gridColsMd" class="block text-xs text-gray-600 mb-1">Tablet</label>
-                                <p-inputNumber id="gridColsMd" formControlName="md" [min]="1" [max]="12" [showButtons]="true" [style]="{'width': '100%'}" placeholder="2"></p-inputNumber>
+                                }
                             </div>
-                            <div>
-                                    <label for="gridColsLg" class="block text-xs text-gray-600 mb-1">Desktop</label>
-                                <p-inputNumber id="gridColsLg" formControlName="lg" [min]="1" [max]="12" [showButtons]="true" [style]="{'width': '100%'}" placeholder="3"></p-inputNumber>
+                            
+                            <!-- Name with Badge -->
+                            <div class="preset-info">
+                                <h4 class="preset-name">
+                                    {{ preset.name }}
+                                </h4>
+                                <p class="preset-description">
+                                    {{ preset.description }}
+                                </p>
                             </div>
+                            
+                            <!-- Selected Badge -->
+                            @if(getCurrentPreset() === preset.id) {
+                            <div class="preset-selected-badge">
+                                <span class="badge-content">
+                                    <i class="pi pi-check"></i>
+                                    Active
+                                </span>
+                            </div>
+                            }
+                            
+                            <!-- Hover Effect -->
+                            <div class="preset-hover-effect"></div>
+                        </div>
+                        }
+                    </div>
+                        </div>
+
+                        <!-- Divider -->
+                        <p-divider></p-divider>
+
+                        <!-- ✨ Alignment Options - Simplified -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            
+                            <!-- Horizontal Alignment -->
                             <div>
-                                    <label for="gridColsXl" class="block text-xs text-gray-600 mb-1">Large</label>
-                                <p-inputNumber id="gridColsXl" formControlName="xl" [min]="1" [max]="12" [showButtons]="true" [style]="{'width': '100%'}" placeholder="4"></p-inputNumber>
+                                <label class="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                                    <i class="pi pi-arrows-h text-primary-600"></i>
+                                    Horizontal Alignment
+                                </label>
+                                <p class="text-xs text-gray-500 mb-3">How items are positioned horizontally</p>
+                                
+                                <div class="grid grid-cols-3 gap-2">
+                                    @for(option of justifyContentOptions; track option.value) {
+                                    <div 
+                                        class="align-option border-2 rounded-lg p-3 cursor-pointer text-center transition-all"
+                                        [class.border-primary-500]="gridConfigGroup.get('justifyContent')?.value === option.value"
+                                        [class.bg-primary-50]="gridConfigGroup.get('justifyContent')?.value === option.value"
+                                        [class.border-gray-200]="gridConfigGroup.get('justifyContent')?.value !== option.value"
+                                        (click)="gridConfigGroup.get('justifyContent')?.setValue(option.value)">
+                                        <i class="pi text-xl mb-1 block"
+                                           [class.pi-align-center]="option.value === 'center'"
+                                           [class.pi-align-left]="option.value === 'start'"
+                                           [class.pi-align-right]="option.value === 'end'"
+                                           [class.pi-arrows-h]="option.value === 'between' || option.value === 'around' || option.value === 'evenly'"
+                                           [class.text-primary-600]="gridConfigGroup.get('justifyContent')?.value === option.value"></i>
+                                        <span class="text-xs font-medium">{{ option.label }}</span>
+                                    </div>
+                                    }
                                 </div>
                             </div>
+
+                            <!-- Vertical Alignment -->
+                        <div>
+                                <label class="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                                    <i class="pi pi-arrows-v text-primary-600"></i>
+                                    Vertical Alignment
+                                </label>
+                                <p class="text-xs text-gray-500 mb-3">How items are positioned vertically</p>
+                                
+                                <div class="grid grid-cols-2 gap-2">
+                                    @for(option of alignItemsOptions; track option.value) {
+                                    <div 
+                                        class="align-option border-2 rounded-lg p-3 cursor-pointer text-center transition-all"
+                                        [class.border-primary-500]="gridConfigGroup.get('alignItems')?.value === option.value"
+                                        [class.bg-primary-50]="gridConfigGroup.get('alignItems')?.value === option.value"
+                                        [class.border-gray-200]="gridConfigGroup.get('alignItems')?.value !== option.value"
+                                        (click)="gridConfigGroup.get('alignItems')?.setValue(option.value)">
+                                        <i class="pi pi-arrows-v text-xl mb-1 block"
+                                           [class.text-primary-600]="gridConfigGroup.get('alignItems')?.value === option.value"></i>
+                                        <span class="text-xs font-medium">{{ option.label }}</span>
+                                    </div>
+                                    }
+                            </div>
+                        </div>
                     </div>
 
-                        <!-- Alignment -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label for="justifyContent" class="block text-sm font-medium text-gray-700 mb-2">Horizontal Alignment</label>
-                            <p-dropdown id="justifyContent" formControlName="justifyContent" [options]="justifyContentOptions" 
-                                    optionLabel="label" optionValue="value" [style]="{'width': '100%'}" placeholder="Select">
-                            </p-dropdown>
-                        </div>
-                        <div>
-                            <label for="alignItems" class="block text-sm font-medium text-gray-700 mb-2">Vertical Alignment</label>
-                            <p-dropdown id="alignItems" formControlName="alignItems" [options]="alignItemsOptions" 
-                                    optionLabel="label" optionValue="value" [style]="{'width': '100%'}" placeholder="Select">
-                            </p-dropdown>
+                        <!-- Divider -->
+                        <p-divider></p-divider>
+
+                        <!-- ✨ Grid Builder - Rows & Columns Control -->
+                        <div class="bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-xl p-6">
+                            <h3 class="text-lg font-bold text-gray-900 mb-3 flex items-center gap-2">
+                                <i class="pi pi-th-large text-primary-600 text-xl"></i>
+                                Advanced Grid Builder
+                            </h3>
+                            <p class="text-sm text-gray-600 mb-6">Control the exact number of columns and rows for your grid layout</p>
+                            
+                            <!-- Grid Columns -->
+                            <div class="mb-6">
+                                <label class="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                                    <i class="pi pi-bars text-primary-600"></i>
+                                    Grid Columns (How many columns in each row)
+                                </label>
+                                <p class="text-xs text-gray-500 mb-3">Set the number of columns for each screen size</p>
+                                
+                                <div [formGroup]="$any(gridConfigGroup.get('gridCols'))" class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                    <div class="bg-white rounded-lg p-3 border-2 border-gray-200">
+                                        <label for="gridColsSm" class="block text-xs font-medium text-gray-600 mb-2">📱 Mobile (sm)</label>
+                                        <p-inputNumber id="gridColsSm" formControlName="sm" [min]="1" [max]="12" [showButtons]="true" [style]="{'width': '100%'}"></p-inputNumber>
+                                    </div>
+                                    <div class="bg-white rounded-lg p-3 border-2 border-gray-200">
+                                        <label for="gridColsMd" class="block text-xs font-medium text-gray-600 mb-2">📲 Tablet (md)</label>
+                                        <p-inputNumber id="gridColsMd" formControlName="md" [min]="1" [max]="12" [showButtons]="true" [style]="{'width': '100%'}"></p-inputNumber>
+                                    </div>
+                                    <div class="bg-white rounded-lg p-3 border-2 border-gray-200">
+                                        <label for="gridColsLg" class="block text-xs font-medium text-gray-600 mb-2">💻 Desktop (lg)</label>
+                                        <p-inputNumber id="gridColsLg" formControlName="lg" [min]="1" [max]="12" [showButtons]="true" [style]="{'width': '100%'}"></p-inputNumber>
+                                    </div>
+                                    <div class="bg-white rounded-lg p-3 border-2 border-gray-200">
+                                        <label for="gridColsXl" class="block text-xs font-medium text-gray-600 mb-2">🖥️ Large (xl)</label>
+                                        <p-inputNumber id="gridColsXl" formControlName="xl" [min]="1" [max]="12" [showButtons]="true" [style]="{'width': '100%'}"></p-inputNumber>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Grid Rows -->
+                            <div>
+                                <label class="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                                    <i class="pi pi-arrows-v text-primary-600"></i>
+                                    Grid Rows (How many rows in the grid)
+                                </label>
+                                <p class="text-xs text-gray-500 mb-3">Set the number of rows for each screen size</p>
+                                
+                                <div [formGroup]="$any(gridConfigGroup.get('gridRows'))" class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                    <div class="bg-white rounded-lg p-3 border-2 border-gray-200">
+                                        <label for="gridRowsSm" class="block text-xs font-medium text-gray-600 mb-2">📱 Mobile (sm)</label>
+                                        <p-inputNumber id="gridRowsSm" formControlName="sm" [min]="1" [max]="12" [showButtons]="true" [style]="{'width': '100%'}"></p-inputNumber>
+                                    </div>
+                                    <div class="bg-white rounded-lg p-3 border-2 border-gray-200">
+                                        <label for="gridRowsMd" class="block text-xs font-medium text-gray-600 mb-2">📲 Tablet (md)</label>
+                                        <p-inputNumber id="gridRowsMd" formControlName="md" [min]="1" [max]="12" [showButtons]="true" [style]="{'width': '100%'}"></p-inputNumber>
+                                    </div>
+                                    <div class="bg-white rounded-lg p-3 border-2 border-gray-200">
+                                        <label for="gridRowsLg" class="block text-xs font-medium text-gray-600 mb-2">💻 Desktop (lg)</label>
+                                        <p-inputNumber id="gridRowsLg" formControlName="lg" [min]="1" [max]="12" [showButtons]="true" [style]="{'width': '100%'}"></p-inputNumber>
+                                    </div>
+                                    <div class="bg-white rounded-lg p-3 border-2 border-gray-200">
+                                        <label for="gridRowsXl" class="block text-xs font-medium text-gray-600 mb-2">🖥️ Large (xl)</label>
+                                        <p-inputNumber id="gridRowsXl" formControlName="xl" [min]="1" [max]="12" [showButtons]="true" [style]="{'width': '100%'}"></p-inputNumber>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Grid Gap -->
+                            <div>
+                                <label for="gridGap" class="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                                    <i class="pi pi-arrows-alt text-primary-600"></i>
+                                    Grid Gap (Space between items)
+                                </label>
+                                <p class="text-xs text-gray-500 mb-3">Set the gap size (Tailwind scale: 0-96)</p>
+                                
+                                <div class="bg-white rounded-lg p-4 border-2 border-gray-200">
+                                    <p-inputNumber 
+                                        id="gridGap" 
+                                        formControlName="gap" 
+                                        [min]="0" 
+                                        [max]="96" 
+                                        [showButtons]="true" 
+                                        [style]="{'width': '100%'}"
+                                        placeholder="4">
+                                    </p-inputNumber>
+                                    <small class="text-gray-500 text-xs mt-2 block">
+                                        <i class="pi pi-info-circle text-blue-500"></i>
+                                        Common values: 2 (8px), 4 (16px), 6 (24px), 8 (32px)
+                                    </small>
+                                </div>
+                            </div>
+
+                            <!-- Row Height (NEW!) -->
+                            <div>
+                                <label for="rowHeight" class="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                                    <i class="pi pi-arrows-v text-primary-600"></i>
+                                    Row Height (Height of each row)
+                                </label>
+                                <p class="text-xs text-gray-500 mb-3">Set the height for grid rows (CSS value)</p>
+                                
+                                <div class="bg-white rounded-lg p-4 border-2 border-gray-200">
+                                    <input 
+                                        id="rowHeight" 
+                                        pInputText 
+                                        formControlName="rowHeight" 
+                                        class="w-full" 
+                                        placeholder="auto">
+                                    <small class="text-gray-500 text-xs mt-2 block">
+                                        <i class="pi pi-info-circle text-blue-500"></i>
+                                        Examples: "auto", "200px", "minmax(200px, auto)", "1fr", "300px"
+                                    </small>
+                                </div>
                             </div>
                         </div>
+
+                        <!-- Divider -->
+                        <p-divider></p-divider>
+
+                        <!-- ✨ Advanced Options (Collapsed by default) -->
+                        <p-accordion>
+                            <p-accordionTab header="Advanced Options">
+                                <div class="space-y-4">
                         
-                        <!-- Height -->
+                        <!-- Height Mode -->
                         <div>
-                            <label for="heightMode" class="block text-sm font-medium text-gray-700 mb-2">Height Mode</label>
+                                        <label for="heightMode" class="block text-sm font-medium text-gray-700 mb-2">Height Mode</label>
                             <p-dropdown id="heightMode" formControlName="heightMode" [options]="heightModeOptions" 
-                                optionLabel="label" optionValue="value" [style]="{'width': '100%'}" placeholder="Select">
+                                            optionLabel="label" optionValue="value" [style]="{'width': '100%'}" placeholder="Select">
                             </p-dropdown>
-                            <div *ngIf="gridConfigGroup.get('heightMode')?.value && ['fixed', 'min', 'max'].includes(gridConfigGroup.get('heightMode')?.value)" class="mt-2">
-                                <input pInputText type="text" formControlName="height" placeholder="e.g., 400px" class="w-full" />
-                            </div>
-                            <div *ngIf="gridConfigGroup.get('heightMode')?.value === 'aspect-ratio'" class="mt-2">
-                                <p-dropdown formControlName="aspectRatio" [options]="aspectRatioOptions" 
-                                    optionLabel="label" optionValue="value" [style]="{'width': '100%'}" [showClear]="true" placeholder="Select">
-                                </p-dropdown>
+                                        
+                                        @if(gridConfigGroup.get('heightMode')?.value && ['fixed', 'min', 'max'].includes(gridConfigGroup.get('heightMode')?.value)) {
+                                        <div class="mt-3">
+                                            <input pInputText type="text" formControlName="height" 
+                                                placeholder="e.g., 400px" class="w-full" />
+                                            <small class="text-gray-500 text-xs mt-1 block">Enter height value (e.g., 400px, 50vh)</small>
+                        </div>
+                                        }
+                                        
+                                        @if(gridConfigGroup.get('heightMode')?.value === 'aspect-ratio') {
+                                        <div class="mt-3">
+                                            <p-dropdown formControlName="aspectRatio" [options]="aspectRatioOptions" 
+                                                optionLabel="label" optionValue="value" [style]="{'width': '100%'}" 
+                                                [showClear]="true" placeholder="Select aspect ratio">
+                                            </p-dropdown>
+                                        </div>
+                                        }
+                        </div>
+
+                                    <!-- Container Width -->
+                                    <div>
+                                        <label for="width" class="block text-sm font-medium text-gray-700 mb-2">Container Width</label>
+                                        <input id="width" pInputText type="text" formControlName="width" 
+                                            placeholder="e.g., 1200px, 80%, 100vw" class="w-full" />
+                                        <small class="text-gray-500 text-xs mt-1 block">Leave empty for full width</small>
+                                    </div>
+
+                                    <!-- Parent Custom Classes -->
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                                            <i class="pi pi-code text-primary-600 mr-2"></i>
+                                            Parent Container Classes
+                                        </label>
+                                        <textarea pInputTextarea formControlName="parentCustomStyle" [rows]="4" 
+                                            class="w-full font-mono text-sm" 
+                                            placeholder="Enter Tailwind CSS classes (space-separated):&#10;bg-gradient-to-r from-blue-50 to-purple-50 p-8 rounded-xl shadow-lg"></textarea>
+                                        <small class="text-gray-500 text-xs mt-1 flex items-center gap-1">
+                                            <i class="pi pi-info-circle text-blue-500"></i>
+                                            These classes will be applied to the parent container of all collections
+                                        </small>
+                                    </div>
+                        </div>
+                            </p-accordionTab>
+                        </p-accordion>
+                    </div>
+                </p-tabPanel>
+
+                <!-- ═══════════════════════════════════════════════════════ -->
+                <!-- 🎨 INTERACTIVE COLLECTIONS PREVIEW -->
+                <!-- ═══════════════════════════════════════════════════════ -->
+                <p-tabPanel header="Interactive Collections" leftIcon="pi pi-images">
+                    <div class="interactive-collections-container p-6">
+                        
+                        <!-- Header with Instructions -->
+                        <div class="mb-6">
+                            <h3 class="text-xl font-bold text-gray-900 mb-2 flex items-center gap-2">
+                                <i class="pi pi-images text-primary-600"></i>
+                                Interactive Collections Preview
+                            </h3>
+                            <p class="text-sm text-gray-600 mb-4">
+                                See your collections in action! Drag to reorder, resize to change span.
+                            </p>
+                            
+                            <!-- Instructions -->
+                            <div class="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-xl p-4">
+                                <h4 class="font-semibold text-blue-900 mb-2 flex items-center gap-2">
+                                    <i class="pi pi-info-circle"></i>
+                                    How to use:
+                                </h4>
+                                <ul class="text-sm text-blue-800 space-y-1 ml-4 list-disc">
+                                    <li><strong>Drag ☰</strong> handle to reorder collections</li>
+                                    <li><strong>Resize ↘️</strong> handle to change column span</li>
+                                    <li>Changes auto-save to form values</li>
+                                    <li>Preview updates in real-time!</li>
+                                </ul>
                             </div>
                         </div>
 
-                        <!-- Width -->
-                        <div>
-                            <label for="width" class="block text-sm font-medium text-gray-700 mb-2">Container Width</label>
-                            <input id="width" pInputText type="text" formControlName="width" placeholder="e.g., 1200px, 80%" class="w-full" />
+                        <!-- Interactive Collections Grid -->
+                        @if(collectionsArray.length === 0) {
+                        <div class="text-center py-16 bg-gray-50 rounded-xl border-2 border-dashed border-gray-300">
+                            <div class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <i class="pi pi-images text-3xl text-gray-400"></i>
+                            </div>
+                            <h4 class="text-lg font-semibold text-gray-900 mb-2">No Collections Yet</h4>
+                            <p class="text-gray-600 mb-4">
+                                Add collections in the "Collections" tab to see them here!
+                            </p>
                         </div>
+                        } @else {
+                        <!-- Grid Preview -->
+                        <div class="interactive-grid-preview bg-gradient-to-br from-gray-50 to-gray-100 border-2 border-gray-300 rounded-xl p-8">
+                            <div 
+                                class="collections-interactive-grid"
+                                [class]="getPreviewParentClass()"
+                                [style]="getPreviewParentStyle()"
+                                cdkDropList
+                                (cdkDropListDropped)="onCollectionDrop($event)">
+                                
+                                @for(collectionGroup of collectionsArray.controls; let i = $index; track trackByIndex(i)) {
+                                <div 
+                                    class="collection-preview-item"
+                                    [class]="getPreviewColSpanClasses(i) + ' ' + getPreviewRowSpanClasses(i) + ' ' + getPreviewItemClass(i)"
+                                    cdkDrag
+                                    [cdkDragData]="{index: i}">
+                                    
+                                    <!-- Collection Preview Card -->
+                                    <div class="relative overflow-hidden rounded-xl shadow-2xl h-full group">
+                                        <!-- Image -->
+                                        @if(getPreviewImageUrl(collectionsArray.at(i))) {
+                                        <img 
+                                            [src]="getPreviewImageUrl(collectionsArray.at(i))" 
+                                            [alt]="getPreviewImageAlt(collectionsArray.at(i))"
+                                            class="w-full h-full object-cover"
+                                            onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'400\' height=\'400\'%3E%3Crect fill=\'%23e5e7eb\' width=\'400\' height=\'400\'/%3E%3Ctext fill=\'%239ca3af\' font-family=\'sans-serif\' font-size=\'20\' dy=\'10.5\' font-weight=\'bold\' x=\'50%25\' y=\'50%25\' text-anchor=\'middle\'%3ENo Image%3C/text%3E%3C/svg%3E'">
+                                        } @else {
+                                        <div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-200 to-gray-300">
+                                            <div class="text-center text-gray-500">
+                                                <i class="pi pi-image text-6xl mb-3 block"></i>
+                                                <p class="text-sm font-medium">No Image</p>
+                                            </div>
+                                        </div>
+                                        }
 
-                        <!-- Parent Custom Style -->
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Parent Custom Classes</label>
-                            <textarea pInputTextarea formControlName="parentCustomStyle" [rows]="4" 
-                                class="w-full font-mono text-sm" 
-                                placeholder="Enter Tailwind CSS classes separated by spaces:&#10;bg-blue-500 p-4 rounded-lg shadow-md"></textarea>
-                            <small class="text-gray-500 text-xs mt-1 block">Enter Tailwind CSS classes (e.g., bg-blue-500 p-4 rounded-lg)</small>
+                                        <!-- Overlay -->
+                                        <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent">
+                                            <!-- Content -->
+                                            <div class="absolute bottom-0 left-0 right-0 p-6">
+                                                @if(collectionGroup.get('title.en')?.value) {
+                                                <h3 class="text-2xl font-bold text-white mb-2 drop-shadow-lg">
+                                                    {{ collectionGroup.get('title.en')?.value }}
+                                                </h3>
+                                                }
+                                                @if(collectionGroup.get('description.en')?.value) {
+                                                <p class="text-white/90 text-sm mb-4 line-clamp-2">
+                                                    {{ collectionGroup.get('description.en')?.value }}
+                                                </p>
+                                                }
+                                                @if(collectionGroup.get('buttonText.en')?.value) {
+                                                <button class="bg-white text-gray-900 px-6 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-all shadow-lg">
+                                                    {{ collectionGroup.get('buttonText.en')?.value }}
+                                                </button>
+                                                }
+                </div>
+            </div>
+
+                                        <!-- Drag Handle (Top-left) -->
+                                        <div 
+                                            cdkDragHandle
+                                            class="absolute top-4 left-4 w-12 h-12 bg-white/20 backdrop-blur-md border-2 border-white/50 rounded-lg flex items-center justify-center cursor-move opacity-0 group-hover:opacity-100 transition-all z-10 hover:bg-white/30">
+                                            <i class="pi pi-bars text-white text-xl"></i>
+                                        </div>
+
+                                        <!-- Resize Handle (Bottom-right) - ENHANCED -->
+                                        <div 
+                                            class="resize-handle-pro absolute bottom-4 right-4 w-14 h-14 bg-gradient-to-br from-primary-500 to-primary-700 backdrop-blur-md border-3 border-white shadow-2xl rounded-xl flex items-center justify-center cursor-nwse-resize opacity-0 group-hover:opacity-100 transition-all z-50 hover:scale-110 hover:rotate-6"
+                                            (mousedown)="startCollectionResize($event, i)"
+                                            (touchstart)="startCollectionResize($event, i)"
+                                            [attr.data-collection-index]="i">
+                                            <i class="pi pi-arrows-alt text-white text-2xl"></i>
+                                        </div>
+
+                                        <!-- Resizing Indicator (shows during resize) -->
+                                        @if(resizingCollectionIndex === i) {
+                                        <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-black/80 backdrop-blur-lg px-6 py-3 rounded-xl border-2 border-primary-500 z-50">
+                                            <div class="text-center">
+                                                <div class="text-white text-3xl font-bold mb-1">
+                                                    {{ getColSpanGroup(i).get('lg')?.value || 1 }}
+                                                </div>
+                                                <div class="text-primary-300 text-xs">columns</div>
+                                            </div>
+                                        </div>
+                                        }
+
+                                        <!-- Item Number Badge -->
+                                        <div class="absolute top-4 right-4 w-12 h-12 bg-gradient-to-br from-primary-600 to-primary-800 text-white rounded-full flex items-center justify-center font-bold text-xl shadow-2xl z-40 border-2 border-white/50">
+                                            {{ i + 1 }}
+                                        </div>
+
+                                        <!-- Span Info Badge - ENHANCED -->
+                                        <div class="absolute bottom-4 left-4 px-4 py-2 bg-gradient-to-r from-black/70 to-black/50 backdrop-blur-lg border-2 border-white/30 rounded-xl text-white text-sm font-bold opacity-0 group-hover:opacity-100 transition-all z-40 shadow-xl">
+                                            <div class="flex items-center gap-2">
+                                                <i class="pi pi-th-large text-primary-400"></i>
+                                                <span>{{ getColSpanGroup(i).get('lg')?.value || 1 }} cols</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                }
+                            </div>
                         </div>
+                        }
                     </div>
                 </p-tabPanel>
             </p-tabView>
 
-            <!-- Collections Section -->
+            <!-- Collections Section with Drag & Drop - IMPROVED UX -->
             <div class="mt-6">
                 <div class="flex justify-between items-center mb-4">
-                    <h3 class="text-lg font-semibold text-gray-900">Collections</h3>
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                            <i class="pi pi-images text-primary-600"></i>
+                            Your Collections
+                        </h3>
+                        <p class="text-sm text-gray-600 mt-1">
+                            Drag to reorder • {{ collectionsArray.length }} {{ collectionsArray.length === 1 ? 'item' : 'items' }}
+                        </p>
+                    </div>
                     <p-button label="Add Collection" icon="pi pi-plus" (onClick)="addCollection()"
                         styleClass="p-button-outlined p-button-sm"></p-button>
                 </div>
 
-                <p-accordion formArrayName="collections" [multiple]="true">
-                    @for(collectionGroup of collectionsArray.controls; let i = $index; track trackByIndex(i)) {
-                    <p-accordionTab>
-                        <ng-template pTemplate="header">
-                            <div class="flex items-center justify-between w-full pr-4">
-                                <div class="flex items-center gap-3">
-                                    <span class="font-semibold">Collection #{{ i + 1 }}</span>
-                                    @if(collectionGroup.get('title.en')?.value || collectionGroup.get('title.ar')?.value) {
-                                    <span class="text-sm text-gray-500">
-                                        - {{ collectionGroup.get('title.en')?.value || collectionGroup.get('title.ar')?.value }}
-                                    </span>
-                                    }
-                                </div>
-                            <p-button *ngIf="collectionsArray.length > 1" type="button" icon="pi pi-trash"
-                                    severity="danger" (onClick)="removeCollection(i); $event.stopPropagation()" 
-                                    styleClass="p-button-text p-button-sm" pTooltip="Remove"></p-button>
+                <!-- Empty State -->
+                @if(collectionsArray.length === 0) {
+                <div class="text-center py-16 bg-gray-50 rounded-xl border-2 border-dashed border-gray-300">
+                    <div class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="pi pi-images text-3xl text-gray-400"></i>
+                    </div>
+                    <h4 class="text-lg font-semibold text-gray-900 mb-2">No Collections Yet</h4>
+                    <p class="text-gray-600 mb-4 max-w-md mx-auto">
+                        Start by adding your first collection. You can add images, titles, descriptions, and buttons.
+                    </p>
+                    <p-button label="Add Your First Collection" icon="pi pi-plus" (onClick)="addCollection()"
+                        severity="success"></p-button>
+                </div>
+                }
+
+                <!-- Collections List with Drag & Drop -->
+                @if(collectionsArray.length > 0) {
+                <div 
+                    cdkDropList 
+                    (cdkDropListDropped)="onCollectionDrop($event)"
+                    formArrayName="collections"
+                    class="space-y-4">
+                    
+                @for(collectionGroup of collectionsArray.controls; let i = $index; track trackByIndex(i)) {
+                <div 
+                    cdkDrag
+                    class="collection-card-pro"
+                    [style.animation-delay]="i * 0.1 + 's'">
+                    
+                    <!-- Drag Handle & Header -->
+                    <div class="collection-header-pro">
+                        <!-- Drag Handle - Enhanced -->
+                        <div cdkDragHandle 
+                             class="drag-handle-pro"
+                             pTooltip="☰ Drag to reorder collections"
+                             tooltipPosition="top">
+                            <i class="pi pi-bars"></i>
+                            <span class="drag-hint">Drag</span>
                         </div>
-                        </ng-template>
+
+                        <!-- Collection Number Badge -->
+                        <div class="collection-number-badge">
+                            <span class="badge-number">{{ i + 1 }}</span>
+                            <span class="badge-label">Collection</span>
+                        </div>
+
+                        <!-- Collection Title & Info -->
+                        <div class="collection-title-section">
+                            <h4 class="collection-title">
+                                @if(collectionGroup.get('title.en')?.value || collectionGroup.get('title.ar')?.value) {
+                                    <i class="pi pi-image text-primary-600 mr-2"></i>
+                                    <span class="title-en">{{ collectionGroup.get('title.en')?.value || 'Untitled' }}</span>
+                                } @else {
+                                    <i class="pi pi-file-edit text-gray-400 mr-2"></i>
+                                    <span class="title-placeholder">Collection #{{ i + 1 }}</span>
+                                }
+                            </h4>
+                            @if(collectionGroup.get('title.ar')?.value) {
+                            <p class="collection-subtitle">
+                                <i class="pi pi-language mr-1"></i>
+                                {{ collectionGroup.get('title.ar')?.value }}
+                            </p>
+                            }
+                            
+                            <!-- Status Indicators -->
+                            <div class="collection-status-row">
+                                @if(collectionGroup.get('image')?.value) {
+                                <span class="status-badge status-success">
+                                    <i class="pi pi-check"></i>
+                                    Image
+                                </span>
+                                } @else {
+                                <span class="status-badge status-warning">
+                                    <i class="pi pi-exclamation-triangle"></i>
+                                    No Image
+                                </span>
+                                }
+                                
+                                @if(collectionGroup.get('buttonLink')?.value) {
+                                <span class="status-badge status-info">
+                                    <i class="pi pi-link"></i>
+                                    Linked
+                                </span>
+                                }
+                            </div>
+                        </div>
+
+                        <!-- Actions -->
+                        <div class="collection-actions">
+                            @if(collectionsArray.length > 1) {
+                            <p-button 
+                                type="button" 
+                                icon="pi pi-trash"
+                                severity="danger" 
+                                (onClick)="removeCollection(i)" 
+                                styleClass="p-button-outlined p-button-rounded"
+                                pTooltip="Delete this collection"
+                                tooltipPosition="left">
+                            </p-button>
+                            }
+                        </div>
+                    </div>
+
+                        <!-- Collection Content -->
                         
                         <div [formGroupName]="i" class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                             <!-- Edit Form -->
@@ -325,23 +821,52 @@
 
                                 <!-- Column Span -->
                                 <div class="field">
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">Column Span *</label>
+                                    <label class="text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                                        <i class="pi pi-arrows-h text-primary-600"></i>
+                                        Column Span *
+                                    </label>
                                     <div [formGroup]="getColSpanGroup(i)" class="grid grid-cols-2 md:grid-cols-4 gap-2">
                                 <div>
-                                            <label [for]="'colSpanSm' + i" class="block text-xs text-gray-600 mb-1">Mobile</label>
+                                            <label [for]="'colSpanSm' + i" class="block text-xs text-gray-600 mb-1">📱 Mobile</label>
                                     <p-inputNumber [id]="'colSpanSm' + i" formControlName="sm" [min]="1" [max]="12" [showButtons]="true" [style]="{'width': '100%'}" placeholder="1"></p-inputNumber>
                                 </div>
                                 <div>
-                                            <label [for]="'colSpanMd' + i" class="block text-xs text-gray-600 mb-1">Tablet</label>
+                                            <label [for]="'colSpanMd' + i" class="block text-xs text-gray-600 mb-1">📲 Tablet</label>
                                     <p-inputNumber [id]="'colSpanMd' + i" formControlName="md" [min]="1" [max]="12" [showButtons]="true" [style]="{'width': '100%'}" placeholder="2"></p-inputNumber>
                                 </div>
                                 <div>
-                                            <label [for]="'colSpanLg' + i" class="block text-xs text-gray-600 mb-1">Desktop</label>
+                                            <label [for]="'colSpanLg' + i" class="block text-xs text-gray-600 mb-1">💻 Desktop</label>
                                     <p-inputNumber [id]="'colSpanLg' + i" formControlName="lg" [min]="1" [max]="12" [showButtons]="true" [style]="{'width': '100%'}" placeholder="2"></p-inputNumber>
                                 </div>
                                 <div>
-                                            <label [for]="'colSpanXl' + i" class="block text-xs text-gray-600 mb-1">Large</label>
+                                            <label [for]="'colSpanXl' + i" class="block text-xs text-gray-600 mb-1">🖥️ Large</label>
                                     <p-inputNumber [id]="'colSpanXl' + i" formControlName="xl" [min]="1" [max]="12" [showButtons]="true" [style]="{'width': '100%'}" placeholder="2"></p-inputNumber>
+                                </div>
+                            </div>
+                        </div>
+
+                                <!-- Row Span (NEW!) -->
+                                <div class="field">
+                                    <label class="text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+                                        <i class="pi pi-arrows-v text-primary-600"></i>
+                                        Row Span * <span class="text-xs text-gray-500 font-normal">(How many rows this item spans)</span>
+                                    </label>
+                                    <div [formGroup]="getRowSpanGroup(i)" class="grid grid-cols-2 md:grid-cols-4 gap-2">
+                                <div>
+                                            <label [for]="'rowSpanSm' + i" class="block text-xs text-gray-600 mb-1">📱 Mobile</label>
+                                    <p-inputNumber [id]="'rowSpanSm' + i" formControlName="sm" [min]="1" [max]="12" [showButtons]="true" [style]="{'width': '100%'}" placeholder="1"></p-inputNumber>
+                                </div>
+                                <div>
+                                            <label [for]="'rowSpanMd' + i" class="block text-xs text-gray-600 mb-1">📲 Tablet</label>
+                                    <p-inputNumber [id]="'rowSpanMd' + i" formControlName="md" [min]="1" [max]="12" [showButtons]="true" [style]="{'width': '100%'}" placeholder="1"></p-inputNumber>
+                                </div>
+                                <div>
+                                            <label [for]="'rowSpanLg' + i" class="block text-xs text-gray-600 mb-1">💻 Desktop</label>
+                                    <p-inputNumber [id]="'rowSpanLg' + i" formControlName="lg" [min]="1" [max]="12" [showButtons]="true" [style]="{'width': '100%'}" placeholder="1"></p-inputNumber>
+                                </div>
+                                <div>
+                                            <label [for]="'rowSpanXl' + i" class="block text-xs text-gray-600 mb-1">🖥️ Large</label>
+                                    <p-inputNumber [id]="'rowSpanXl' + i" formControlName="xl" [min]="1" [max]="12" [showButtons]="true" [style]="{'width': '100%'}" placeholder="1"></p-inputNumber>
                                 </div>
                             </div>
                         </div>
@@ -432,9 +957,10 @@
                                 </div>
                             </div>
                         </div>
-                    </p-accordionTab>
+                    </div>
                     }
-                </p-accordion>
+                </div>
+                }
             </div>
 
             <!-- Form Actions -->

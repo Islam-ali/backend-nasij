@@ -1,0 +1,22 @@
+// Import featured collections styles for consistency
+@import '../../featured-collections/featured-collections-list/featured-collections-list.component.scss';
+
+// Additional hero layouts specific styles
+.hero-layout-preview {
+  min-height: 200px;
+  border: 2px dashed #e5e7eb;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f9fafb;
+}
+
+.item-card {
+  transition: all 0.2s ease;
+
+  &:hover {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  }
+}
+

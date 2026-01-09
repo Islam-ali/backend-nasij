@@ -36,16 +36,32 @@ import { InputNumberModule } from 'primeng/inputnumber';
 import { AccordionModule } from 'primeng/accordion';
 import { TabViewModule } from 'primeng/tabview';
 import { PanelModule } from 'primeng/panel';
+import { OrderListModule } from 'primeng/orderlist';
+import { SliderModule } from 'primeng/slider';
+import { ColorPickerModule } from 'primeng/colorpicker';
+import { SelectButtonModule } from 'primeng/selectbutton';
+import { TooltipModule } from 'primeng/tooltip';
+import { RadioButtonModule } from 'primeng/radiobutton';
 import { ICategory } from '../../../interfaces/category.interface';
 import { IBrand } from '../../../interfaces/brand.interface';
 import { IPackage } from '../../../interfaces/package.interface';
 import { PackageService } from '../../../services/package.service';
 import { IProduct } from '../../../interfaces/product.interface';
 import { ProductsService } from '../../../services/products.service';
+import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-drop';
 
 interface Column {
   field: string;
   header: string;
+}
+
+// Visual Grid Builder Interfaces
+interface GridBuilderItem {
+  id: number;
+  colStart: number;
+  rowStart: number;
+  colSpan: number;
+  rowSpan: number;
 }
 
 @Component({
@@ -76,7 +92,14 @@ interface Column {
     InputNumberModule,
     AccordionModule,
     TabViewModule,
-    PanelModule
+    PanelModule,
+    OrderListModule,
+    SliderModule,
+    ColorPickerModule,
+    SelectButtonModule,
+    TooltipModule,
+    RadioButtonModule,
+    DragDropModule
   ],
   templateUrl: './featured-collections-list.component.html',
   styleUrls: ['./featured-collections-list.component.scss'],
@@ -120,6 +143,62 @@ export class FeaturedCollectionsListComponent extends ComponentBase implements O
     { label: '3:2 (Photo)', value: '3/2' },
     { label: '2:1 (Panoramic)', value: '2/1' }
   ];
+
+  // Grid Presets - User-friendly!
+  gridPresets = [
+    {
+      id: 'single',
+      name: 'Single Column',
+      description: 'One full-width item',
+      icon: 'pi-stop',
+      preview: '┌────────┐\n│   1    │\n└────────┘',
+      gridCols: { sm: 1, md: 1, lg: 1, xl: 1 }
+    },
+    {
+      id: 'two',
+      name: 'Two Columns',
+      description: 'Two equal columns',
+      icon: 'pi-pause',
+      preview: '┌────┬────┐\n│ 1  │ 2  │\n└────┴────┘',
+      gridCols: { sm: 1, md: 2, lg: 2, xl: 2 }
+    },
+    {
+      id: 'three',
+      name: 'Three Columns',
+      description: 'Three equal columns',
+      icon: 'pi-bars',
+      preview: '┌──┬──┬──┐\n│1 │2 │3 │\n└──┴──┴──┘',
+      gridCols: { sm: 1, md: 2, lg: 3, xl: 3 }
+    },
+    {
+      id: 'four',
+      name: 'Four Columns',
+      description: 'Four equal columns',
+      icon: 'pi-th-large',
+      preview: '┌─┬─┬─┬─┐\n│1│2│3│4│\n└─┴─┴─┴─┘',
+      gridCols: { sm: 2, md: 2, lg: 4, xl: 4 }
+    },
+    {
+      id: 'featured',
+      name: 'Featured Layout',
+      description: 'One large + two small',
+      icon: 'pi-window-maximize',
+      preview: '┌────────┬──┐\n│   1    │2 │\n│        ├──┤\n│        │3 │\n└────────┴──┘',
+      gridCols: { sm: 1, md: 2, lg: 2, xl: 2 }
+    }
+  ];
+
+  selectedPreset = signal<string>('three');
+
+  // Visual Style Options
+  shadowOptions = [
+    { label: 'None', value: 'shadow-none' },
+    { label: 'Small', value: 'shadow-sm' },
+    { label: 'Medium', value: 'shadow-md' },
+    { label: 'Large', value: 'shadow-lg' },
+    { label: 'Extra Large', value: 'shadow-xl' }
+  ];
+
   selectedFeaturedCollections: IFeaturedCollection[] = [];
   loading = signal(false);
   featuredCollections = signal<IFeaturedCollection[]>([]);
@@ -138,6 +217,15 @@ export class FeaturedCollectionsListComponent extends ComponentBase implements O
     { field: 'isActive', header: 'Status' },
     { field: 'createdAt', header: 'Created At' }
   ];
+
+  // ═══════════════════════════════════════════════════════════
+  // 🎨 INTERACTIVE COLLECTIONS RESIZE
+  // ═══════════════════════════════════════════════════════════
+  isResizingCollection = false;
+  resizingCollectionIndex = -1;
+  private resizeStartX = 0;
+  private resizeStartColSpan = 0;
+  private columnWidth = 150;
 
   constructor(
     private fb: FormBuilder,
@@ -184,7 +272,16 @@ export class FeaturedCollectionsListComponent extends ComponentBase implements O
           lg: [3, [Validators.min(1), Validators.max(12)]],
           xl: [4, [Validators.min(1), Validators.max(12)]]
         }),
+        gridRows: this.fb.group({
+          sm: [1, [Validators.required, Validators.min(1), Validators.max(12)]],
+          md: [1, [Validators.min(1), Validators.max(12)]],
+          lg: [1, [Validators.min(1), Validators.max(12)]],
+          xl: [1, [Validators.min(1), Validators.max(12)]]
+        }),
         colSpans: this.fb.array([]),
+        rowSpans: this.fb.array([]),
+        gap: [4, [Validators.min(0), Validators.max(96)]],
+        rowHeight: ['auto'],
         justifyContent: ['center'],
         alignItems: ['stretch'],
         heightMode: ['min'],
@@ -213,6 +310,10 @@ export class FeaturedCollectionsListComponent extends ComponentBase implements O
     return this.gridConfigGroup?.get('colSpans') as FormArray;
   }
 
+  get rowSpansArray(): FormArray {
+    return this.gridConfigGroup?.get('rowSpans') as FormArray;
+  }
+
   getColSpanGroup(index: number): FormGroup {
     if (index < 0 || index >= this.colSpansArray.length) {
       console.error(`Invalid index for colSpan: ${index}. Array length: ${this.colSpansArray.length}`);
@@ -225,6 +326,20 @@ export class FeaturedCollectionsListComponent extends ComponentBase implements O
       });
     }
     return this.colSpansArray.at(index) as FormGroup;
+  }
+
+  getRowSpanGroup(index: number): FormGroup {
+    if (index < 0 || index >= this.rowSpansArray.length) {
+      // console.error(`Invalid index for rowSpan: ${index}. Array length: ${this.rowSpansArray.length}`);
+      // Return a default group to prevent errors
+      return this.fb.group({
+        sm: [1],
+        md: [1],
+        lg: [1],
+        xl: [1]
+      });
+    }
+    return this.rowSpansArray.at(index) as FormGroup;
   }
 
   get itemsCustomStyleArray(): FormArray {
@@ -270,11 +385,20 @@ export class FeaturedCollectionsListComponent extends ComponentBase implements O
       xl: [2, [Validators.min(1), Validators.max(12)]]
     });
     
+    // Add default responsive rowSpan
+    const defaultRowSpan = this.fb.group({
+      sm: [1, [Validators.required, Validators.min(1), Validators.max(12)]],
+      md: [1, [Validators.min(1), Validators.max(12)]],
+      lg: [1, [Validators.min(1), Validators.max(12)]],
+      xl: [1, [Validators.min(1), Validators.max(12)]]
+    });
+    
     // Add default item custom style (textarea)
     const defaultItemStyle = this.fb.control('');
     
     // Add all related items together to maintain synchronization
     this.colSpansArray.push(defaultColSpan);
+    this.rowSpansArray.push(defaultRowSpan);
     this.itemsCustomStyleArray.push(defaultItemStyle);
     this.collectionsArray.push(collectionGroup);
     
@@ -297,13 +421,17 @@ export class FeaturedCollectionsListComponent extends ComponentBase implements O
     }
 
     // Remove from all arrays simultaneously to maintain synchronization
-    // This ensures that all related data (collections, colSpans, itemsCustomStyle) stay aligned
+    // This ensures that all related data (collections, colSpans, rowSpans, itemsCustomStyle) stay aligned
     if (this.collectionsArray.length > index) {
       this.collectionsArray.removeAt(index);
     }
     
     if (this.colSpansArray.length > index) {
       this.colSpansArray.removeAt(index);
+    }
+    
+    if (this.rowSpansArray.length > index) {
+      this.rowSpansArray.removeAt(index);
     }
     
     if (this.itemsCustomStyleArray.length > index) {
@@ -433,6 +561,7 @@ export class FeaturedCollectionsListComponent extends ComponentBase implements O
     this.featuredCollectionDialog = true;
     this.collectionsArray.clear();
     this.colSpansArray.clear();
+    this.rowSpansArray.clear();
     this.itemsCustomStyleArray.clear();
     this.parentCustomStyleControl.reset();
     // Set default grid config
@@ -443,6 +572,14 @@ export class FeaturedCollectionsListComponent extends ComponentBase implements O
         lg: 3,
         xl: 4
       },
+      gridRows: {
+        sm: 1,
+        md: 1,
+        lg: 1,
+        xl: 1
+      },
+      gap: 4,
+      rowHeight: 'auto',
       justifyContent: 'center',
       alignItems: 'stretch',
       heightMode: 'min',
@@ -460,6 +597,7 @@ export class FeaturedCollectionsListComponent extends ComponentBase implements O
     // Clear all arrays to ensure clean state
     this.collectionsArray.clear();
     this.colSpansArray.clear();
+    this.rowSpansArray.clear();
     this.itemsCustomStyleArray.clear();
     this.parentCustomStyleControl.reset();
     this.expandedCollectionIndex.set(null);
@@ -493,13 +631,28 @@ export class FeaturedCollectionsListComponent extends ComponentBase implements O
         xl: [colSpan.xl || 2, [Validators.min(1), Validators.max(12)]]
       });
       
+      // Create corresponding rowSpan group
+      const rowSpan = featuredCollection.gridConfig?.rowSpans?.[index] || { sm: 1, md: 1, lg: 1, xl: 1 };
+      const rowSpanGroup = this.fb.group({
+        sm: [rowSpan.sm || 1, [Validators.required, Validators.min(1), Validators.max(12)]],
+        md: [rowSpan.md || 1, [Validators.min(1), Validators.max(12)]],
+        lg: [rowSpan.lg || 1, [Validators.min(1), Validators.max(12)]],
+        xl: [rowSpan.xl || 1, [Validators.min(1), Validators.max(12)]]
+      });
+      
       // Create corresponding item custom style control
-      const itemStyle = featuredCollection.gridConfig?.itemsCustomStyle?.[index] || {};
-      const itemStyleText = this.objectToCssText(itemStyle);
+      const itemStyle = featuredCollection.gridConfig?.itemsCustomStyle?.[index];
+      let itemStyleText = '';
+      if (typeof itemStyle === 'string') {
+        itemStyleText = itemStyle; // Already a string (new format)
+      } else if (itemStyle && typeof itemStyle === 'object') {
+        itemStyleText = this.objectToCssText(itemStyle); // Convert object to string (backward compatibility)
+      }
       const itemStyleControl = this.fb.control(itemStyleText);
       
       // Add all related items together to maintain synchronization
       this.colSpansArray.push(colSpanGroup);
+      this.rowSpansArray.push(rowSpanGroup);
       this.itemsCustomStyleArray.push(itemStyleControl);
       this.collectionsArray.push(collectionGroup);
       
@@ -528,6 +681,7 @@ export class FeaturedCollectionsListComponent extends ComponentBase implements O
       isActive: featuredCollection.isActive,
       gridConfig: {
         gridCols: featuredCollection.gridConfig?.gridCols || { sm: 1, md: 2, lg: 3, xl: 4 },
+        gridRows: featuredCollection.gridConfig?.gridRows || { sm: 1, md: 1, lg: 1, xl: 1 },
         justifyContent: featuredCollection.gridConfig?.justifyContent || 'center',
         alignItems: featuredCollection.gridConfig?.alignItems || 'stretch',
         heightMode: featuredCollection.gridConfig?.heightMode || 'min',
@@ -539,7 +693,13 @@ export class FeaturedCollectionsListComponent extends ComponentBase implements O
               ? featuredCollection.gridConfig.parentCustomStyle 
               : this.objectToCssText(featuredCollection.gridConfig.parentCustomStyle))
           : '',
-        itemsCustomStyle: featuredCollection.gridConfig?.itemsCustomStyle ? featuredCollection.gridConfig.itemsCustomStyle.map((itemStyle: any) => this.objectToCssText(itemStyle)) : []
+        itemsCustomStyle: featuredCollection.gridConfig?.itemsCustomStyle 
+          ? featuredCollection.gridConfig.itemsCustomStyle.map((itemStyle: any) => 
+              typeof itemStyle === 'string' ? itemStyle : this.objectToCssText(itemStyle)
+            ) 
+          : [],
+        gap: featuredCollection.gridConfig?.gap || 4,
+        rowHeight: featuredCollection.gridConfig?.rowHeight || 'auto'
       }
     });
     
@@ -697,20 +857,15 @@ export class FeaturedCollectionsListComponent extends ComponentBase implements O
       }
       formData.gridConfig.colSpans = colSpans.length > 0 ? colSpans : undefined;
       
-      // Convert itemsCustomStyle FormArray (strings) to array of objects
-      const itemsStyles: Record<string, string>[] = [];
+      // Keep itemsCustomStyle as string array (Tailwind classes)
+      const itemsStyles: string[] = [];
       for (let i = 0; i < this.itemsCustomStyleArray.length; i++) {
         const itemStyleControl = this.itemsCustomStyleArray.at(i);
         const itemStyleText = itemStyleControl.value;
         if (typeof itemStyleText === 'string' && itemStyleText.trim()) {
-          const style = this.cssTextToObject(itemStyleText);
-          if (Object.keys(style).length > 0) {
-            itemsStyles.push(style);
-          } else {
-            itemsStyles.push({});
-          }
+          itemsStyles.push(itemStyleText.trim());
         } else {
-          itemsStyles.push({});
+          itemsStyles.push('');
         }
       }
       formData.gridConfig.itemsCustomStyle = itemsStyles.length > 0 ? itemsStyles : undefined;
@@ -882,6 +1037,19 @@ export class FeaturedCollectionsListComponent extends ComponentBase implements O
     return classes.join(' ');
   }
 
+  getPreviewRowSpanClasses(index: number): string {
+    if (index < 0 || index >= this.rowSpansArray.length) {
+      return 'row-span-1 md:row-span-1 lg:row-span-1 xl:row-span-1';
+    }
+    const rowSpans = this.rowSpansArray?.at(index)?.value || { sm: 1, md: 1, lg: 1, xl: 1 };
+    const classes: string[] = [];
+    if (rowSpans.sm) classes.push(`row-span-${rowSpans.sm}`);
+    if (rowSpans.md) classes.push(`md:row-span-${rowSpans.md}`);
+    if (rowSpans.lg) classes.push(`lg:row-span-${rowSpans.lg}`);
+    if (rowSpans.xl) classes.push(`xl:row-span-${rowSpans.xl}`);
+    return classes.join(' ');
+  }
+
   getPreviewJustifyContentClass(): string {
     const justifyContent = this.gridConfigGroup?.get('justifyContent')?.value || 'center';
     const map: { [key: string]: string } = {
@@ -909,27 +1077,97 @@ export class FeaturedCollectionsListComponent extends ComponentBase implements O
   getPreviewParentStyle(): { [key: string]: string } {
     const styles: { [key: string]: string } = {};
     const width = this.gridConfigGroup?.get('width')?.value;
+    const rowHeight = this.gridConfigGroup?.get('rowHeight')?.value;
     
     if (width && width.trim()) {
       styles['width'] = width.trim();
+    }
+    
+    // Add row height (grid-auto-rows)
+    if (rowHeight && rowHeight.trim() && rowHeight !== 'auto') {
+      styles['grid-auto-rows'] = rowHeight.trim();
     }
     
     return styles;
   }
 
   getPreviewParentClass(): string {
-    const parentCustomStyle = this.gridConfigGroup?.get('parentCustomStyle')?.value;
+    const classes: string[] = ['grid'];
     
+    // Add grid columns for each breakpoint
+    const gridCols = this.gridConfigGroup?.get('gridCols')?.value;
+    if (gridCols) {
+      if (gridCols.sm) classes.push(`grid-cols-${gridCols.sm}`);
+      if (gridCols.md) classes.push(`md:grid-cols-${gridCols.md}`);
+      if (gridCols.lg) classes.push(`lg:grid-cols-${gridCols.lg}`);
+      if (gridCols.xl) classes.push(`xl:grid-cols-${gridCols.xl}`);
+    }
+    
+    // Add grid rows for each breakpoint
+    const gridRows = this.gridConfigGroup?.get('gridRows')?.value;
+    if (gridRows) {
+      if (gridRows.sm && gridRows.sm > 1) classes.push(`grid-rows-${gridRows.sm}`);
+      if (gridRows.md && gridRows.md > 1) classes.push(`md:grid-rows-${gridRows.md}`);
+      if (gridRows.lg && gridRows.lg > 1) classes.push(`lg:grid-rows-${gridRows.lg}`);
+      if (gridRows.xl && gridRows.xl > 1) classes.push(`xl:grid-rows-${gridRows.xl}`);
+    }
+    
+    // Add gap
+    const gap = this.gridConfigGroup?.get('gap')?.value;
+    if (gap !== undefined && gap !== null) {
+      const gapClass = this.getGapClass(gap);
+      if (gapClass) classes.push(gapClass);
+    }
+    
+    // Add justify-content
+    const justifyContent = this.gridConfigGroup?.get('justifyContent')?.value;
+    if (justifyContent) {
+      const justifyMap: { [key: string]: string } = {
+        'center': 'justify-center',
+        'start': 'justify-start',
+        'end': 'justify-end',
+        'between': 'justify-between',
+        'around': 'justify-around',
+        'evenly': 'justify-evenly'
+      };
+      const justifyClass = justifyMap[justifyContent];
+      if (justifyClass) classes.push(justifyClass);
+    }
+    
+    // Add align-items
+    const alignItems = this.gridConfigGroup?.get('alignItems')?.value;
+    if (alignItems) {
+      const alignMap: { [key: string]: string } = {
+        'center': 'items-center',
+        'start': 'items-start',
+        'end': 'items-end',
+        'stretch': 'items-stretch'
+      };
+      const alignClass = alignMap[alignItems];
+      if (alignClass) classes.push(alignClass);
+    }
+    
+    // Add custom parent style
+    const parentCustomStyle = this.gridConfigGroup?.get('parentCustomStyle')?.value;
     if (parentCustomStyle) {
       if (typeof parentCustomStyle === 'string' && parentCustomStyle.trim()) {
-        return parentCustomStyle.trim();
+        classes.push(parentCustomStyle.trim());
       } else if (typeof parentCustomStyle === 'object') {
         // Backward compatibility: if it's an object, convert to string
-        return this.objectToCssText(parentCustomStyle);
+        classes.push(this.objectToCssText(parentCustomStyle));
       }
     }
     
-    return '';
+    return classes.join(' ');
+  }
+  
+  private getGapClass(gap: number): string {
+    // Support all Tailwind gap values (0-96)
+    // Tailwind gap scale: 0 = 0px, 1 = 0.25rem (4px), 2 = 0.5rem (8px), 4 = 1rem (16px), etc.
+    if (gap >= 0 && gap <= 96) {
+      return `gap-${gap}`;
+    }
+    return 'gap-4'; // default fallback (1rem = 16px)
   }
 
   getPreviewHeightStyle(): { [key: string]: string } {
@@ -1049,5 +1287,227 @@ export class FeaturedCollectionsListComponent extends ComponentBase implements O
     }
     return 'Collection image';
   }
+
+  // ========================================
+  // 🎨 NEW UX METHODS
+  // ========================================
+
+  /**
+   * Apply Grid Preset - User-friendly way to set grid columns
+   */
+  applyGridPreset(presetId: string) {
+    this.selectedPreset.set(presetId);
+    const preset = this.gridPresets.find(p => p.id === presetId);
+    if (preset) {
+      this.gridConfigGroup?.get('gridCols')?.patchValue(preset.gridCols);
+      
+      // Show success message
+      this.messageService.add({
+        severity: 'success',
+        summary: 'Layout Applied',
+        detail: `${preset.name} layout has been applied`,
+        life: 2000
+      });
+    }
+  }
+
+  /**
+   * Drag & Drop Collections Reordering
+   */
+  onCollectionDrop(event: CdkDragDrop<any[]>) {
+    const collectionsArray = this.collectionsArray;
+    const colSpansArray = this.colSpansArray;
+    const itemsCustomStyleArray = this.itemsCustomStyleArray;
+
+    // Move items in all related arrays
+    moveItemInArray(collectionsArray.controls, event.previousIndex, event.currentIndex);
+    moveItemInArray(colSpansArray.controls, event.previousIndex, event.currentIndex);
+    moveItemInArray(itemsCustomStyleArray.controls, event.previousIndex, event.currentIndex);
+
+    // Update form arrays
+    collectionsArray.setValue(collectionsArray.controls.map(c => c.value));
+    colSpansArray.setValue(colSpansArray.controls.map(c => c.value));
+    itemsCustomStyleArray.setValue(itemsCustomStyleArray.controls.map(c => c.value));
+
+    this.messageService.add({
+      severity: 'info',
+      summary: 'Reordered',
+      detail: 'Collection order updated',
+      life: 2000
+    });
+  }
+
+  /**
+   * Get current preset ID based on gridCols values
+   */
+  getCurrentPreset(): string {
+    const gridCols = this.gridConfigGroup?.get('gridCols')?.value;
+    if (!gridCols) return this.selectedPreset();
+
+    const preset = this.gridPresets.find(p => 
+      p.gridCols.sm === gridCols.sm &&
+      p.gridCols.md === gridCols.md &&
+      p.gridCols.lg === gridCols.lg &&
+      p.gridCols.xl === gridCols.xl
+    );
+
+    return preset?.id || this.selectedPreset();
+  }
+
+  // ═══════════════════════════════════════════════════════════
+  // 🎨 INTERACTIVE COLLECTIONS RESIZE METHODS
+  // ═══════════════════════════════════════════════════════════
+
+  /**
+   * Start resizing a collection - ENHANCED
+   */
+  startCollectionResize(event: MouseEvent | TouchEvent, collectionIndex: number): void {
+    event.preventDefault();
+    event.stopPropagation();
+
+    console.log('🎯 Starting resize for collection:', collectionIndex);
+
+    this.isResizingCollection = true;
+    this.resizingCollectionIndex = collectionIndex;
+
+    const colSpanGroup = this.getColSpanGroup(collectionIndex);
+    this.resizeStartColSpan = colSpanGroup.get('lg')?.value || 1;
+
+    // Get the actual grid element to calculate column width
+    const gridElement = document.querySelector('.collections-interactive-grid') as HTMLElement;
+    if (gridElement) {
+      const gridWidth = gridElement.offsetWidth;
+      const gridCols = this.gridConfigGroup?.get('gridCols')?.value?.lg || 12;
+      const gap = parseFloat(getComputedStyle(gridElement).gap) || 0;
+      
+      // Calculate actual column width including gap
+      this.columnWidth = (gridWidth - (gap * (gridCols - 1))) / gridCols;
+      console.log('📏 Column width:', this.columnWidth, 'Grid:', gridWidth, 'Cols:', gridCols);
+    } else {
+      this.columnWidth = 150; // Fallback
+    }
+
+    if (event instanceof MouseEvent) {
+      this.resizeStartX = event.clientX;
+      document.addEventListener('mousemove', this.onCollectionResizeMove, { passive: false });
+      document.addEventListener('mouseup', this.onCollectionResizeEnd);
+    } else {
+      this.resizeStartX = event.touches[0].clientX;
+      document.addEventListener('touchmove', this.onCollectionResizeMove, { passive: false });
+      document.addEventListener('touchend', this.onCollectionResizeEnd);
+    }
+
+    // Add visual feedback class
+    document.body.style.cursor = 'nwse-resize';
+    document.body.classList.add('resizing-active');
+  }
+
+  /**
+   * Handle collection resize move - ENHANCED
+   */
+  private onCollectionResizeMove = (event: MouseEvent | TouchEvent): void => {
+    if (!this.isResizingCollection || this.resizingCollectionIndex === -1) return;
+
+    event.preventDefault(); // Prevent text selection
+
+    const clientX = event instanceof MouseEvent ? event.clientX : event.touches[0].clientX;
+    const deltaX = clientX - this.resizeStartX;
+
+    console.log('📐 Delta X:', deltaX, 'Column width:', this.columnWidth);
+
+    // Calculate new span based on actual column width
+    const colSpanDelta = Math.round(deltaX / this.columnWidth);
+    const gridCols = this.gridConfigGroup?.get('gridCols')?.value;
+    const maxColSpan = gridCols?.lg || 12;
+
+    const newColSpan = Math.max(1, Math.min(this.resizeStartColSpan + colSpanDelta, maxColSpan));
+
+    console.log('📊 New span:', newColSpan, 'Delta:', colSpanDelta, 'Max:', maxColSpan);
+
+    // Only update if span changed
+    const colSpanGroup = this.getColSpanGroup(this.resizingCollectionIndex);
+    const currentSpan = colSpanGroup.get('lg')?.value || 1;
+
+    if (newColSpan !== currentSpan) {
+      // Calculate ratio for proportional update
+      const ratio = newColSpan / this.resizeStartColSpan;
+
+      // Get original values
+      const originalSm = this.resizeStartColSpan; // Simplified
+      const originalMd = this.resizeStartColSpan;
+      const originalXl = this.resizeStartColSpan;
+
+      colSpanGroup.patchValue({
+        sm: Math.max(1, Math.min(Math.round(originalSm * ratio), gridCols?.sm || 12)),
+        md: Math.max(1, Math.min(Math.round(originalMd * ratio), gridCols?.md || 12)),
+        lg: newColSpan,
+        xl: Math.max(1, Math.min(Math.round(originalXl * ratio), gridCols?.xl || 12))
+      }, { emitEvent: false }); // Don't emit to avoid performance issues
+
+      console.log('✅ Updated spans:', {
+        sm: colSpanGroup.get('sm')?.value,
+        md: colSpanGroup.get('md')?.value,
+        lg: colSpanGroup.get('lg')?.value,
+        xl: colSpanGroup.get('xl')?.value
+      });
+    }
+  };
+
+  /**
+   * Handle collection resize end - ENHANCED
+   */
+  private onCollectionResizeEnd = (): void => {
+    if (this.isResizingCollection) {
+      console.log('🏁 Resize ended');
+
+      this.isResizingCollection = false;
+      const collectionIndex = this.resizingCollectionIndex;
+      this.resizingCollectionIndex = -1;
+
+      document.removeEventListener('mousemove', this.onCollectionResizeMove);
+      document.removeEventListener('mouseup', this.onCollectionResizeEnd);
+      document.removeEventListener('touchmove', this.onCollectionResizeMove);
+      document.removeEventListener('touchend', this.onCollectionResizeEnd);
+
+      // Remove visual feedback
+      document.body.style.cursor = '';
+      document.body.classList.remove('resizing-active');
+
+      const colSpanGroup = this.getColSpanGroup(collectionIndex);
+      const newSpan = colSpanGroup.get('lg')?.value;
+
+      this.messageService.add({
+        severity: 'success',
+        summary: 'Resized!',
+        detail: `Collection ${collectionIndex + 1} → ${newSpan} columns`,
+        life: 2000
+      });
+
+      console.log('✨ Final span:', newSpan);
+    }
+  };
+
+  // ═══════════════════════════════════════════════════════════
+  // 🗑️ DEPRECATED: Visual Grid Builder Methods (Not Used)
+  // ═══════════════════════════════════════════════════════════
+
+  /**
+   * Generate grid cells array for template
+   */
+  getGridCells(): number[] {
+    return [];
+  }
+
+  // Deprecated methods - kept for compatibility
+  isGridCellOccupied(cellIndex: number): boolean { return false; }
+  addGridItem(): void {}
+  addGridItemAtPosition(cellIndex: number): void {}
+  removeGridItem(index: number): void {}
+  clearAllGridItems(): void {}
+  resetVisualGrid(): void {}
+  onVisualGridChange(): void {}
+  startResize(event: MouseEvent | TouchEvent, itemIndex: number): void {}
+  getGeneratedCode(): string { return ''; }
+  copyGeneratedCode(): void {}
 
 } 

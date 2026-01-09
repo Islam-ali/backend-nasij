@@ -1,5 +1,6 @@
 import { Archived } from "../shared/components/fields/models/Archived";
 import { MultilingualText } from "../core/models/multi-language";
+import { IProfessionalGridConfig } from './professional-grid.interface';
 
 export interface IResponsiveGridConfig {
   sm: number;
@@ -10,7 +11,11 @@ export interface IResponsiveGridConfig {
 
 export interface IGridConfig {
   gridCols: IResponsiveGridConfig;
+  gridRows?: IResponsiveGridConfig;
   colSpans?: IResponsiveGridConfig[];
+  rowSpans?: IResponsiveGridConfig[];
+  gap?: number;
+  rowHeight?: string;
   justifyContent?: 'center' | 'start' | 'end' | 'between' | 'around' | 'evenly';
   alignItems?: 'center' | 'start' | 'end' | 'stretch';
   heightMode?: 'auto' | 'fixed' | 'min' | 'max' | 'aspect-ratio';
@@ -18,7 +23,8 @@ export interface IGridConfig {
   aspectRatio?: string;
   width?: string;
   parentCustomStyle?: string;
-  itemsCustomStyle?: Record<string, string>[];
+  itemsCustomStyle?: string[]; // Changed to string array for Tailwind classes
+  heroGrid?: IProfessionalGridConfig; // New Professional Grid Config
 }
 
 export interface ICollectionItem {

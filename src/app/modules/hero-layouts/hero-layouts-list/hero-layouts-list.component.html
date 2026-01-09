@@ -1,0 +1,340 @@
+<div class="card">
+    <p-toast></p-toast>
+    <p-confirmDialog></p-confirmDialog>
+
+    <p-toolbar styleClass="mb-4 gap-2" *ngIf="!loading()">
+        <ng-template pTemplate="left">
+            <p-button label="New Hero Layout" icon="pi pi-plus" severity="success" (onClick)="openNew()" />
+        </ng-template>
+    </p-toolbar>
+
+    <p-table #dt [value]="heroLayouts()" dataKey="_id"
+        [tableStyle]="{'min-width': '75rem'}" 
+        [globalFilterFields]="['name','sectionTitle','sectionSubtitle']"
+        [loading]="loading()" 
+        styleClass="p-datatable-sm">
+        
+        <ng-template pTemplate="caption">
+            <div class="flex items-center justify-between">
+                <h5 class="m-0">Hero Layouts</h5>
+                <span class="p-input-icon-left">
+                    <i class="pi pi-search"></i>
+                    <input pInputText type="text" (input)="onGlobalFilter(dt, $event)" placeholder="Search..." />
+                </span>
+            </div>
+        </ng-template>
+
+        <ng-template pTemplate="header">
+            <tr>
+                <th pSortableColumn="name">Name <p-sortIcon field="name"></p-sortIcon></th>
+                <th pSortableColumn="sectionTitle">Section Title <p-sortIcon field="sectionTitle"></p-sortIcon></th>
+                <th>Items Count</th>
+                <th>Tags</th>
+                <th pSortableColumn="displayOrder">Order <p-sortIcon field="displayOrder"></p-sortIcon></th>
+                <th pSortableColumn="isActive">Status <p-sortIcon field="isActive"></p-sortIcon></th>
+                <th pSortableColumn="createdAt">Created At <p-sortIcon field="createdAt"></p-sortIcon></th>
+                <th style="width: 10rem">Actions</th>
+            </tr>
+        </ng-template>
+
+        <ng-template pTemplate="body" let-heroLayout>
+            <tr>
+                <td>{{ heroLayout.name }}</td>
+                <td>
+                    <div>{{ heroLayout.sectionTitle?.en || '-' }}</div>
+                    <small class="text-gray-500">{{ heroLayout.sectionTitle?.ar || '-' }}</small>
+                </td>
+                <td>
+                    <p-tag [value]="heroLayout.items?.length + ' items'" severity="info"></p-tag>
+                </td>
+                <td>
+                    <p-tag *ngFor="let tag of heroLayout.tags" [value]="tag" class="mr-1"></p-tag>
+                    <span *ngIf="!heroLayout.tags || heroLayout.tags.length === 0">-</span>
+                </td>
+                <td>{{ heroLayout.displayOrder }}</td>
+                <td>
+                    <p-tag [value]="heroLayout.isActive ? 'Active' : 'Inactive'" 
+                           [severity]="heroLayout.isActive ? 'success' : 'danger'">
+                    </p-tag>
+                </td>
+                <td>{{ heroLayout.createdAt | date: 'short' }}</td>
+                <td>
+                    <div class="flex gap-2">
+                        <p-button icon="pi pi-pencil" severity="info" [rounded]="true" [text]="true" 
+                                  (onClick)="editHeroLayout(heroLayout)" pTooltip="Edit"></p-button>
+                        <p-button icon="pi pi-trash" severity="danger" [rounded]="true" [text]="true" 
+                                  (onClick)="deleteHeroLayout(heroLayout)" pTooltip="Delete"></p-button>
+                        <p-button [icon]="heroLayout.isActive ? 'pi pi-eye-slash' : 'pi pi-eye'" 
+                                  [severity]="heroLayout.isActive ? 'warn' : 'success'" 
+                                  [rounded]="true" [text]="true" 
+                                  (onClick)="toggleActive(heroLayout)" 
+                                  pTooltip="Toggle Active Status"></p-button>
+                    </div>
+                </td>
+            </tr>
+        </ng-template>
+
+        <ng-template pTemplate="emptymessage">
+            <tr>
+                <td colspan="8" class="text-center">No hero layouts found.</td>
+            </tr>
+        </ng-template>
+    </p-table>
+
+    <!-- Hero Layout Dialog -->
+    <p-dialog [(visible)]="heroLayoutDialog" 
+              [style]="{width: '100vw', maxWidth: '100vw', height: '100vh'}" 
+              [modal]="true"
+              [draggable]="false" 
+              [resizable]="true" 
+              [closable]="true"
+              [showHeader]="false"
+              styleClass="featured-collection-dialog-pro">
+        @if(heroLayoutDialog) {
+        
+        <!-- Professional Header -->
+        <div class="dialog-header-pro">
+            <div class="header-content">
+                <div class="header-left">
+                    <div class="header-icon-gradient">
+                        <i class="pi {{ selectedHeroLayout ? 'pi-pencil' : 'pi-sparkles' }}"></i>
+                    </div>
+                    <div class="header-text">
+                        <h2 class="header-title">
+                            {{ selectedHeroLayout ? 'Edit Hero Layout' : 'Create New Hero Layout' }}
+                        </h2>
+                        <p class="header-subtitle">
+                            {{ selectedHeroLayout ? 'Update your hero layout settings' : 'Design a beautiful hero section' }}
+                        </p>
+                    </div>
+                </div>
+                <div class="header-right">
+                    @if(itemsArray.length > 0) {
+                    <div class="progress-badge-pro">
+                        <i class="pi pi-check-circle"></i>
+                        <span>{{ itemsArray.length }} {{ itemsArray.length === 1 ? 'Item' : 'Items' }}</span>
+                    </div>
+                    }
+                    <button type="button" pButton icon="pi pi-times" 
+                            class="p-button-rounded p-button-text p-button-plain close-btn-pro" 
+                            (click)="hideDialog()"></button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Form Content -->
+        <div class="dialog-body-pro">
+            <form [formGroup]="heroLayoutForm">
+                <p-tabView>
+                    
+                    <!-- Basic Info Tab -->
+                    <p-tabPanel header="Basic Info" leftIcon="pi pi-info-circle">
+                        <div class="grid grid-cols-1 gap-6 p-6">
+                            
+                            <!-- Name -->
+                            <div class="field">
+                                <label for="name" class="block text-sm font-medium text-gray-700 mb-2">
+                                    Layout Name <small class="text-gray-500">(Optional - Unique identifier)</small>
+                                </label>
+                                <input id="name" pInputText type="text" formControlName="name" 
+                                       placeholder="e.g., home-hero, category-showcase" 
+                                       class="w-full" />
+                                <small *ngIf="submitted && heroLayoutForm.get('name')?.invalid" 
+                                       class="text-red-500">Name must be at least 3 characters</small>
+                            </div>
+
+                            <!-- Section Title -->
+                            <div class="field">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Section Title</label>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4" formGroupName="sectionTitle">
+                                    <div>
+                                        <label for="sectionTitleEn" class="block text-xs text-gray-600 mb-1">English</label>
+                                        <input id="sectionTitleEn" pInputText type="text" formControlName="en" 
+                                               placeholder="e.g., Featured Collections" class="w-full" dir="ltr" />
+                                    </div>
+                                    <div>
+                                        <label for="sectionTitleAr" class="block text-xs text-gray-600 mb-1">العربية</label>
+                                        <input id="sectionTitleAr" pInputText type="text" formControlName="ar" 
+                                               placeholder="مثل: المجموعات المميزة" class="w-full" dir="rtl" />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Section Subtitle -->
+                            <div class="field">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Section Subtitle</label>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4" formGroupName="sectionSubtitle">
+                                    <div>
+                                        <label for="subtitleEn" class="block text-xs text-gray-600 mb-1">English</label>
+                                        <input id="subtitleEn" pInputText type="text" formControlName="en" 
+                                               placeholder="e.g., Discover Our Best" class="w-full" dir="ltr" />
+                                    </div>
+                                    <div>
+                                        <label for="subtitleAr" class="block text-xs text-gray-600 mb-1">العربية</label>
+                                        <input id="subtitleAr" pInputText type="text" formControlName="ar" 
+                                               placeholder="مثل: اكتشف الأفضل" class="w-full" dir="rtl" />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Description -->
+                            <div class="field">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4" formGroupName="description">
+                                    <div>
+                                        <label for="descEn" class="block text-xs text-gray-600 mb-1">English</label>
+                                        <textarea id="descEn" pInputTextarea formControlName="en" [rows]="3" 
+                                                  class="w-full" dir="ltr" 
+                                                  placeholder="Optional description"></textarea>
+                                    </div>
+                                    <div>
+                                        <label for="descAr" class="block text-xs text-gray-600 mb-1">العربية</label>
+                                        <textarea id="descAr" pInputTextarea formControlName="ar" [rows]="3" 
+                                                  class="w-full" dir="rtl" 
+                                                  placeholder="وصف اختياري"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Display Order & Tags -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div class="field">
+                                    <label for="displayOrder" class="block text-sm font-medium text-gray-700 mb-2">Display Order</label>
+                                    <input id="displayOrder" type="number" pInputText formControlName="displayOrder" class="w-full" />
+                                </div>
+                                <div class="field">
+                                    <label for="tags" class="block text-sm font-medium text-gray-700 mb-2">Tags</label>
+                                    <p-chips id="tags" formControlName="tags" 
+                                             placeholder="Add tags (press Enter)" 
+                                             class="w-full"></p-chips>
+                                </div>
+                            </div>
+
+                        </div>
+                    </p-tabPanel>
+
+                    <!-- Items Tab -->
+                    <p-tabPanel header="Items" leftIcon="pi pi-images">
+                        <div class="p-6">
+                            <div class="flex justify-between items-center mb-4">
+                                <h3 class="text-lg font-semibold">Layout Items</h3>
+                                <p-button label="Add Item" icon="pi pi-plus" (onClick)="addItem()"></p-button>
+                            </div>
+
+                            <div formArrayName="items" class="space-y-6">
+                                @for (item of itemsArray.controls; track $index; let i = $index) {
+                                <p-card [formGroupName]="i" class="relative">
+                                    <ng-template pTemplate="header">
+                                        <div class="flex justify-between items-center p-4 bg-gray-50">
+                                            <h4 class="text-base font-medium">Item {{ i + 1 }}</h4>
+                                            <p-button icon="pi pi-trash" severity="danger" [text]="true" 
+                                                      (onClick)="removeItem(i)" 
+                                                      [disabled]="itemsArray.length === 1"></p-button>
+                                        </div>
+                                    </ng-template>
+
+                                    <div class="grid grid-cols-1 gap-4">
+                                        
+                                        <!-- Image Upload -->
+                                        <div class="field bg-blue-50 p-4 rounded-lg border-2 border-blue-200">
+                                            <label class="block text-base font-semibold text-gray-800 mb-3 flex items-center">
+                                                <i class="pi pi-image mr-2 text-blue-600"></i>
+                                                Image Upload * (Required)
+                                            </label>
+                                            <p class="text-sm text-gray-600 mb-3">
+                                                Click the area below or drag and drop an image
+                                            </p>
+                                            <app-upload-files
+                                                [index]="i"
+                                                [control]="item.get('image')!"
+                                                [multiple]="false"
+                                                [filesServer]="item.get('image')?.value"
+                                                [accept]="'image/*'">
+                                            </app-upload-files>
+                                            <small *ngIf="submitted && item.get('image')?.invalid" 
+                                                   class="text-red-500 font-bold flex items-center mt-2">
+                                                <i class="pi pi-exclamation-triangle mr-2"></i>
+                                                Image is required - Please upload an image
+                                            </small>
+                                        </div>
+
+                                        <!-- Title -->
+                                        <div class="field">
+                                            <label class="block text-sm font-medium text-gray-700 mb-2">Title *</label>
+                                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4" [formGroupName]="'title'">
+                                                <input pInputText type="text" formControlName="en" 
+                                                       placeholder="English title" dir="ltr" />
+                                                <input pInputText type="text" formControlName="ar" 
+                                                       placeholder="العنوان بالعربية" dir="rtl" />
+                                            </div>
+                                        </div>
+
+                                        <!-- Description -->
+                                        <div class="field">
+                                            <label class="block text-sm font-medium text-gray-700 mb-2">Description *</label>
+                                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4" [formGroupName]="'description'">
+                                                <textarea pInputTextarea formControlName="en" [rows]="2" 
+                                                          placeholder="English description" dir="ltr"></textarea>
+                                                <textarea pInputTextarea formControlName="ar" [rows]="2" 
+                                                          placeholder="الوصف بالعربية" dir="rtl"></textarea>
+                                            </div>
+                                        </div>
+
+                                        <!-- Button Text & Link -->
+                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div class="field">
+                                                <label class="block text-sm font-medium text-gray-700 mb-2">Button Text *</label>
+                                                <div class="grid grid-cols-2 gap-2" [formGroupName]="'buttonText'">
+                                                    <input pInputText type="text" formControlName="en" 
+                                                           placeholder="Shop Now" dir="ltr" />
+                                                    <input pInputText type="text" formControlName="ar" 
+                                                           placeholder="تسوق الآن" dir="rtl" />
+                                                </div>
+                                            </div>
+                                            <div class="field">
+                                                <label class="block text-sm font-medium text-gray-700 mb-2">Button Link *</label>
+                                                <input pInputText type="text" formControlName="buttonLink" 
+                                                       placeholder="/products" class="w-full" />
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </p-card>
+                                }
+                            </div>
+
+                            @if(itemsArray.length === 0) {
+                            <div class="text-center py-8 text-gray-500">
+                                <i class="pi pi-images text-4xl mb-4"></i>
+                                <p>No items added. Click "Add Item" to start.</p>
+                            </div>
+                            }
+                        </div>
+                    </p-tabPanel>
+
+                    <!-- Grid Config Tab -->
+                    <p-tabPanel header="Grid Layout" leftIcon="pi pi-th-large">
+                        <div class="p-6">
+                            <app-hero-grid-builder
+                                [collectionsCount]="itemsArray.length"
+                                [config]="heroLayoutForm.get('gridConfig')?.value"
+                                (configChange)="onGridConfigChange($event)">
+                            </app-hero-grid-builder>
+                        </div>
+                    </p-tabPanel>
+
+                </p-tabView>
+            </form>
+        </div>
+
+        <!-- Footer Actions -->
+        <div class="dialog-footer-pro">
+            <p-button label="Cancel" icon="pi pi-times" [text]="true" (onClick)="hideDialog()"></p-button>
+            <p-button label="Save" icon="pi pi-check" (onClick)="saveHeroLayout()"></p-button>
+        </div>
+
+        }
+    </p-dialog>
+
+</div>
+

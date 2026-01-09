@@ -54,6 +54,10 @@ export const appRoutes: Routes = [
                 loadComponent: () => import('./app/modules/featured-collections/featured-collections-list/featured-collections-list.component').then(m => m.FeaturedCollectionsListComponent)
             },
             {
+                path: 'hero-layouts',
+                loadComponent: () => import('./app/modules/hero-layouts/hero-layouts-list/hero-layouts-list.component').then(m => m.HeroLayoutsListComponent)
+            },
+            {
                 path: 'product-features',
                 loadComponent: () => import('./app/modules/product-features/product-features-list/product-features-list.component').then(m => m.ProductFeaturesListComponent)
             },

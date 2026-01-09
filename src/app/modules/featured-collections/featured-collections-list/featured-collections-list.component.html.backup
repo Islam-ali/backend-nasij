@@ -1,0 +1,535 @@
+<div class="card">
+    <p-toast></p-toast>
+    <p-confirmDialog></p-confirmDialog>
+
+    <p-toolbar styleClass="mb-4 gap-2" *ngIf="!loading()">
+        <ng-template pTemplate="left">
+            <p-button label="New" icon="pi pi-plus" severity="success" (onClick)="openNew()" />
+        </ng-template>
+    </p-toolbar>
+
+    <p-table #dt [value]="featuredCollections()" [(selection)]="selectedFeaturedCollections" dataKey="_id"
+        [tableStyle]="{'min-width': '75rem'}" [globalFilterFields]="['sectionSubtitle','sectionTitle','description']"
+        [loading]="loading()" styleClass="p-datatable-sm">
+        <ng-template pTemplate="caption">
+            <div class="flex items-center justify-between">
+                <h5 class="m-0">Featured Collections</h5>
+                <span class="p-input-icon-left">
+                    <i class="pi pi-search"></i>
+                    <input pInputText type="text" (input)="onGlobalFilter(dt, $event)" placeholder="Search..." />
+                </span>
+            </div>
+        </ng-template>
+        <ng-template pTemplate="header">
+            <tr>
+                <th pSortableColumn="sectionSubtitle">Subtitle <p-sortIcon field="sectionSubtitle"></p-sortIcon></th>
+                <th pSortableColumn="sectionTitle">Title <p-sortIcon field="sectionTitle"></p-sortIcon></th>
+                <th pSortableColumn="description">Description <p-sortIcon field="description"></p-sortIcon></th>
+                <th>Collections Count</th>
+                <th pSortableColumn="isActive">Status <p-sortIcon field="isActive"></p-sortIcon></th>
+                <th pSortableColumn="createdAt">Created At <p-sortIcon field="createdAt"></p-sortIcon></th>
+                <th style="width: 10rem">Actions</th>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-featuredCollection>
+            <tr>
+                <td>
+                    <div class="space-y-1">
+                        <div class="font-semibold text-gray-900" dir="ltr">{{ featuredCollection.sectionSubtitle?.en || '-' }}</div>
+                        <div class="text-sm text-gray-600" dir="rtl">{{ featuredCollection.sectionSubtitle?.ar || '-' }}</div>
+                    </div>
+                </td>
+                <td>
+                    <div class="space-y-1">
+                        <div class="font-semibold text-gray-900" dir="ltr">{{ featuredCollection.sectionTitle?.en || '-' }}</div>
+                        <div class="text-sm text-gray-600" dir="rtl">{{ featuredCollection.sectionTitle?.ar || '-' }}</div>
+                    </div>
+                </td>
+                <td>
+                    <div class="space-y-1 max-w-xs">
+                        <div class="text-sm text-gray-600 truncate" dir="ltr">{{ (featuredCollection.description?.en || '').slice(0, 50) }}{{ (featuredCollection.description?.en || '').length > 50 ? '...' : '' }}</div>
+                        <div class="text-sm text-gray-500 truncate" dir="rtl">{{ (featuredCollection.description?.ar || '').slice(0, 50) }}{{ (featuredCollection.description?.ar || '').length > 50 ? '...' : '' }}</div>
+                    </div>
+                </td>
+                <td>
+                    <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
+                        {{ featuredCollection.collections.length }} items
+                    </span>
+                </td>
+                <td>
+                    <p-tag [value]="getStatusValue(featuredCollection.isActive)"
+                        [severity]="getStatusSeverity(featuredCollection.isActive)"></p-tag>
+                </td>
+                <td>{{ featuredCollection.createdAt | date:'short' }}</td>
+                <td>
+                    <div class="flex gap-2">
+                        <p-button icon="pi pi-pencil" severity="secondary"
+                            (onClick)="editFeaturedCollection(featuredCollection)" pTooltip="Edit"></p-button>
+                        <p-button [icon]="featuredCollection.isActive ? 'pi pi-eye-slash' : 'pi pi-eye'"
+                            [severity]="featuredCollection.isActive ? 'warn' : 'success'"
+                            (onClick)="toggleActive(featuredCollection)"></p-button>
+                        <p-button icon="pi pi-trash" severity="danger"
+                            (onClick)="deleteFeaturedCollection(featuredCollection)" pTooltip="Delete"></p-button>
+                    </div>
+                </td>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="emptymessage">
+            <tr>
+                <td colspan="7" class="text-center py-8">
+                    <div class="text-gray-500 flex flex-col items-center justify-center">
+                        <i class="pi pi-image text-4xl mb-4 block"></i>
+                        <p class="text-lg font-semibold mb-2">No Featured Collections</p>
+                        <p class="mb-4">Create your first featured collection to showcase your products.</p>
+                        <p-button label="Create Featured Collection" icon="pi pi-plus" (onClick)="openNew()"></p-button>
+                    </div>
+                </td>
+            </tr>
+        </ng-template>
+    </p-table>
+
+    <!-- Featured Collection Dialog -->
+    <p-dialog [(visible)]="featuredCollectionDialog" [style]="{width: '95vw', maxWidth: '1400px'}" [modal]="true"
+        [draggable]="false" [resizable]="false" [closable]="true"
+        header="{{ selectedFeaturedCollections.length > 0 ? 'Edit' : 'New' }} Featured Collection"
+        styleClass="featured-collection-dialog">
+        @if(featuredCollectionDialog) {
+        <form [formGroup]="featuredCollectionForm" class="space-y-4">
+            <!-- Tabs for better organization -->
+            <p-tabView>
+                <!-- Basic Information Tab -->
+                <p-tabPanel header="Basic Information" leftIcon="pi pi-info-circle">
+                    <div class="space-y-4">
+            <!-- Section Subtitle -->
+                        <div class="field">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Section Subtitle *</label>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4" formGroupName="sectionSubtitle">
+                    <div>
+                                    <label for="sectionSubtitleEn" class="block text-xs text-gray-600 mb-1">English</label>
+                        <input id="sectionSubtitleEn" pInputText type="text" formControlName="en" required
+                            placeholder="e.g., FEATURED COLLECTIONS" class="w-full" dir="ltr" />
+                                    <small *ngIf="featuredCollectionForm.get('sectionSubtitle.en')?.invalid && featuredCollectionForm.get('sectionSubtitle.en')?.touched" class="text-red-500 text-xs">Required</small>
+                    </div>
+                    <div>
+                                    <label for="sectionSubtitleAr" class="block text-xs text-gray-600 mb-1">العربية</label>
+                        <input id="sectionSubtitleAr" pInputText type="text" formControlName="ar" required
+                            placeholder="مثل: المجموعات المميزة" class="w-full" dir="rtl" />
+                                    <small *ngIf="featuredCollectionForm.get('sectionSubtitle.ar')?.invalid && featuredCollectionForm.get('sectionSubtitle.ar')?.touched" class="text-red-500 text-xs">مطلوب</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section Title -->
+                        <div class="field">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Section Title *</label>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4" formGroupName="sectionTitle">
+                    <div>
+                                    <label for="sectionTitleEn" class="block text-xs text-gray-600 mb-1">English</label>
+                        <input id="sectionTitleEn" pInputText type="text" formControlName="en" required
+                            placeholder="e.g., Featured Collections" class="w-full" dir="ltr" />
+                                    <small *ngIf="featuredCollectionForm.get('sectionTitle.en')?.invalid && featuredCollectionForm.get('sectionTitle.en')?.touched" class="text-red-500 text-xs">Required</small>
+                    </div>
+                    <div>
+                                    <label for="sectionTitleAr" class="block text-xs text-gray-600 mb-1">العربية</label>
+                        <input id="sectionTitleAr" pInputText type="text" formControlName="ar" required
+                            placeholder="مثل: المجموعات المميزة" class="w-full" dir="rtl" />
+                                    <small *ngIf="featuredCollectionForm.get('sectionTitle.ar')?.invalid && featuredCollectionForm.get('sectionTitle.ar')?.touched" class="text-red-500 text-xs">مطلوب</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Description -->
+                        <div class="field">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Description *</label>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4" formGroupName="description">
+                    <div>
+                                    <label for="descEn" class="block text-xs text-gray-600 mb-1">English</label>
+                        <textarea id="descEn" pInputTextarea formControlName="en" [rows]="3" class="w-full" dir="ltr"
+                                        placeholder="Enter description..."></textarea>
+                                    <small *ngIf="featuredCollectionForm.get('description.en')?.invalid && featuredCollectionForm.get('description.en')?.touched" class="text-red-500 text-xs">Required</small>
+                    </div>
+                    <div>
+                                    <label for="descAr" class="block text-xs text-gray-600 mb-1">العربية</label>
+                        <textarea id="descAr" pInputTextarea formControlName="ar" [rows]="3" class="w-full" dir="rtl"
+                                        placeholder="أدخل الوصف..."></textarea>
+                                    <small *ngIf="featuredCollectionForm.get('description.ar')?.invalid && featuredCollectionForm.get('description.ar')?.touched" class="text-red-500 text-xs">مطلوب</small>
+                    </div>
+                </div>
+            </div>
+
+                        <div class="field">
+                            <label class="flex items-center gap-2 cursor-pointer">
+                    <p-toggleSwitch formControlName="isActive"></p-toggleSwitch>
+                                <span class="text-sm font-medium text-gray-700">Active</span>
+                </label>
+            </div>
+                </div>
+                </p-tabPanel>
+                
+                <!-- Grid Configuration Tab - IMPROVED UX -->
+                <p-tabPanel header="Layout Style" leftIcon="pi pi-th-large">
+                    <div formGroupName="gridConfig" class="space-y-6">
+                        
+                        <!-- ✨ Grid Presets - Visual Selection -->
+                    <div>
+                            <h3 class="text-lg font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                                <i class="pi pi-layout text-primary-600"></i>
+                                Choose Your Layout Style
+                            </h3>
+                            <p class="text-sm text-gray-600 mb-4">Select a layout that works best for your content</p>
+                            
+                            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                                @for(preset of gridPresets; track preset.id) {
+                                <div 
+                                    class="preset-card border-2 rounded-xl p-4 cursor-pointer transition-all duration-200 hover:shadow-lg"
+                                    [class.border-primary-500]="getCurrentPreset() === preset.id"
+                                    [class.bg-primary-50]="getCurrentPreset() === preset.id"
+                                    [class.border-gray-200]="getCurrentPreset() !== preset.id"
+                                    [class.hover:border-primary-300]="getCurrentPreset() !== preset.id"
+                                    (click)="applyGridPreset(preset.id)">
+                                    
+                                    <!-- Preview Icon -->
+                                    <div class="flex justify-center items-center h-16 mb-3">
+                                        <i [class]="'pi ' + preset.icon + ' text-4xl'"
+                                           [class.text-primary-600]="getCurrentPreset() === preset.id"
+                                           [class.text-gray-400]="getCurrentPreset() !== preset.id"></i>
+                                    </div>
+                                    
+                                    <!-- Name -->
+                                    <h4 class="font-semibold text-center mb-1"
+                                        [class.text-primary-700]="getCurrentPreset() === preset.id"
+                                        [class.text-gray-900]="getCurrentPreset() !== preset.id">
+                                        {{ preset.name }}
+                                    </h4>
+                                    
+                                    <!-- Description -->
+                                    <p class="text-xs text-center text-gray-500">
+                                        {{ preset.description }}
+                                    </p>
+                                    
+                                    <!-- Selected Badge -->
+                                    @if(getCurrentPreset() === preset.id) {
+                                    <div class="mt-2 flex justify-center">
+                                        <span class="inline-flex items-center gap-1 px-2 py-1 bg-primary-100 text-primary-700 rounded-full text-xs font-medium">
+                                            <i class="pi pi-check text-xs"></i>
+                                            Selected
+                                        </span>
+                                    </div>
+                                    }
+                                </div>
+                                }
+                            </div>
+                        </div>
+
+                        <!-- Divider -->
+                        <p-divider></p-divider>
+
+                        <!-- ✨ Alignment Options - Simplified -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            
+                            <!-- Horizontal Alignment -->
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                                    <i class="pi pi-arrows-h text-primary-600"></i>
+                                    Horizontal Alignment
+                                </label>
+                                <p class="text-xs text-gray-500 mb-3">How items are positioned horizontally</p>
+                                
+                                <div class="grid grid-cols-3 gap-2">
+                                    @for(option of justifyContentOptions; track option.value) {
+                                    <div 
+                                        class="align-option border-2 rounded-lg p-3 cursor-pointer text-center transition-all"
+                                        [class.border-primary-500]="gridConfigGroup.get('justifyContent')?.value === option.value"
+                                        [class.bg-primary-50]="gridConfigGroup.get('justifyContent')?.value === option.value"
+                                        [class.border-gray-200]="gridConfigGroup.get('justifyContent')?.value !== option.value"
+                                        (click)="gridConfigGroup.get('justifyContent')?.setValue(option.value)">
+                                        <i class="pi text-xl mb-1 block"
+                                           [class.pi-align-center]="option.value === 'center'"
+                                           [class.pi-align-left]="option.value === 'start'"
+                                           [class.pi-align-right]="option.value === 'end'"
+                                           [class.pi-arrows-h]="option.value === 'between' || option.value === 'around' || option.value === 'evenly'"
+                                           [class.text-primary-600]="gridConfigGroup.get('justifyContent')?.value === option.value"></i>
+                                        <span class="text-xs font-medium">{{ option.label }}</span>
+                                    </div>
+                                    }
+                                </div>
+                            </div>
+
+                            <!-- Vertical Alignment -->
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                                    <i class="pi pi-arrows-v text-primary-600"></i>
+                                    Vertical Alignment
+                                </label>
+                                <p class="text-xs text-gray-500 mb-3">How items are positioned vertically</p>
+                                
+                                <div class="grid grid-cols-2 gap-2">
+                                    @for(option of alignItemsOptions; track option.value) {
+                                    <div 
+                                        class="align-option border-2 rounded-lg p-3 cursor-pointer text-center transition-all"
+                                        [class.border-primary-500]="gridConfigGroup.get('alignItems')?.value === option.value"
+                                        [class.bg-primary-50]="gridConfigGroup.get('alignItems')?.value === option.value"
+                                        [class.border-gray-200]="gridConfigGroup.get('alignItems')?.value !== option.value"
+                                        (click)="gridConfigGroup.get('alignItems')?.setValue(option.value)">
+                                        <i class="pi pi-arrows-v text-xl mb-1 block"
+                                           [class.text-primary-600]="gridConfigGroup.get('alignItems')?.value === option.value"></i>
+                                        <span class="text-xs font-medium">{{ option.label }}</span>
+                                    </div>
+                                    }
+                            </div>
+                            </div>
+                    </div>
+
+                        <!-- Divider -->
+                        <p-divider></p-divider>
+
+                        <!-- ✨ Advanced Options (Collapsed by default) -->
+                        <p-accordion>
+                            <p-accordionTab header="Advanced Options">
+                                <div class="space-y-4">
+                        
+                        <!-- Height Mode -->
+                        <div>
+                                        <label for="heightMode" class="block text-sm font-medium text-gray-700 mb-2">Height Mode</label>
+                            <p-dropdown id="heightMode" formControlName="heightMode" [options]="heightModeOptions" 
+                                            optionLabel="label" optionValue="value" [style]="{'width': '100%'}" placeholder="Select">
+                            </p-dropdown>
+                                        
+                                        @if(gridConfigGroup.get('heightMode')?.value && ['fixed', 'min', 'max'].includes(gridConfigGroup.get('heightMode')?.value)) {
+                                        <div class="mt-3">
+                                            <input pInputText type="text" formControlName="height" 
+                                                placeholder="e.g., 400px" class="w-full" />
+                                            <small class="text-gray-500 text-xs mt-1 block">Enter height value (e.g., 400px, 50vh)</small>
+                        </div>
+                                        }
+                                        
+                                        @if(gridConfigGroup.get('heightMode')?.value === 'aspect-ratio') {
+                                        <div class="mt-3">
+                                            <p-dropdown formControlName="aspectRatio" [options]="aspectRatioOptions" 
+                                                optionLabel="label" optionValue="value" [style]="{'width': '100%'}" 
+                                                [showClear]="true" placeholder="Select aspect ratio">
+                                            </p-dropdown>
+                                        </div>
+                                        }
+                        </div>
+
+                                    <!-- Container Width -->
+                                    <div>
+                                        <label for="width" class="block text-sm font-medium text-gray-700 mb-2">Container Width</label>
+                                        <input id="width" pInputText type="text" formControlName="width" 
+                                            placeholder="e.g., 1200px, 80%, 100vw" class="w-full" />
+                                        <small class="text-gray-500 text-xs mt-1 block">Leave empty for full width</small>
+                                    </div>
+                        </div>
+                            </p-accordionTab>
+                        </p-accordion>
+                    </div>
+                </p-tabPanel>
+            </p-tabView>
+
+            <!-- Collections Section -->
+            <div class="mt-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg font-semibold text-gray-900">Collections</h3>
+                    <p-button label="Add Collection" icon="pi pi-plus" (onClick)="addCollection()"
+                        styleClass="p-button-outlined p-button-sm"></p-button>
+                </div>
+
+                <p-accordion formArrayName="collections" [multiple]="true">
+                    @for(collectionGroup of collectionsArray.controls; let i = $index; track trackByIndex(i)) {
+                    <p-accordionTab>
+                        <ng-template pTemplate="header">
+                            <div class="flex items-center justify-between w-full pr-4">
+                                <div class="flex items-center gap-3">
+                                    <span class="font-semibold">Collection #{{ i + 1 }}</span>
+                                    @if(collectionGroup.get('title.en')?.value || collectionGroup.get('title.ar')?.value) {
+                                    <span class="text-sm text-gray-500">
+                                        - {{ collectionGroup.get('title.en')?.value || collectionGroup.get('title.ar')?.value }}
+                                    </span>
+                                    }
+                                </div>
+                            <p-button *ngIf="collectionsArray.length > 1" type="button" icon="pi pi-trash"
+                                    severity="danger" (onClick)="removeCollection(i); $event.stopPropagation()" 
+                                    styleClass="p-button-text p-button-sm" pTooltip="Remove"></p-button>
+                        </div>
+                        </ng-template>
+                        
+                        <div [formGroupName]="i" class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            <!-- Edit Form -->
+                            <div class="space-y-4">
+                                <!-- Title -->
+                                <div class="field">
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Title *</label>
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3" formGroupName="title">
+                                <div>
+                                            <label [for]="'titleEn' + i" class="block text-xs text-gray-600 mb-1">English</label>
+                                    <input [id]="'titleEn' + i" pInputText type="text" formControlName="en" required
+                                        placeholder="e.g., Summer Collection" class="w-full" dir="ltr" />
+                                            <small *ngIf="collectionGroup.get('title.en')?.invalid && collectionGroup.get('title.en')?.touched" class="text-red-500 text-xs">Required</small>
+                                </div>
+                                <div>
+                                            <label [for]="'titleAr' + i" class="block text-xs text-gray-600 mb-1">العربية</label>
+                                    <input [id]="'titleAr' + i" pInputText type="text" formControlName="ar" required
+                                        placeholder="مثل: مجموعة الصيف" class="w-full" dir="rtl" />
+                                            <small *ngIf="collectionGroup.get('title.ar')?.invalid && collectionGroup.get('title.ar')?.touched" class="text-red-500 text-xs">مطلوب</small>
+                                </div>
+                            </div>
+                        </div>
+
+                                <!-- Description -->
+                                <div class="field">
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Description *</label>
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3" formGroupName="description">
+                                <div>
+                                            <label [for]="'descEn' + i" class="block text-xs text-gray-600 mb-1">English</label>
+                                    <textarea [id]="'descEn' + i" pInputTextarea formControlName="en" [rows]="2" class="w-full" dir="ltr"
+                                                placeholder="Enter description..."></textarea>
+                                            <small *ngIf="collectionGroup.get('description.en')?.invalid && collectionGroup.get('description.en')?.touched" class="text-red-500 text-xs">Required</small>
+                                </div>
+                                <div>
+                                            <label [for]="'descAr' + i" class="block text-xs text-gray-600 mb-1">العربية</label>
+                                    <textarea [id]="'descAr' + i" pInputTextarea formControlName="ar" [rows]="2" class="w-full" dir="rtl"
+                                                placeholder="أدخل الوصف..."></textarea>
+                                            <small *ngIf="collectionGroup.get('description.ar')?.invalid && collectionGroup.get('description.ar')?.touched" class="text-red-500 text-xs">مطلوب</small>
+                                </div>
+                            </div>
+                        </div>
+
+                                <!-- Image -->
+                                <div class="field">
+                                    <label [for]="'image' + i" class="block text-sm font-medium text-gray-700 mb-2">Image *</label>
+                            @if(collectionsArray.at(i).get('image')) {
+                            <app-upload-files [control]="collectionsArray.at(i).get('image')!" [index]="i"
+                                [filesServer]="collectionsArray.at(i).get('image')?.value" [accept]="'image/*'"
+                                [multiple]="false" [attr.data-collection-index]="i"
+                                [attr.id]="'upload-' + i"></app-upload-files>
+                            }
+                                    <small *ngIf="getCollectionFieldError(i, 'image')" class="text-red-500 text-xs">{{
+                                getCollectionFieldError(i, 'image') }}</small>
+                        </div>
+
+                                <!-- Column Span -->
+                                <div class="field">
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Column Span *</label>
+                                    <div [formGroup]="getColSpanGroup(i)" class="grid grid-cols-2 md:grid-cols-4 gap-2">
+                                <div>
+                                            <label [for]="'colSpanSm' + i" class="block text-xs text-gray-600 mb-1">Mobile</label>
+                                    <p-inputNumber [id]="'colSpanSm' + i" formControlName="sm" [min]="1" [max]="12" [showButtons]="true" [style]="{'width': '100%'}" placeholder="1"></p-inputNumber>
+                                </div>
+                                <div>
+                                            <label [for]="'colSpanMd' + i" class="block text-xs text-gray-600 mb-1">Tablet</label>
+                                    <p-inputNumber [id]="'colSpanMd' + i" formControlName="md" [min]="1" [max]="12" [showButtons]="true" [style]="{'width': '100%'}" placeholder="2"></p-inputNumber>
+                                </div>
+                                <div>
+                                            <label [for]="'colSpanLg' + i" class="block text-xs text-gray-600 mb-1">Desktop</label>
+                                    <p-inputNumber [id]="'colSpanLg' + i" formControlName="lg" [min]="1" [max]="12" [showButtons]="true" [style]="{'width': '100%'}" placeholder="2"></p-inputNumber>
+                                </div>
+                                <div>
+                                            <label [for]="'colSpanXl' + i" class="block text-xs text-gray-600 mb-1">Large</label>
+                                    <p-inputNumber [id]="'colSpanXl' + i" formControlName="xl" [min]="1" [max]="12" [showButtons]="true" [style]="{'width': '100%'}" placeholder="2"></p-inputNumber>
+                                </div>
+                            </div>
+                        </div>
+
+                                <!-- Button Text -->
+                                <div class="field">
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Button Text *</label>
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3" formGroupName="buttonText">
+                                <div>
+                                            <label [for]="'buttonTextEn' + i" class="block text-xs text-gray-600 mb-1">English</label>
+                                    <input [id]="'buttonTextEn' + i" pInputText type="text" formControlName="en" required
+                                                placeholder="e.g., Shop Now" class="w-full" dir="ltr" />
+                                            <small *ngIf="collectionGroup.get('buttonText.en')?.invalid && collectionGroup.get('buttonText.en')?.touched" class="text-red-500 text-xs">Required</small>
+                                </div>
+                                <div>
+                                            <label [for]="'buttonTextAr' + i" class="block text-xs text-gray-600 mb-1">العربية</label>
+                                    <input [id]="'buttonTextAr' + i" pInputText type="text" formControlName="ar" required
+                                                placeholder="مثل: تسوق الآن" class="w-full" dir="rtl" />
+                                            <small *ngIf="collectionGroup.get('buttonText.ar')?.invalid && collectionGroup.get('buttonText.ar')?.touched" class="text-red-500 text-xs">مطلوب</small>
+                                </div>
+                            </div>
+                        </div>
+
+                                <!-- Button Link -->
+                                <div class="field">
+                                    <label [for]="'buttonLink' + i" class="block text-sm font-medium text-gray-700 mb-2">Button Link *</label>
+                                    <input [id]="'buttonLink' + i" pInputText type="text" formControlName="buttonLink" 
+                                        placeholder="/shop" class="w-full" dir="ltr" />
+                                    <small *ngIf="getCollectionFieldError(i, 'buttonLink')" class="text-red-500 text-xs">{{
+                                    getCollectionFieldError(i, 'buttonLink') }}</small>
+                            </div>
+
+                                <!-- Item Custom Style -->
+                                <div class="field">
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Item Custom Classes</label>
+                                    <textarea pInputTextarea [formControl]="getItemCustomStyleControl(i)" [rows]="3" 
+                                        class="w-full font-mono text-sm" 
+                                        placeholder="Enter Tailwind CSS classes separated by spaces:&#10;bg-white p-6 shadow-xl"></textarea>
+                                    <small class="text-gray-500 text-xs mt-1 block">Enter Tailwind CSS classes (e.g., bg-white p-6 shadow-xl)</small>
+                                </div>
+                                </div>
+
+                            <!-- Preview -->
+                            <div class="lg:sticky lg:top-4 h-fit">
+                                <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+                                    <h4 class="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                                        <i class="pi pi-eye text-blue-600"></i>
+                                        Preview
+                                    </h4>
+                                    <div class="group relative overflow-hidden rounded-lg shadow-lg transition-all duration-300"
+                                        [ngClass]="getPreviewItemContainerClasses(i)"
+                                        [ngStyle]="getPreviewItemStyle(i)">
+                                        @if(getPreviewImageUrl(collectionsArray.at(i))) {
+                                        <img [src]="getPreviewImageUrl(collectionsArray.at(i))" 
+                                            [alt]="getPreviewImageAlt(collectionsArray.at(i))"
+                                            class="w-full h-full object-cover transition-transform duration-300"
+                                            [ngStyle]="getPreviewItemStyle(i)"
+                                            onerror="this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'400\' height=\'400\'%3E%3Crect fill=\'%23e5e7eb\' width=\'400\' height=\'400\'/%3E%3Ctext fill=\'%239ca3af\' font-family=\'sans-serif\' font-size=\'20\' dy=\'10.5\' font-weight=\'bold\' x=\'50%25\' y=\'50%25\' text-anchor=\'middle\'%3ENo Image%3C/text%3E%3C/svg%3E'">
+                                        <div class="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/70 via-black/20 to-transparent">
+                                            @if(collectionsArray.at(i).get('title.en')?.value || collectionsArray.at(i).get('title.ar')?.value) {
+                                            <h3 class="text-lg font-bold text-white mb-2">
+                                                <span class="block" dir="ltr">{{collectionsArray.at(i).get('title.en')?.value || ''}}</span>
+                                                <span class="block" dir="rtl">{{collectionsArray.at(i).get('title.ar')?.value || ''}}</span>
+                                            </h3>
+                                            }
+                                            @if(collectionsArray.at(i).get('description.en')?.value || collectionsArray.at(i).get('description.ar')?.value) {
+                                            <p class="text-white/90 text-sm mb-3 line-clamp-2">
+                                                <span class="block" dir="ltr">{{collectionsArray.at(i).get('description.en')?.value || ''}}</span>
+                                                <span class="block" dir="rtl">{{collectionsArray.at(i).get('description.ar')?.value || ''}}</span>
+                                            </p>
+                                            }
+                                            @if(collectionsArray.at(i).get('buttonText.en')?.value || collectionsArray.at(i).get('buttonText.ar')?.value) {
+                                            <button class="bg-white text-gray-900 px-4 py-2 rounded-lg font-semibold text-sm hover:bg-gray-100 transition-all">
+                                                <span class="block" dir="ltr">{{collectionsArray.at(i).get('buttonText.en')?.value || ''}}</span>
+                                                <span class="block" dir="rtl">{{collectionsArray.at(i).get('buttonText.ar')?.value || ''}}</span>
+                                            </button>
+                                            }
+                                        </div>
+                                        } @else {
+                                        <div class="w-full h-64 flex items-center justify-center bg-gray-200 dark:bg-gray-700">
+                                            <div class="text-center text-gray-400">
+                                                <i class="pi pi-image text-3xl mb-2 block"></i>
+                                                <p class="text-xs">No Image</p>
+                                            </div>
+                                        </div>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </p-accordionTab>
+                    }
+                </p-accordion>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="flex justify-end gap-2 pt-4 border-t border-gray-200">
+                <p-button label="Cancel" icon="pi pi-times" (onClick)="hideDialog()"
+                    styleClass="p-button-text"></p-button>
+                <p-button label="Save" icon="pi pi-check" (onClick)="saveFeaturedCollection()"
+                    [disabled]="featuredCollectionForm.invalid || collectionsArray.length === 0"></p-button>
+            </div>
+        </form>
+        }
+    </p-dialog>
+</div>
