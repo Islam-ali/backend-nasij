@@ -58,6 +58,14 @@ export const appRoutes: Routes = [
                 loadComponent: () => import('./app/modules/hero-layouts/hero-layouts-list/hero-layouts-list.component').then(m => m.HeroLayoutsListComponent)
             },
             {
+                path: 'hero-layouts/new',
+                loadComponent: () => import('./app/modules/hero-layouts/hero-layout-form/hero-layout-form.component').then(m => m.HeroLayoutFormComponent)
+            },
+            {
+                path: 'hero-layouts/:id',
+                loadComponent: () => import('./app/modules/hero-layouts/hero-layout-form/hero-layout-form.component').then(m => m.HeroLayoutFormComponent)
+            },
+            {
                 path: 'product-features',
                 loadComponent: () => import('./app/modules/product-features/product-features-list/product-features-list.component').then(m => m.ProductFeaturesListComponent)
             },

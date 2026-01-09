@@ -1,7 +1,8 @@
-import { Component, OnInit, OnChanges, SimpleChanges, Input, Output, EventEmitter, signal } from '@angular/core';
+import { Component, OnInit, OnChanges, SimpleChanges, Input, Output, EventEmitter, signal, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, FormArray, Validators, ReactiveFormsModule, FormControl } from '@angular/forms';
 import { DragDropModule, CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
+import { Subscription } from 'rxjs';
 
 // PrimeNG
 import { ButtonModule } from 'primeng/button';
@@ -36,12 +37,14 @@ import { IProfessionalGridConfig, Responsive, IBreakpoint } from '../../../inter
   templateUrl: './hero-grid-builder.component.html',
   styleUrls: ['./hero-grid-builder.component.scss'],
 })
-export class HeroGridBuilderComponent implements OnInit, OnChanges {
+export class HeroGridBuilderComponent implements OnInit, OnChanges, OnDestroy {
   @Input() collectionsCount: number = 0;
   @Input() config?: IProfessionalGridConfig;
   @Output() configChange = new EventEmitter<IProfessionalGridConfig>();
 
   heroGridForm!: FormGroup;
+  private formSubscription?: Subscription;
+  private isLoadingConfig = false;
   
   // Breakpoints
   breakpoints: IBreakpoint[] = [
@@ -71,12 +74,18 @@ export class HeroGridBuilderComponent implements OnInit, OnChanges {
     { label: '1fr', value: '1fr' },
   ];
 
-  constructor(private fb: FormBuilder) {}
+  constructor(
+    private fb: FormBuilder,
+    private cdr: ChangeDetectorRef
+  ) {}
 
   ngOnInit(): void {
     this.initForm();
-    if (this.config) {
-      this.loadConfig(this.config);
+    // Load config if it's already available
+    if (this.config && this.heroGridForm) {
+      setTimeout(() => {
+        this.loadConfig(this.config!);
+      }, 0);
     }
   }
 
@@ -85,6 +94,56 @@ export class HeroGridBuilderComponent implements OnInit, OnChanges {
       // Re-initialize items when collections count changes
       this.initItems();
     }
+    
+    // Load config when it changes (but only if it's a real change, not just initialization)
+    if (changes['config'] && changes['config'].currentValue && this.heroGridForm) {
+      // Only load if config actually changed (not just first load or circular update)
+      const previousValue = changes['config'].previousValue;
+      const currentValue = changes['config'].currentValue;
+      
+      // Check if config really changed - compare with current form values to avoid circular updates
+      const currentFormValue = this.getCurrentFormConfig();
+      const currentFormStr = JSON.stringify(currentFormValue);
+      const newConfigStr = JSON.stringify(currentValue);
+      
+      // Only load if the new config is different from current form values
+      // This prevents loading when config is updated due to our own emitConfig
+      if (currentFormStr !== newConfigStr && previousValue !== currentValue) {
+        setTimeout(() => {
+          this.loadConfig(currentValue);
+        }, 0);
+      }
+    }
+  }
+
+  private getCurrentFormConfig(): Partial<IProfessionalGridConfig> {
+    if (!this.heroGridForm) {
+      return {};
+    }
+    
+    const formValue = this.heroGridForm.value;
+    
+    // Clean rows object
+    const cleanedRows: any = {};
+    if (formValue.rows) {
+      Object.keys(formValue.rows).forEach(key => {
+        const value = formValue.rows[key];
+        if (value !== null && value !== undefined && value !== '' && !isNaN(Number(value))) {
+          cleanedRows[key] = Number(value);
+        }
+      });
+    }
+    
+    return {
+      columns: formValue.columns || {},
+      rows: Object.keys(cleanedRows).length > 0 ? cleanedRows : undefined,
+      rowHeight: formValue.rowHeight || {},
+      gap: formValue.gap ?? 24,
+      items: formValue.items || [],
+      wrapperClass: formValue.wrapperClass || '',
+      justifyContent: formValue.justifyContent || 'center',
+      alignItems: formValue.alignItems || 'stretch',
+    };
   }
 
   initForm(): void {
@@ -117,19 +176,35 @@ export class HeroGridBuilderComponent implements OnInit, OnChanges {
     // Initialize items based on collections count
     this.initItems();
 
-    // Watch for form changes
-    this.heroGridForm.valueChanges.subscribe(() => {
-      this.emitConfig();
+    // Watch for form changes (only when user makes changes, not during loading)
+    this.formSubscription = this.heroGridForm.valueChanges.subscribe(() => {
+      if (!this.isLoadingConfig) {
+        this.emitConfig();
+      }
     });
+  }
+
+  ngOnDestroy(): void {
+    if (this.formSubscription) {
+      this.formSubscription.unsubscribe();
+    }
   }
 
   initItems(): void {
     const itemsArray = this.heroGridForm.get('items') as FormArray;
+    const wasLoading = this.isLoadingConfig;
+    this.isLoadingConfig = true; // Prevent emitConfig during items initialization
+    
     itemsArray.clear();
 
     for (let i = 0; i < this.collectionsCount; i++) {
       itemsArray.push(this.createItemGroup(i));
     }
+    
+    // Restore previous loading state
+    setTimeout(() => {
+      this.isLoadingConfig = wasLoading;
+    }, 0);
   }
 
   createItemGroup(index: number): FormGroup {
@@ -154,26 +229,82 @@ export class HeroGridBuilderComponent implements OnInit, OnChanges {
   }
 
   loadConfig(config: IProfessionalGridConfig): void {
-    if (config.columns) {
-      this.heroGridForm.patchValue({ columns: config.columns });
+    if (!config || !this.heroGridForm) {
+      return;
     }
-    if (config.rows) {
-      this.heroGridForm.patchValue({ rows: config.rows });
+
+    // Set flag to prevent emitConfig during loading
+    this.isLoadingConfig = true;
+
+    // Patch columns FormGroup
+    const columnsGroup = this.heroGridForm.get('columns') as FormGroup;
+    if (columnsGroup) {
+      const columnsValue: any = {};
+      if (config.columns) {
+        columnsValue.base = config.columns.base ?? columnsGroup.get('base')?.value ?? 1;
+        columnsValue.md = config.columns.md ?? columnsGroup.get('md')?.value ?? 2;
+        columnsValue.lg = config.columns.lg ?? columnsGroup.get('lg')?.value ?? 3;
+        columnsValue.xl = config.columns.xl ?? columnsGroup.get('xl')?.value ?? 4;
+      } else {
+        // Use current form values if config doesn't have columns
+        columnsValue.base = columnsGroup.get('base')?.value ?? 1;
+        columnsValue.md = columnsGroup.get('md')?.value ?? 2;
+        columnsValue.lg = columnsGroup.get('lg')?.value ?? 3;
+        columnsValue.xl = columnsGroup.get('xl')?.value ?? 4;
+      }
+      columnsGroup.patchValue(columnsValue, { emitEvent: false });
     }
+
+    // Patch rows FormGroup - always set all keys, null for empty values
+    const rowsGroup = this.heroGridForm.get('rows') as FormGroup;
+    if (rowsGroup) {
+      // Use values from config.rows if available, otherwise keep null
+      const rowsValue: any = {};
+      if (config.rows) {
+        // Only include keys that exist in config.rows and have non-null values
+        Object.keys(rowsGroup.controls).forEach(key => {
+          if (config.rows && key in config.rows) {
+            const value = config.rows[key as keyof typeof config.rows];
+            rowsValue[key] = value !== null && value !== undefined ? value : null;
+          } else {
+            // If key doesn't exist in config.rows, set to null
+            rowsValue[key] = null;
+          }
+        });
+      } else {
+        // If no rows in config, set all to null
+        Object.keys(rowsGroup.controls).forEach(key => {
+          rowsValue[key] = null;
+        });
+      }
+      rowsGroup.patchValue(rowsValue, { emitEvent: false });
+    }
+
+    // Patch rowHeight FormGroup
     if (config.rowHeight) {
-      this.heroGridForm.patchValue({ rowHeight: config.rowHeight });
+      const rowHeightGroup = this.heroGridForm.get('rowHeight') as FormGroup;
+      if (rowHeightGroup) {
+        rowHeightGroup.patchValue({
+          base: config.rowHeight.base ?? 'auto',
+          md: config.rowHeight.md ?? 'auto',
+          lg: config.rowHeight.lg ?? 'minmax(220px,1fr)',
+          xl: config.rowHeight.xl ?? 'minmax(220px,1fr)'
+        }, { emitEvent: false });
+      }
     }
-    if (config.gap !== undefined) {
-      this.heroGridForm.patchValue({ gap: config.gap });
+
+    // Patch simple fields
+    if (config.gap !== undefined && config.gap !== null) {
+      this.heroGridForm.patchValue({ gap: config.gap }, { emitEvent: false });
     }
     if (config.wrapperClass) {
-      this.heroGridForm.patchValue({ wrapperClass: config.wrapperClass });
+      this.heroGridForm.patchValue({ wrapperClass: config.wrapperClass }, { emitEvent: false });
     }
     if (config.justifyContent) {
-      this.heroGridForm.patchValue({ justifyContent: config.justifyContent });
+      this.heroGridForm.patchValue({ justifyContent: config.justifyContent }, { emitEvent: false });
     }
     if (config.alignItems) {
-      this.heroGridForm.patchValue({ alignItems: config.alignItems });
+      this.heroGridForm.patchValue({ alignItems: config.alignItems }, { emitEvent: false });
     }
     
     // Load items
@@ -181,27 +312,69 @@ export class HeroGridBuilderComponent implements OnInit, OnChanges {
       const itemsArray = this.heroGridForm.get('items') as FormArray;
       itemsArray.clear();
       config.items.forEach(item => {
-        itemsArray.push(this.fb.group({
-          colSpan: this.fb.group(item.colSpan || {}),
-          rowSpan: this.fb.group(item.rowSpan || {}),
-          customClass: [item.customClass || ''],
-        }));
+        const itemGroup = this.fb.group({
+          colSpan: this.fb.group({
+            base: [item.colSpan?.base ?? 1],
+            md: [item.colSpan?.md ?? 1],
+            lg: [item.colSpan?.lg ?? 1],
+            xl: [item.colSpan?.xl ?? 1]
+          }),
+          rowSpan: this.fb.group({
+            base: [item.rowSpan?.base ?? 1],
+            md: [item.rowSpan?.md ?? 1],
+            lg: [item.rowSpan?.lg ?? 1],
+            xl: [item.rowSpan?.xl ?? 1]
+          }),
+          customClass: [item.customClass || '']
+        });
+        itemsArray.push(itemGroup);
       });
     }
+
+    // Trigger change detection
+    this.cdr.detectChanges();
+    
+    // Reset flag after loading is complete
+    setTimeout(() => {
+      this.isLoadingConfig = false;
+    }, 100);
   }
 
   emitConfig(): void {
+    if (!this.heroGridForm) {
+      return;
+    }
+    
     const formValue = this.heroGridForm.value;
+    
+    // Clean rows object - remove null/undefined/empty string values
+    const cleanedRows: any = {};
+    if (formValue.rows) {
+      Object.keys(formValue.rows).forEach(key => {
+        const value = formValue.rows[key];
+        // Only include if value is a valid number
+        if (value !== null && value !== undefined && value !== '' && !isNaN(Number(value))) {
+          cleanedRows[key] = Number(value);
+        }
+      });
+    }
+    
+    // Build config object
     const config: IProfessionalGridConfig = {
-      columns: formValue.columns,
-      rows: formValue.rows,
-      rowHeight: formValue.rowHeight,
-      gap: formValue.gap,
-      items: formValue.items,
-      wrapperClass: formValue.wrapperClass,
-      justifyContent: formValue.justifyContent,
-      alignItems: formValue.alignItems,
+      columns: formValue.columns || {},
+      rowHeight: formValue.rowHeight || {},
+      gap: formValue.gap ?? 24,
+      items: formValue.items || [],
+      wrapperClass: formValue.wrapperClass || '',
+      justifyContent: formValue.justifyContent || 'center',
+      alignItems: formValue.alignItems || 'stretch',
     };
+    
+    // Only include rows if it has at least one valid value
+    if (Object.keys(cleanedRows).length > 0) {
+      config.rows = cleanedRows;
+    }
+    
     this.configChange.emit(config);
   }
 
