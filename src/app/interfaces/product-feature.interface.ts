@@ -14,6 +14,12 @@ export interface ISortingRule {
   order: 'asc' | 'desc';
 }
 
+export enum HeaderAlignment {
+  START = 'start',
+  CENTER = 'center',
+  END = 'end',
+}
+
 export interface IProductFeature {
   _id?: string;
   title: IMultiLanguageText;
@@ -26,6 +32,7 @@ export interface IProductFeature {
   createdAt?: string;
   updatedAt?: string;
 }
+
 
 
 

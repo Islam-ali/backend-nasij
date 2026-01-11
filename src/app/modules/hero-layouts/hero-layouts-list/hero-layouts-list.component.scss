@@ -1,6 +1,4 @@
-// Import featured collections styles for consistency
-@import '../../featured-collections/featured-collections-list/featured-collections-list.component.scss';
-
+@use '../../featured-collections/featured-collections-list/featured-collections-list.component.scss';
 // Additional hero layouts specific styles
 .hero-layout-preview {
   min-height: 200px;
@@ -19,5 +17,9 @@
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
   }
 }
+
+
+
+
 
 

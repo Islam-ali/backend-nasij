@@ -28,6 +28,9 @@ import { MessageModule } from 'primeng/message';
 import { SkeletonModule } from 'primeng/skeleton';
 import { InputGroupModule } from 'primeng/inputgroup';
 import { InputGroupAddonModule } from 'primeng/inputgroupaddon';
+import { TabViewModule } from 'primeng/tabview';
+import { SelectButtonModule } from 'primeng/selectbutton';
+import { DropdownModule } from 'primeng/dropdown';
 
 import { IBusinessProfile } from '../../../interfaces/business-profile.interface';
 import { BusinessProfileService } from '../../../services/business-profile.service';
@@ -38,6 +41,7 @@ import { FallbackImgDirective } from '../../../core/directives/fallback-img.dire
 import { UploadFilesComponent } from '../../../shared/components/fields/upload-files/upload-files.component';
 import { SafePipe } from '../../../core/pipes/safe.pipe';
 import { environment } from '../../../../environments/environment';
+import { HeaderAlignment } from '../../../interfaces/product-feature.interface';
 
 @Component({
   selector: 'app-business-profile-list',
@@ -67,6 +71,9 @@ import { environment } from '../../../../environments/environment';
       SkeletonModule,
       InputGroupModule,
       InputGroupAddonModule,
+      TabViewModule,
+      SelectButtonModule,
+      DropdownModule,
       UploadFilesComponent,
       SafePipe
     ],
@@ -85,6 +92,17 @@ export class BusinessProfileListComponent extends ComponentBase implements OnIni
   showEditor = signal(false);
   hasUnsavedChanges = signal(false);
   formProgress = signal(0);
+  
+  scriptPositionOptions = [
+    { label: 'Head', value: 'head', icon: 'pi pi-angle-up' },
+    { label: 'Body', value: 'body', icon: 'pi pi-angle-down' }
+  ];
+
+  headerAlignmentOptions = [
+    { label: 'Start', value: HeaderAlignment.START },
+    { label: 'Center', value: HeaderAlignment.CENTER },
+    { label: 'End', value: HeaderAlignment.END },
+  ];
 
   constructor(
     private fb: FormBuilder,
@@ -178,12 +196,34 @@ export class BusinessProfileListComponent extends ComponentBase implements OnIni
         ar: ['']
       }),
       primaryColor: ['#3B82F6'],
-      faq: this.fb.array([])
+      headerAlignment: [HeaderAlignment.CENTER],
+      faq: this.fb.array([]),
+      metaTitle: this.fb.group({
+        en: [''],
+        ar: ['']
+      }),
+      metaDescription: this.fb.group({
+        en: [''],
+        ar: ['']
+      }),
+      metaKeywords: [''],
+      metaTags: [''],
+      scripts: this.fb.array([]),
+      siteName: this.fb.group({
+        en: [''],
+        ar: ['']
+      }),
+      baseUrl: [''],
+      canonicalUrl: ['']
     });
   }
 
   get faqArray(): FormArray {
     return this.businessProfileForm.get('faq') as FormArray;
+  }
+
+  get scriptsArray(): FormArray {
+    return this.businessProfileForm.get('scripts') as FormArray;
   }
 
   get logoDarkControl(): FormControl {
@@ -228,6 +268,35 @@ export class BusinessProfileListComponent extends ComponentBase implements OnIni
       this.faqArray.setControl(currentIndex, targetGroup);
       this.faqArray.setControl(newIndex, currentGroup);
     }
+  }
+
+
+  addScript() {
+    const scriptGroup = this.fb.group({
+      position: ['head', [Validators.required]],
+      script: ['', [Validators.required]]
+    });
+    this.scriptsArray.push(scriptGroup);
+  }
+
+  removeScript(index: number) {
+    this.scriptsArray.removeAt(index);
+  }
+
+  getKeywordsArray(): string[] {
+    const value = this.businessProfileForm.get('metaKeywords')?.value || '';
+    if (typeof value === 'string') {
+      return value.split(',').map(k => k.trim()).filter(k => k.length > 0);
+    }
+    return Array.isArray(value) ? value : [];
+  }
+
+  removeKeyword(index: number): void {
+    const keywordsArray = this.getKeywordsArray();
+    keywordsArray.splice(index, 1);
+    this.businessProfileForm.patchValue({
+      metaKeywords: keywordsArray.join(', ')
+    });
   }
 
   loadBusinessProfile() {
@@ -295,7 +364,15 @@ export class BusinessProfileListComponent extends ComponentBase implements OnIni
         ar: profile.termsOfService.ar
       },
       primaryColor: profile.primaryColor || '#3B82F6',
-      faq: profile.faq
+      headerAlignment: profile.headerAlignment || HeaderAlignment.CENTER,
+      faq: profile.faq,
+      metaTitle: profile.metaTitle || { en: '', ar: '' },
+      metaDescription: profile.metaDescription || { en: '', ar: '' },
+      metaKeywords: Array.isArray(profile.metaKeywords) ? profile.metaKeywords.join(', ') : (profile.metaKeywords || ''),
+      metaTags: profile.metaTags || '',
+      siteName: profile.siteName || { en: '', ar: '' },
+      baseUrl: profile.baseUrl || '',
+      canonicalUrl: profile.canonicalUrl || ''
     });
 
     // Update logo control
@@ -304,19 +381,34 @@ export class BusinessProfileListComponent extends ComponentBase implements OnIni
 
     // Populate FAQ array
     this.faqArray.clear();
-    profile.faq.forEach(faq => {
-      const faqGroup = this.fb.group({
-        question: this.fb.group({
-          en: [faq.question.en, [Validators.required]],
-          ar: [faq.question.ar, [Validators.required]]
-        }),
-        answer: this.fb.group({
-          en: [faq.answer.en, [Validators.required]],
-          ar: [faq.answer.ar, [Validators.required]]
-        })
+    if (profile.faq) {
+      profile.faq.forEach(faq => {
+        const faqGroup = this.fb.group({
+          question: this.fb.group({
+            en: [faq.question.en, [Validators.required]],
+            ar: [faq.question.ar, [Validators.required]]
+          }),
+          answer: this.fb.group({
+            en: [faq.answer.en, [Validators.required]],
+            ar: [faq.answer.ar, [Validators.required]]
+          })
+        });
+        this.faqArray.push(faqGroup);
       });
-      this.faqArray.push(faqGroup);
-    });
+    }
+
+
+    // Populate Scripts array
+    this.scriptsArray.clear();
+    if (profile.scripts) {
+      profile.scripts.forEach(script => {
+        const scriptGroup = this.fb.group({
+          position: [script.position || 'head', [Validators.required]],
+          script: [script.script, [Validators.required]]
+        });
+        this.scriptsArray.push(scriptGroup);
+      });
+    }
   }
 
   toggleEditMode() {
@@ -390,7 +482,22 @@ export class BusinessProfileListComponent extends ComponentBase implements OnIni
     }
 
     this.saving.set(true);
-    const formData = this.businessProfileForm.value;
+    const formData = { ...this.businessProfileForm.value };
+    
+    // Convert metaKeywords from string to array
+    if (formData.metaKeywords && typeof formData.metaKeywords === 'string') {
+      formData.metaKeywords = formData.metaKeywords
+        .split(',')
+        .map((k: string) => k.trim())
+        .filter((k: string) => k.length > 0);
+    }
+    
+    // metaTags is now a string, no cleaning needed
+    // Just trim if it exists
+    if (formData.metaTags && typeof formData.metaTags === 'string') {
+      formData.metaTags = formData.metaTags.trim() || undefined;
+    }
+    
     // Logo is already a single object when multiple = false
 
     if (this.businessProfile) {
@@ -752,5 +859,11 @@ export class BusinessProfileListComponent extends ComponentBase implements OnIni
     };
     
     return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+  }
+
+  getHeaderAlignmentLabel(alignment?: HeaderAlignment): string {
+    if (!alignment) return 'Center';
+    const option = this.headerAlignmentOptions.find(opt => opt.value === alignment);
+    return option?.label || 'Center';
   }
 } 

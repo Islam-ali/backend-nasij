@@ -1,5 +1,6 @@
 import { Archived } from "../shared/components/fields/models/Archived";
 import { MultilingualText } from "../core/models/multi-language";
+import { HeaderAlignment } from "./product-feature.interface";
 
 export interface ISocialMedia {
   facebook?: string;
@@ -33,6 +34,11 @@ export interface IPaymobSettings {
   enabled: boolean;
 }
 
+export interface IScript {
+  position: 'head' | 'body';
+  script: string;
+}
+
 export interface IBusinessProfile {
   _id: string;
   logo_dark?: Archived;
@@ -46,7 +52,16 @@ export interface IBusinessProfile {
   vodafoneCashAccount: string;
   paymobSettings?: IPaymobSettings;
   primaryColor?: string;
+  headerAlignment?: HeaderAlignment;
   faq: IFAQ[];
+  metaTitle?: MultilingualText;
+  metaDescription?: MultilingualText;
+  metaKeywords?: string[];
+  metaTags?: string;
+  scripts?: IScript[];
+  siteName?: MultilingualText;
+  baseUrl?: string;
+  canonicalUrl?: string;
   createdAt: Date;
   updatedAt: Date;
 } 

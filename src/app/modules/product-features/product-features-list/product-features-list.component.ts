@@ -21,6 +21,7 @@ import { CategoryService } from '../../../services/category.service';
 import { BrandService } from '../../../services/brand.service';
 import { ICategory } from '../../../interfaces/category.interface';
 import { IBrand } from '../../../interfaces/brand.interface';
+import { TextareaModule } from 'primeng/textarea';
 
 @Component({
   selector: 'app-product-features-list',
@@ -37,6 +38,7 @@ import { IBrand } from '../../../interfaces/brand.interface';
     ToggleSwitchModule,
     ToastModule,
     ConfirmDialogModule,
+    TextareaModule,
   ],
   providers: [MessageService, ConfirmationService],
   templateUrl: './product-features-list.component.html',
@@ -82,6 +84,7 @@ export class ProductFeaturesListComponent implements OnInit, OnDestroy {
     { label: 'Ascending', value: 'asc' },
     { label: 'Descending', value: 'desc' },
   ];
+
 
   // Available filter fields (completely dynamic)
   filterFieldOptions = [
