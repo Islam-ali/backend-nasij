@@ -10,7 +10,7 @@
                                 optionLabel="label" optionValue="value" styleClass="w-32">
                             </p-dropdown>
                         </div>
-                        <p-button label="New Category" icon="pi pi-plus" class="mr-2" (click)="openNew()"
+                        <p-button [label]="'category.new' | translate" icon="pi pi-plus" class="mr-2" (click)="openNew()"
                             [style]="{'margin-right': '.5em'}">
                         </p-button>
                     </div>
@@ -22,27 +22,27 @@
                 [(selection)]="selectedCategories" selectionMode="multiple" [rowHover]="true" dataKey="_id">
 
                 <ng-template pTemplate="caption">
-                    <div class="flex flex-column md:flex-row md:justify-between md:align-items-center">
-                        <h5 class="m-0">Manage Categories</h5>
-                        <p-iconField iconPosition="left" class="ml-auto">
-                            <p-inputIcon>
-                                <i class="pi pi-search"></i>
-                            </p-inputIcon>
-                            <input pInputText type="text" (input)="onGlobalFilter($event)" placeholder="Search..."
-                                class="w-full sm:w-auto" />
-                        </p-iconField>
-                    </div>
+                        <div class="flex flex-column md:flex-row md:justify-between md:align-items-center">
+                            <h5 class="m-0">{{ 'category.manage' | translate }}</h5>
+                            <p-iconField iconPosition="left" class="ms-auto">
+                                <p-inputIcon>
+                                    <i class="pi pi-search"></i>
+                                </p-inputIcon>
+                                <input pInputText type="text" (input)="onGlobalFilter($event)" [placeholder]="'common.search' | translate"
+                                    class="w-full sm:w-auto" />
+                            </p-iconField>
+                        </div>
                 </ng-template>
 
                 <ng-template pTemplate="header">
-                    <tr>
-                        <th>Image</th>
-                        <th pSortableColumn="name">Name <p-sortIcon field="name"></p-sortIcon></th>
-                        <th pSortableColumn="sortOrder">Sort Order <p-sortIcon field="sortOrder"></p-sortIcon></th>
-                        <th pSortableColumn="isActive">Status <p-sortIcon field="isActive"></p-sortIcon></th>
-                        <th pSortableColumn="productCount">Products <p-sortIcon field="productCount"></p-sortIcon></th>
-                        <th style="width: 8rem"></th>
-                    </tr>
+                        <tr>
+                            <th>{{ 'category.image' | translate }}</th>
+                            <th pSortableColumn="name">{{ 'common.name' | translate }} <p-sortIcon field="name"></p-sortIcon></th>
+                            <th pSortableColumn="sortOrder">{{ 'category.sortOrder' | translate }} <p-sortIcon field="sortOrder"></p-sortIcon></th>
+                            <th pSortableColumn="isActive">{{ 'category.status' | translate }} <p-sortIcon field="isActive"></p-sortIcon></th>
+                            <th pSortableColumn="productCount">{{ 'category.products' | translate }} <p-sortIcon field="productCount"></p-sortIcon></th>
+                            <th style="width: 8rem">{{ 'common.actions' | translate }}</th>
+                        </tr>
                 </ng-template>
 
                 <ng-template pTemplate="body" let-category>
@@ -55,7 +55,7 @@
                         </td>
                         <td>{{category.sortOrder}}</td>
                         <td>
-                            <p-tag [value]="category.isActive ? 'Active' : 'Inactive'"
+                            <p-tag [value]="category.isActive ? ('brand.active' | translate) : ('brand.inactive' | translate)"
                                 [severity]="category.isActive ? 'success' : 'danger'"></p-tag>
                         </td>
                         <td>{{category.productCount || 0}}</td>
@@ -74,7 +74,7 @@
                         <td colspan="7" class="text-center py-6">
                             <div class="flex flex-column gap-2 items-center justify-center">
                                 <i class="pi pi-inbox text-5xl text-400"></i>
-                                <span class="text-xl text-600">No categories found.</span>
+                                <span class="text-xl text-600">{{ 'category.noData' | translate }}</span>
                             </div>
                         </td>
                     </tr>
@@ -86,7 +86,7 @@
                             <p-paginator appendTo="body" [dropdownAppendTo]="'body'" [rows]="pagination().limit" [totalRecords]="pagination().total"
                                 (onPageChange)="loadCategories($event.page , $event.rows)" [rowsPerPageOptions]="[5,10,20,30]"
                                 [pageLinkSize]="5" [showPageLinks]="true" [showCurrentPageReport]="true"
-                                currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries">
+                                currentPageReportTemplate="{{ 'category.paging' | translate }}">
                             </p-paginator>
                         </td>
                     </tr>
@@ -96,7 +96,7 @@
 
             <!-- Category Dialog -->
             <p-dialog [(visible)]="categoryDialog" [style]="{width: '70vw'}"
-                [header]="categoryForm.get('_id')?.value ? 'Edit Category' : 'New Category'" [modal]="true"
+                [header]="categoryForm.get('_id')?.value ? ('category.dialogEdit' | translate) : ('category.dialogNew' | translate)" [modal]="true"
                 class="p-fluid">
                 <ng-template pTemplate="content">
 
@@ -104,55 +104,58 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div class="field-checkbox w-full flex items-center col-span-2">
                                 <label class="block text-sm font-medium text-gray-700 me-4"
-                                    for="isActive">Active</label>
+                                    for="isActive">{{ 'category.status' | translate }}</label>
                                 <p-toggleswitch id="isActive" formControlName="isActive" />
                             </div>
                             <ng-container formGroupName="name">
                                 <div class="w-full">
-                                    <label class="block text-sm font-medium text-gray-700 mb-2" for="nameEn">Name (English) *</label>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2" for="nameEn">{{ 'common.nameEn' | translate }} *</label>
                                     <input id="nameEn" type="text" pInputText formControlName="en" class="w-full"
+                                        [placeholder]="'category.nameEnPlaceholder' | translate"
                                         [class.ng-invalid]="submitted && categoryForm.get('name.en')?.invalid" />
                                     <small class="p-error" *ngIf="submitted && categoryForm.get('name.en')?.invalid">
-                                        English name is required
+                                        {{ 'category.nameEnRequired' | translate }}
                                     </small>
                                 </div>
 
                                 <div class="w-full">
-                                    <label class="block text-sm font-medium text-gray-700 mb-2" for="nameAr">Name (Arabic) *</label>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2" for="nameAr">{{ 'common.nameAr' | translate }} *</label>
                                     <input id="nameAr" type="text" pInputText formControlName="ar" class="w-full"
+                                        [placeholder]="'category.nameArPlaceholder' | translate"
                                         [class.ng-invalid]="submitted && categoryForm.get('name.ar')?.invalid" />
                                     <small class="p-error" *ngIf="submitted && categoryForm.get('name.ar')?.invalid">
-                                        Arabic name is required
+                                        {{ 'category.nameArRequired' | translate }}
                                     </small>
                                 </div>
                             </ng-container>
 
                             <ng-container formGroupName="slug">
                                 <div class="w-full">
-                                    <label class="block text-sm font-medium text-gray-700 mb-2" for="slugEn">Slug (English) *</label>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2" for="slugEn">{{ 'category.slugEn' | translate }} *</label>
                                     <input id="slugEn" type="text" pInputText formControlName="en" class="w-full"
+                                        [placeholder]="'category.slugEnPlaceholder' | translate"
                                         [class.ng-invalid]="submitted && categoryForm.get('slug.en')?.invalid" />
                                     <small class="p-error" *ngIf="submitted && categoryForm.get('slug.en')?.invalid">
-                                        English slug is required
+                                        {{ 'category.slugEnRequired' | translate }}
                                     </small>
                                 </div>
 
                                 <div class="w-full">
-                                    <label class="block text-sm font-medium text-gray-700 mb-2" for="slugAr">Slug (Arabic) *</label>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2" for="slugAr">{{ 'category.slugAr' | translate }} *</label>
                                     <input id="slugAr" type="text" pInputText formControlName="ar" class="w-full"
+                                        [placeholder]="'category.slugArPlaceholder' | translate"
                                         [class.ng-invalid]="submitted && categoryForm.get('slug.ar')?.invalid" />
                                     <small class="p-error" *ngIf="submitted && categoryForm.get('slug.ar')?.invalid">
-                                        Arabic slug is required
+                                        {{ 'category.slugArRequired' | translate }}
                                     </small>
                                 </div>
                             </ng-container>
 
                             <div class="w-full">
-                                <label class="block text-sm font-medium text-gray-700 mb-2" for="parent">Parent
-                                    Category</label>
+                                <label class="block text-sm font-medium text-gray-700 mb-2" for="parent">{{ 'category.parent' | translate }}</label>
                                 <p-dropdown [options]="parentCategories" styleClass="w-full" formControlName="parentId"
                                     optionLabel="name" optionValue="_id" [showClear]="true"
-                                    placeholder="Select a parent category">
+                                    [placeholder]="'category.selectParent' | translate">
                                     <ng-template let-category pTemplate="item">
                                         {{ category.name | multiLanguage:currentLanguage() }}
                                     </ng-template>
@@ -160,8 +163,7 @@
                             </div>
 
                             <div class="w-full">
-                                <label class="block text-sm font-medium text-gray-700 mb-2" for="sortOrder">Sort
-                                    Order</label>
+                                <label class="block text-sm font-medium text-gray-700 mb-2" for="sortOrder">{{ 'category.sortOrder' | translate }}</label>
                                 <p-inputNumber id="sortOrder" class="w-full" formControlName="sortOrder" mode="decimal"
                                     [showButtons]="true" [min]="0" [max]="100">
                                 </p-inputNumber>
@@ -170,21 +172,21 @@
                             <ng-container formGroupName="description">
                                 <div class="w-full">
                                     <label class="block text-sm font-medium text-gray-700 mb-2"
-                                        for="descriptionEn">Description (English)</label>
+                                        for="descriptionEn">{{ 'common.descriptionEn' | translate }}</label>
                                     <textarea id="descriptionEn" class="w-full" pTextarea formControlName="en"
-                                        rows="3" placeholder="Enter English description"></textarea>
+                                        rows="3" [placeholder]="'category.descriptionEnPlaceholder' | translate"></textarea>
                                 </div>
 
                                 <div class="w-full">
                                     <label class="block text-sm font-medium text-gray-700 mb-2"
-                                        for="descriptionAr">Description (Arabic)</label>
+                                        for="descriptionAr">{{ 'common.descriptionAr' | translate }}</label>
                                     <textarea id="descriptionAr" class="w-full" pTextarea formControlName="ar"
-                                        rows="3" placeholder="أدخل الوصف بالعربية"></textarea>
+                                        rows="3" [placeholder]="'category.descriptionArPlaceholder' | translate"></textarea>
                                 </div>
                             </ng-container>
 
                             <div class="w-full col-span-2">
-                                <label class="block text-sm font-medium text-gray-700 mb-2" for="image">Image</label>
+                                <label class="block text-sm font-medium text-gray-700 mb-2" for="image">{{ 'category.image' | translate }}</label>
                                 <app-upload-files [control]="formControlImage"
                                     [filesServer]="categoryForm.get('image')?.value" [multiple]="false"
                                     [accept]="'image/*'">
@@ -196,9 +198,9 @@
                 <!-- footer -->
                 <ng-template pTemplate="footer">
                     <div class="flex justify-end gap-2">
-                        <p-button label="Cancel" severity="danger" icon="pi pi-times" (click)="hideDialog()">
+                        <p-button [label]="'common.cancel' | translate" severity="danger" icon="pi pi-times" (click)="hideDialog()">
                         </p-button>
-                        <p-button label="Save" type="submit" severity="success" icon="pi pi-check"
+                        <p-button [label]="'common.save' | translate" type="submit" severity="success" icon="pi pi-check"
                             [disabled]="categoryForm.invalid" (click)="saveCategory()">
                         </p-button>
                     </div>

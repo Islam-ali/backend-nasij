@@ -12,7 +12,7 @@ import { CommonModule } from '@angular/common';
             <div class="loading-container">
                 <div class="logo-container">
                     <div class="loading-logo">
-                        <img src="images/logo.png" alt="Pledge Logo" class="loading-logo-image">
+                        <img src="assets/images/logo.png" alt="Pledge Logo" class="loading-logo-image">
                     </div>
                 </div>
             </div>

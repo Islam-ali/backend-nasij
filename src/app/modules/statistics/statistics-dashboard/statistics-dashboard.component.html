@@ -5,15 +5,15 @@
         <div class="header-content">
             <div class="header-title">
                 <i class="pi pi-chart-line header-icon"></i>
-                <h1 class="m-0">Dashboard Statistics</h1>
+                <h1 class="m-0">{{ 'statistics.title' | translate }}</h1>
             </div>
             <div class="header-actions">
-                <button pButton pRipple label="Recalculate All" icon="pi pi-calculator" 
+                <button pButton pRipple [label]="'statistics.recalculateAll' | translate" icon="pi pi-calculator" 
                     class="p-button-warning me-2" 
                     (click)="recalculateStatistics()" 
                     [disabled]="loading()"
-                    title="Recalculate all statistics from scratch (products soldCount, packages soldCount, customer statistics)"></button>
-                <button pButton pRipple label="Refresh" icon="pi pi-refresh" 
+                    [title]="'dashboard.recalculateAllTitle' | translate"></button>
+                <button pButton pRipple [label]="'statistics.refresh' | translate" icon="pi pi-refresh" 
                     class="p-button-primary refresh-btn" 
                     (click)="refresh()" [disabled]="loading()"></button>
             </div>
@@ -24,7 +24,7 @@
     <p-card class="mb-4 filter-card">
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4 filter-grid">
             <div class="col-span-1 md:col-span-1">
-                <label class="block text-sm font-medium mb-2">الفترة</label>
+                <label class="block text-sm font-medium mb-2">{{ 'statistics.period' | translate }}</label>
                 <p-dropdown 
                     [(ngModel)]="selectedPeriod" 
                     [options]="periodOptions"
@@ -33,29 +33,29 @@
                     appendTo="body"
                     (onChange)="onPeriodChange()"
                     class="w-full"
-                    placeholder="اختر الفترة">
+                    [placeholder]="'dashboard.selectPeriod' | translate">
                 </p-dropdown>
             </div>
             <div class="col-span-1 md:col-span-1" [hidden]="!showDateRange">
-                <label class="block text-sm font-medium mb-2">من تاريخ</label>
+                <label class="block text-sm font-medium mb-2">{{ 'statistics.fromDate' | translate }}</label>
                 <p-calendar 
                     [(ngModel)]="startDate" 
                     [showIcon]="true"
                     dateFormat="dd/mm/yy"
                     appendTo="body"
-                    placeholder="اختر التاريخ"
+                    [placeholder]="'dashboard.from' | translate"
                     (onSelect)="onDateRangeChange()"
                     class="w-full">
                 </p-calendar>
             </div>
             <div class="col-span-1 md:col-span-1" [hidden]="!showDateRange">
-                <label class="block text-sm font-medium mb-2">إلى تاريخ</label>
+                <label class="block text-sm font-medium mb-2">{{ 'statistics.toDate' | translate }}</label>
                 <p-calendar 
                     [(ngModel)]="endDate" 
                     [showIcon]="true"
                     dateFormat="dd/mm/yy"
                     appendTo="body"
-                    placeholder="اختر التاريخ"
+                    [placeholder]="'dashboard.to' | translate"
                     (onSelect)="onDateRangeChange()"
                     class="w-full">
                 </p-calendar>
@@ -80,50 +80,50 @@
                 <div class="stat-card profit-revenue-card">
                     <div class="stat-card-header">
                         <i class="pi pi-dollar stat-icon"></i>
-                        <span class="stat-label">إجمالي الإيرادات</span>
+                        <span class="stat-label">{{ 'statistics.profit.revenue' | translate }}</span>
                     </div>
                     <div class="stat-card-content">
                         <h2 class="stat-value">{{ ecommerceStats.profit.revenue | currency }}</h2>
                         <div class="stat-subtitle">
-                            إجمالي المبيعات
+                            {{ 'statistics.profit.totalRevenue' | translate }}
                         </div>
                     </div>
                 </div>
                 <div class="stat-card profit-gross-card">
                     <div class="stat-card-header">
                         <i class="pi pi-chart-line stat-icon"></i>
-                        <span class="stat-label">الربح الإجمالي</span>
+                        <span class="stat-label">{{ 'statistics.profit.grossProfit' | translate }}</span>
                     </div>
                     <div class="stat-card-content">
                         <h2 class="stat-value">{{ ecommerceStats.profit.grossProfit | currency }}</h2>
                         <div class="stat-subtitle">
-                            {{ ecommerceStats.profit.grossProfitMargin | number:'1.2-2' }}% من الإيرادات
+                            {{ ecommerceStats.profit.grossProfitMargin | number:'1.2-2' }}% {{ 'statistics.profit.fromRevenue' | translate }}
                         </div>
                     </div>
                 </div>
                 <div class="stat-card profit-net-card">
                     <div class="stat-card-header">
                         <i class="pi pi-money-bill stat-icon"></i>
-                        <span class="stat-label">صافي الربح</span>
+                        <span class="stat-label">{{ 'statistics.profit.netProfit' | translate }}</span>
                     </div>
                     <div class="stat-card-content">
                         <h2 class="stat-value" [style.color]="ecommerceStats.profit.netProfit >= 0 ? '#1e293b' : '#ef4444'">
                             {{ ecommerceStats.profit.netProfit | currency }}
                         </h2>
                         <div class="stat-subtitle">
-                            {{ ecommerceStats.profit.profitMargin | number:'1.2-2' }}% من الإيرادات
+                            {{ ecommerceStats.profit.profitMargin | number:'1.2-2' }}% {{ 'statistics.profit.fromRevenue' | translate }}
                         </div>
                     </div>
                 </div>
                 <div class="stat-card profit-margin-card">
                     <div class="stat-card-header">
                         <i class="pi pi-percentage stat-icon"></i>
-                        <span class="stat-label">هامش الربح</span>
+                        <span class="stat-label">{{ 'statistics.profit.profitMargin' | translate }}</span>
                     </div>
                     <div class="stat-card-content">
                         <h2 class="stat-value">{{ ecommerceStats.profit.profitMargin | number:'1.2-2' }}%</h2>
                         <div class="stat-subtitle">
-                            نسبة الربحية
+                            {{ 'statistics.profit.profitability' | translate }}
                         </div>
                     </div>
                 </div>
@@ -136,7 +136,7 @@
                         <ng-template pTemplate="header">
                             <div class="chart-header">
                                 <i class="pi pi-chart-bar chart-icon"></i>
-                                <h5 class="m-0">تحليل الربح</h5>
+                                <h5 class="m-0">{{ 'statistics.profit.analysis' | translate }}</h5>
                             </div>
                         </ng-template>
                         <div class="chart-container profit-chart-container">
@@ -149,7 +149,7 @@
                         <ng-template pTemplate="header">
                             <div class="chart-header">
                                 <i class="pi pi-chart-bar chart-icon"></i>
-                                <h5 class="m-0">توزيع الربح</h5>
+                                <h5 class="m-0">{{ 'statistics.profit.distribution' | translate }}</h5>
                             </div>
                         </ng-template>
                         <div class="chart-container profit-chart-container">
@@ -165,7 +165,7 @@
             <div class="stat-card revenue-card today">
                 <div class="stat-card-header">
                     <i class="pi pi-calendar stat-icon"></i>
-                    <span class="stat-label">Today Sales</span>
+                    <span class="stat-label">{{ 'statistics.sales.today' | translate }}</span>
                 </div>
                 <div class="stat-card-content">
                     <h2 class="stat-value">{{ ecommerceStats.revenue.today.revenue | currency }}</h2>
@@ -181,7 +181,7 @@
             <div class="stat-card revenue-card month">
                 <div class="stat-card-header">
                     <i class="pi pi-calendar-plus stat-icon"></i>
-                    <span class="stat-label">Month Sales</span>
+                    <span class="stat-label">{{ 'statistics.sales.month' | translate }}</span>
                 </div>
                 <div class="stat-card-content">
                     <h2 class="stat-value">{{ ecommerceStats.revenue.month.revenue | currency }}</h2>
@@ -197,7 +197,7 @@
             <div class="stat-card revenue-card year">
                 <div class="stat-card-header">
                     <i class="pi pi-calendar-times stat-icon"></i>
-                    <span class="stat-label">Year Sales</span>
+                    <span class="stat-label">{{ 'statistics.sales.year' | translate }}</span>
                 </div>
                 <div class="stat-card-content">
                     <h2 class="stat-value">{{ ecommerceStats.revenue.year.revenue | currency }}</h2>
@@ -217,7 +217,7 @@
             <div class="stat-card order-card">
                 <div class="stat-card-header">
                     <i class="pi pi-shopping-cart stat-icon"></i>
-                    <span class="stat-label">Today Orders</span>
+                    <span class="stat-label">{{ 'statistics.orders.today' | translate }}</span>
                 </div>
                 <div class="stat-card-content">
                     <h2 class="stat-value">{{ ecommerceStats.orderCount.today }}</h2>
@@ -226,7 +226,7 @@
             <div class="stat-card order-card">
                 <div class="stat-card-header">
                     <i class="pi pi-shopping-bag stat-icon"></i>
-                    <span class="stat-label">Month Orders</span>
+                    <span class="stat-label">{{ 'statistics.orders.month' | translate }}</span>
                 </div>
                 <div class="stat-card-content">
                     <h2 class="stat-value">{{ ecommerceStats.orderCount.month }}</h2>
@@ -235,7 +235,7 @@
             <div class="stat-card order-card pending">
                 <div class="stat-card-header">
                     <i class="pi pi-clock stat-icon"></i>
-                    <span class="stat-label">Pending Orders</span>
+                    <span class="stat-label">{{ 'statistics.orders.pending' | translate }}</span>
                 </div>
                 <div class="stat-card-content">
                     <h2 class="stat-value">{{ ecommerceStats.orderCount.pending }}</h2>
@@ -244,7 +244,7 @@
             <div class="stat-card order-card paid">
                 <div class="stat-card-header">
                     <i class="pi pi-check-circle stat-icon"></i>
-                    <span class="stat-label">Paid Orders</span>
+                    <span class="stat-label">{{ 'statistics.orders.paid' | translate }}</span>
                 </div>
                 <div class="stat-card-content">
                     <h2 class="stat-value">{{ ecommerceStats.orderCount.paid }}</h2>
@@ -259,7 +259,7 @@
                     <ng-template pTemplate="header">
                         <div class="chart-header">
                             <i class="pi pi-chart-bar chart-icon"></i>
-                            <h5 class="m-0">Sales Overview</h5>
+                            <h5 class="m-0">{{ 'statistics.sales.overview' | translate }}</h5>
                         </div>
                     </ng-template>
                     <div class="chart-container">
@@ -272,7 +272,7 @@
                     <ng-template pTemplate="header">
                         <div class="chart-header">
                             <i class="pi pi-chart-line chart-icon"></i>
-                            <h5 class="m-0">Sales Trend (Last 7 Days)</h5>
+                            <h5 class="m-0">{{ 'statistics.sales.trend' | translate }}</h5>
                         </div>
                     </ng-template>
                     <div class="chart-container">
@@ -288,7 +288,7 @@
                     <ng-template pTemplate="header">
                         <div class="chart-header">
                             <i class="pi pi-credit-card chart-icon"></i>
-                            <h5 class="m-0">Payment Methods</h5>
+                            <h5 class="m-0">{{ 'statistics.paymentMethods' | translate }}</h5>
                         </div>
                     </ng-template>
                     <div class="chart-container">
@@ -301,21 +301,21 @@
                     <ng-template pTemplate="header">
                         <div class="chart-header">
                             <i class="pi pi-dollar chart-icon"></i>
-                            <h5 class="m-0">Average Order Value</h5>
+                            <h5 class="m-0">{{ 'statistics.averageOrderValue' | translate }}</h5>
                         </div>
                     </ng-template>
                     <div class="average-value-content">
                         <div class="average-value-main">
-                            <label class="average-label">Average</label>
+                            <label class="average-label">{{ 'statistics.average' | translate }}</label>
                             <h3 class="average-value">{{ ecommerceStats.averageOrderValue.averageOrderValue | currency }}</h3>
                         </div>
                         <div class="average-value-range">
                             <div class="range-item">
-                                <label class="range-label">Min</label>
+                                <label class="range-label">{{ 'statistics.min' | translate }}</label>
                                 <p class="range-value">{{ ecommerceStats.averageOrderValue.minOrderValue | currency }}</p>
                             </div>
                             <div class="range-item">
-                                <label class="range-label">Max</label>
+                                <label class="range-label">{{ 'statistics.max' | translate }}</label>
                                 <p class="range-value">{{ ecommerceStats.averageOrderValue.maxOrderValue | currency }}</p>
                             </div>
                         </div>
@@ -330,17 +330,17 @@
                 <ng-template pTemplate="header">
                     <div class="table-header">
                         <i class="pi pi-star table-icon"></i>
-                        <h5 class="m-0">Top Selling Products</h5>
+                        <h5 class="m-0">{{ 'statistics.products.topSelling' | translate }}</h5>
                     </div>
                 </ng-template>
                 <p-table [value]="ecommerceStats.topProducts" [paginator]="true" [rows]="10" 
                     styleClass="p-datatable-gridlines enhanced-table">
                     <ng-template pTemplate="header">
                         <tr>
-                            <th>Product</th>
-                            <th>Price</th>
-                            <th>Sold Count</th>
-                            <th>Total Revenue</th>
+                            <th>{{ 'statistics.products.product' | translate }}</th>
+                            <th>{{ 'common.price' | translate }}</th>
+                            <th>{{ 'statistics.products.soldCount' | translate }}</th>
+                            <th>{{ 'statistics.products.totalRevenue' | translate }}</th>
                         </tr>
                     </ng-template>
                     <ng-template pTemplate="body" let-product>
@@ -362,17 +362,17 @@
                     <ng-template pTemplate="header">
                         <div class="table-header">
                             <i class="pi pi-users table-icon"></i>
-                            <h5 class="m-0">Top Customers by Orders</h5>
+                            <h5 class="m-0">{{ 'statistics.customers.topByOrders' | translate }}</h5>
                         </div>
                     </ng-template>
                     <p-table [value]="ecommerceStats.topCustomersByOrders" [paginator]="true" [rows]="5" 
                         styleClass="p-datatable-gridlines enhanced-table">
                         <ng-template pTemplate="header">
                             <tr>
-                                <th>Name</th>
-                                <th>Phone</th>
-                                <th>Orders</th>
-                                <th>Total Amount</th>
+                                <th>{{ 'common.name' | translate }}</th>
+                                <th>{{ 'statistics.customers.phone' | translate }}</th>
+                                <th>{{ 'statistics.orders.orders' | translate }}</th>
+                                <th>{{ 'statistics.customers.totalAmount' | translate }}</th>
                             </tr>
                         </ng-template>
                         <ng-template pTemplate="body" let-customer>
@@ -391,17 +391,17 @@
                     <ng-template pTemplate="header">
                         <div class="table-header">
                             <i class="pi pi-wallet table-icon"></i>
-                            <h5 class="m-0">Top Customers by Amount</h5>
+                            <h5 class="m-0">{{ 'statistics.customers.topByAmount' | translate }}</h5>
                         </div>
                     </ng-template>
                     <p-table [value]="ecommerceStats.topCustomersByAmount" [paginator]="true" [rows]="5" 
                         styleClass="p-datatable-gridlines enhanced-table">
                         <ng-template pTemplate="header">
                             <tr>
-                                <th>Name</th>
-                                <th>Phone</th>
-                                <th>Orders</th>
-                                <th>Total Amount</th>
+                                <th>{{ 'common.name' | translate }}</th>
+                                <th>{{ 'statistics.customers.phone' | translate }}</th>
+                                <th>{{ 'statistics.orders.orders' | translate }}</th>
+                                <th>{{ 'statistics.customers.totalAmount' | translate }}</th>
                             </tr>
                         </ng-template>
                         <ng-template pTemplate="body" let-customer>
@@ -423,16 +423,16 @@
                 <ng-template pTemplate="header">
                     <div class="table-header">
                         <i class="pi pi-map-marker table-icon"></i>
-                        <h5 class="m-0">Top States by Sales</h5>
+                        <h5 class="m-0">{{ 'statistics.states.topBySales' | translate }}</h5>
                     </div>
                 </ng-template>
                 <p-table [value]="ecommerceStats.topStates" [paginator]="true" [rows]="10" 
                     styleClass="p-datatable-gridlines enhanced-table">
                     <ng-template pTemplate="header">
                         <tr>
-                            <th>State</th>
-                            <th>Orders</th>
-                            <th>Total Revenue</th>
+                            <th>{{ 'statistics.states.state' | translate }}</th>
+                            <th>{{ 'statistics.states.orders' | translate }}</th>
+                            <th>{{ 'statistics.products.totalRevenue' | translate }}</th>
                         </tr>
                     </ng-template>
                     <ng-template pTemplate="body" let-state>
@@ -451,7 +451,7 @@
             <div class="stat-card total-card customers">
                 <div class="stat-card-header">
                     <i class="pi pi-users stat-icon"></i>
-                    <span class="stat-label">Total Customers</span>
+                    <span class="stat-label">{{ 'statistics.customers.total' | translate }}</span>
                 </div>
                 <div class="stat-card-content">
                     <h2 class="stat-value">{{ ecommerceStats.totals.customers }}</h2>
@@ -460,7 +460,7 @@
             <div class="stat-card total-card orders">
                 <div class="stat-card-header">
                     <i class="pi pi-shopping-cart stat-icon"></i>
-                    <span class="stat-label">Total Orders</span>
+                    <span class="stat-label">{{ 'statistics.orders.totalOrders' | translate }}</span>
                 </div>
                 <div class="stat-card-content">
                     <h2 class="stat-value">{{ ecommerceStats.totals.orders }}</h2>
@@ -469,7 +469,7 @@
             <div class="stat-card total-card products">
                 <div class="stat-card-header">
                     <i class="pi pi-box stat-icon"></i>
-                    <span class="stat-label">Total Products</span>
+                    <span class="stat-label">{{ 'statistics.products.total' | translate }}</span>
                 </div>
                 <div class="stat-card-content">
                     <h2 class="stat-value">{{ ecommerceStats.totals.products }}</h2>
@@ -478,7 +478,7 @@
             <div class="stat-card total-card packages">
                 <div class="stat-card-header">
                     <i class="pi pi-gift stat-icon"></i>
-                    <span class="stat-label">Total Packages</span>
+                    <span class="stat-label">{{ 'statistics.packages.total' | translate }}</span>
                 </div>
                 <div class="stat-card-content">
                     <h2 class="stat-value">{{ ecommerceStats.totals.packages }}</h2>

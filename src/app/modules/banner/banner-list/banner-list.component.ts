@@ -39,6 +39,8 @@ import { IPackage } from '../../../interfaces/package.interface';
 import { PackageService } from '../../../services/package.service';
 import { MultiLanguagePipe } from '../../../core/pipes/multi-language.pipe';
 import { environment } from '../../../../environments/environment';
+import { TranslateService, TranslateModule } from '@ngx-translate/core';
+import { inject } from '@angular/core';
 
 @Component({
   selector: 'app-banner-list',
@@ -59,7 +61,8 @@ import { environment } from '../../../../environments/environment';
     DropdownModule,
     UploadFilesComponent,
     TextareaModule,
-    MultiLanguagePipe
+    MultiLanguagePipe,
+    TranslateModule
   ],
   providers: [MessageService, ConfirmationService],
   templateUrl: './banner-list.component.html',
@@ -81,12 +84,11 @@ export class BannerListComponent extends ComponentBase implements OnInit {
   selectedQueryParamValues = signal<{ [key: number]: any[] }>({});
   bannerForm!: FormGroup;
   
+  translate = inject(TranslateService);
+
   // Language support
   currentLanguage = signal<SupportedLanguage>('en');
-  languages = signal<{label: string, value: SupportedLanguage}[]>([
-    { label: 'English', value: 'en' },
-    { label: 'العربية', value: 'ar' }
-  ]);
+  languages = signal<{label: string, value: SupportedLanguage}[]>([]);
 
   constructor(
     private bannerService: BannerService,
@@ -101,6 +103,7 @@ export class BannerListComponent extends ComponentBase implements OnInit {
   }
 
   ngOnInit() {
+    this.initializeLanguages();
     this.loadBanners();
     this.initForm();
     this.loadparams();
@@ -108,7 +111,19 @@ export class BannerListComponent extends ComponentBase implements OnInit {
     this.loadBrands();
     this.loadProducts();
     this.loadPackages();
-    }
+    
+    this.translate.onLangChange.subscribe(() => {
+      this.initializeLanguages();
+      this.loadparams();
+    });
+  }
+
+  initializeLanguages() {
+    this.languages.set([
+      { label: this.translate.instant('common.english'), value: 'en' },
+      { label: this.translate.instant('common.arabic'), value: 'ar' }
+    ]);
+  }
     getImageUrl(filePath: string): string {
         return `${environment.baseUrl}/${filePath}`;
     }
@@ -179,8 +194,8 @@ export class BannerListComponent extends ComponentBase implements OnInit {
         console.error('Error loading banners:', error);
         this.messageService.add({
           severity: 'error',
-          summary: 'Error',
-          detail: 'Failed to load banners'
+          summary: this.translate.instant('common.error'),
+          detail: this.translate.instant('banner.failedToLoad')
         });
         this.loading.set(false);
       }
@@ -252,8 +267,8 @@ export class BannerListComponent extends ComponentBase implements OnInit {
           this.banner.set(null);
           this.messageService.add({
             severity: 'success',
-            summary: 'Successful',
-            detail: 'Banner Deleted',
+            summary: this.translate.instant('common.success'),
+            detail: this.translate.instant('banner.deletedSuccessfully'),
             life: 3000
           });
           this.loadBanners();
@@ -262,8 +277,8 @@ export class BannerListComponent extends ComponentBase implements OnInit {
           console.error('Error deleting banner:', error);
           this.messageService.add({
             severity: 'error',
-            summary: 'Error',
-            detail: 'Failed to delete banner'
+            summary: this.translate.instant('common.error'),
+            detail: this.translate.instant('banner.failedToDelete')
           });
         }
       });
@@ -294,8 +309,8 @@ export class BannerListComponent extends ComponentBase implements OnInit {
           next: (updatedBanner) => {
             this.messageService.add({
               severity: 'success',
-              summary: 'Successful',
-              detail: 'Banner Updated',
+              summary: this.translate.instant('common.success'),
+              detail: this.translate.instant('banner.updatedSuccessfully'),
               life: 3000
             });
             this.hideDialog();
@@ -305,8 +320,8 @@ export class BannerListComponent extends ComponentBase implements OnInit {
             console.error('Error updating banner:', error);
             this.messageService.add({
               severity: 'error',
-              summary: 'Error',
-              detail: 'Failed to update banner'
+              summary: this.translate.instant('common.error'),
+              detail: this.translate.instant('banner.failedToUpdate')
             });
           }
         });
@@ -316,8 +331,8 @@ export class BannerListComponent extends ComponentBase implements OnInit {
           next: (newBanner) => {
             this.messageService.add({
               severity: 'success',
-              summary: 'Successful',
-              detail: 'Banner Created',
+              summary: this.translate.instant('common.success'),
+              detail: this.translate.instant('banner.createdSuccessfully'),
               life: 3000
             });
             this.hideDialog();
@@ -327,8 +342,8 @@ export class BannerListComponent extends ComponentBase implements OnInit {
             console.error('Error creating banner:', error);
             this.messageService.add({
               severity: 'error',
-              summary: 'Error',
-              detail: 'Failed to create banner'
+              summary: this.translate.instant('common.error'),
+              detail: this.translate.instant('banner.failedToCreate')
             });
           }
         });
@@ -341,8 +356,10 @@ export class BannerListComponent extends ComponentBase implements OnInit {
       next: (updatedBanner) => {
         this.messageService.add({
           severity: 'success',
-          summary: 'Successful',
-          detail: `Banner ${updatedBanner.data.isActive ? 'Activated' : 'Deactivated'}`,
+          summary: this.translate.instant('common.success'),
+          detail: updatedBanner.data.isActive 
+            ? this.translate.instant('banner.activated') 
+            : this.translate.instant('banner.deactivated'),
           life: 3000
         });
         this.loadBanners();
@@ -351,8 +368,8 @@ export class BannerListComponent extends ComponentBase implements OnInit {
         console.error('Error toggling banner:', error);
         this.messageService.add({
           severity: 'error',
-          summary: 'Error',
-          detail: 'Failed to toggle banner status'
+          summary: this.translate.instant('common.error'),
+          detail: this.translate.instant('banner.failedToToggle')
         });
       }
     });
@@ -363,14 +380,16 @@ export class BannerListComponent extends ComponentBase implements OnInit {
   }
 
   getStatusLabel(isActive: boolean): string {
-    return isActive ? 'Active' : 'Inactive';
+    return isActive 
+      ? this.translate.instant('common.active') 
+      : this.translate.instant('common.inactive');
   }
   loadparams() {
     this.params.set([
-      { name: 'category', value: 'category' },
-      { name: 'brand', value: 'brand' },
-      { name: 'product', value: 'product' },
-      { name: 'package', value: 'package' }
+      { name: this.translate.instant('banner.paramCategory'), value: 'category' },
+      { name: this.translate.instant('banner.paramBrand'), value: 'brand' },
+      { name: this.translate.instant('banner.paramProduct'), value: 'product' },
+      { name: this.translate.instant('banner.paramPackage'), value: 'package' }
     ]);
   }
 

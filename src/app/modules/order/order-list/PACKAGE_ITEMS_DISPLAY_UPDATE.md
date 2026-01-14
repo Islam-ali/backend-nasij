@@ -23,7 +23,7 @@
     <td colspan="9" class="p-3">
         <div class="ml-4">
             <h6 class="text-sm font-semibold text-blue-800 dark:text-blue-200 mb-2">
-                <i class="pi pi-box mr-2"></i>Package Contents:
+                <i class="pi pi-box me-2"></i>Package Contents:
             </h6>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                 <div *ngFor="let packageItem of item.get('packageItems')?.value" 
@@ -65,7 +65,7 @@
     <td colspan="9" class="p-3">
         <div class="ml-4">
             <h6 class="text-sm font-semibold text-green-800 dark:text-green-200 mb-2">
-                <i class="pi pi-tag mr-2"></i>Selected Variants:
+                <i class="pi pi-tag me-2"></i>Selected Variants:
             </h6>
             <div class="flex flex-wrap gap-2">
                 <span *ngFor="let variant of item.get('selectedVariants')?.value" 

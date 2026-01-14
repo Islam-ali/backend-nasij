@@ -4,7 +4,7 @@
 
     <p-toolbar styleClass="mb-4 gap-2">
         <ng-template pTemplate="left">
-            <button pButton pRipple label="New User" icon="pi pi-plus" class="p-button-success" (click)="openNew()"></button>
+            <button pButton pRipple [label]="'user.new' | translate" icon="pi pi-plus" class="p-button-success" (click)="openNew()"></button>
             <!-- <button pButton pRipple label="Delete" icon="pi pi-trash" class="p-button-danger"
                 (click)="confirmDeleteSelected()"
                 [disabled]="!selectedUsers() || selectedUsers().length === 0"></button> -->
@@ -22,19 +22,19 @@
                 </span>
             </div> -->
             <div class="w-full">
-                <label class="block text-sm font-medium text-gray-700 mb-1">Role</label>
-                <p-dropdown [options]="roles" [(ngModel)]="filters.role" placeholder="All Roles" 
+                <label class="block text-sm font-medium text-gray-700 mb-1">{{ 'user.role' | translate }}</label>
+                <p-dropdown [options]="roles" [(ngModel)]="filters.role" [placeholder]="'user.allRoles' | translate" 
                     [showClear]="true" class="w-full"></p-dropdown>
             </div>
             <div class="w-full">
-                <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
-                <p-dropdown [options]="[{label: 'Active', value: true}, {label: 'Inactive', value: false}]" 
-                    [(ngModel)]="filters.isActive" placeholder="All Status" 
+                <label class="block text-sm font-medium text-gray-700 mb-1">{{ 'common.status' | translate }}</label>
+                <p-dropdown [options]="[{label: ('common.active' | translate), value: true}, {label: ('common.inactive' | translate), value: false}]" 
+                    [(ngModel)]="filters.isActive" [placeholder]="'user.allStatuses' | translate" 
                     [showClear]="true" class="w-full"></p-dropdown>
             </div>
             <div class="w-full flex items-end gap-2">
-                <button pButton pRipple label="Apply" icon="pi pi-filter" class="p-button-primary" (click)="applyFilters()"></button>
-                <button pButton pRipple label="Clear" icon="pi pi-times" class="p-button-secondary" (click)="clearFilters()"></button>
+                <button pButton pRipple [label]="'common.apply' | translate" icon="pi pi-filter" class="p-button-primary" (click)="applyFilters()"></button>
+                <button pButton pRipple [label]="'common.clear' | translate" icon="pi pi-times" class="p-button-secondary" (click)="clearFilters()"></button>
             </div>
         </div>
     </div>
@@ -47,10 +47,10 @@
         (onPageChange)="onPageChange($event)" styleClass="p-datatable-gridlines">
         <ng-template pTemplate="caption">
             <div class="flex align-items-center justify-content-between">
-                <h5 class="m-0">Manage Users</h5>
+                <h5 class="m-0">{{ 'user.manage' | translate }}</h5>
                 <span class="p-input-icon-left">
                     <i class="pi pi-search"></i>
-                    <input pInputText type="text" (input)="onGlobalFilter(dt, $event)" placeholder="Search..." />
+                    <input pInputText type="text" (input)="onGlobalFilter(dt, $event)" [placeholder]="'common.search' | translate" />
                 </span>
             </div>
         </ng-template>
@@ -59,14 +59,14 @@
                 <!-- <th style="width: 4rem">
                     <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
                 </th> -->
-                <th pSortableColumn="name" style="min-width:150px">Name <p-sortIcon field="name"></p-sortIcon></th>
-                <th pSortableColumn="email" style="min-width:200px">Email <p-sortIcon field="email"></p-sortIcon></th>
-                <th pSortableColumn="role" style="min-width:100px">Role <p-sortIcon field="role"></p-sortIcon></th>
-                <th style="min-width:120px">Addresses</th>
-                <th pSortableColumn="isActive" style="min-width:100px">Status <p-sortIcon field="isActive"></p-sortIcon></th>
-                <th pSortableColumn="lastLogin" style="min-width:150px">Last Login <p-sortIcon field="lastLogin"></p-sortIcon></th>
-                <th pSortableColumn="createdAt" style="min-width:150px">Created Date <p-sortIcon field="createdAt"></p-sortIcon></th>
-                <th style="min-width:10rem">Actions</th>
+                <th pSortableColumn="name" style="min-width:150px">{{ 'common.name' | translate }} <p-sortIcon field="name"></p-sortIcon></th>
+                <th pSortableColumn="email" style="min-width:200px">{{ 'common.email' | translate }} <p-sortIcon field="email"></p-sortIcon></th>
+                <th pSortableColumn="role" style="min-width:100px">{{ 'user.role' | translate }} <p-sortIcon field="role"></p-sortIcon></th>
+                <th style="min-width:120px">{{ 'user.addresses' | translate }}</th>
+                <th pSortableColumn="isActive" style="min-width:100px">{{ 'common.status' | translate }} <p-sortIcon field="isActive"></p-sortIcon></th>
+                <th pSortableColumn="lastLogin" style="min-width:150px">{{ 'user.lastLogin' | translate }} <p-sortIcon field="lastLogin"></p-sortIcon></th>
+                <th pSortableColumn="createdAt" style="min-width:150px">{{ 'user.createdDate' | translate }} <p-sortIcon field="createdAt"></p-sortIcon></th>
+                <th style="min-width:10rem">{{ 'common.actions' | translate }}</th>
             </tr>
         </ng-template>
         <ng-template pTemplate="body" let-user>
@@ -80,7 +80,7 @@
                             <span class="text-blue-600 font-semibold text-sm">{{user.name.charAt(0).toUpperCase()}}</span>
                         </div>
                         <div>
-                            <span class="font-bold">{{user.name}}</span>
+                            <span class="font-bold mb-2">{{user.name}}</span>
                             <div *ngIf="user.phone" class="text-sm text-gray-500">{{user.phone}}</div>
                         </div>
                     </div>
@@ -91,7 +91,7 @@
                 </td>
                 <td>
                     <div class="flex flex-col gap-1">
-                        <span class="text-sm">{{getAddressesCount(user.addresses)}} address(es)</span>
+                        <span class="text-sm">{{getAddressesCount(user.addresses)}} {{ 'user.addressCount' | translate }}</span>
                         <span class="text-xs text-gray-500">{{getDefaultAddress(user.addresses)}}</span>
                     </div>
                 </td>
@@ -107,18 +107,18 @@
                         {{user.lastLogin | date:'medium'}}
                     </span>
                     <ng-template #noLogin>
-                        <span class="text-gray-400">Never</span>
+                        <span class="text-gray-400">{{ 'user.never' | translate }}</span>
                     </ng-template>
                 </td>
                 <td>{{user.createdAt | date:'medium'}}</td>
                 <td>
                     <div class="flex gap-2">
                         <button pButton pRipple icon="pi pi-eye" class="p-button-rounded p-button-info" 
-                            [routerLink]="['/users', user._id]" pTooltip="View Details"></button>
+                            [routerLink]="['/users', user._id]" [pTooltip]="'common.viewDetails' | translate"></button>
                         <button pButton pRipple icon="pi pi-pencil" class="p-button-rounded p-button-success" 
-                            (click)="editUser(user)" pTooltip="Edit User"></button>
+                            (click)="editUser(user)" [pTooltip]="'common.edit' | translate "></button>
                         <button pButton pRipple icon="pi pi-trash" class="p-button-rounded p-button-warn" 
-                            (click)="deleteUser(user)" pTooltip="Delete User"></button>
+                            (click)="deleteUser(user)" [pTooltip]="'common.delete' | translate "></button>
                     </div>
                 </td>
             </tr>
@@ -133,8 +133,8 @@
                     </div>
                     <ng-template #noData>
                         <i class="pi pi-users" style="font-size: 5rem"></i>
-                        <h3>No users found</h3>
-                        <p>Start by creating your first user.</p>
+                        <h3>{{ 'user.noUsersFound' | translate }}</h3>
+                        <p>{{ 'user.noUsersFoundDescription' | translate }}</p>
                     </ng-template>
                 </td>
             </tr>
@@ -144,45 +144,45 @@
 
 <!-- User Dialog -->
 <p-dialog [(visible)]="userDialog" [style]="{width: '90vw'}" [maximizable]="true" 
-    header="{{isEdit() ? 'Edit User' : 'New User'}}" [modal]="true" styleClass="p-fluid">
+    [header]="isEdit() ? ('user.dialogEdit' | translate) : ('user.dialogNew' | translate)" [modal]="true" styleClass="p-fluid">
     <form [formGroup]="userForm" (ngSubmit)="saveUser()">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <!-- Basic Information -->
             <div class="col-span-2">
-                <h4 class="mb-3 text-lg font-semibold">Basic Information</h4>
+                <h4 class="mb-3 text-lg font-semibold">{{ 'user.basicInformation' | translate }}</h4>
             </div>
             
             <div class="w-full">
-                <label for="name" class="font-bold">Name *</label>
+                <label for="name" class="font-bold mb-2">{{ 'common.name' | translate }} *</label>
                 <input id="name" type="text" pInputText formControlName="name" class="w-full" required autofocus />
-                <small *ngIf="submitted() && userForm.get('name')?.invalid" class="p-error">Name is required and must be at least 2 characters.</small>
+                <small *ngIf="submitted() && userForm.get('name')?.invalid" class="p-error">{{ 'user.nameRequired' | translate }}</small>
             </div>
             
             <div class="w-full">
-                <label for="email" class="font-bold">Email *</label>
+                <label for="email" class="font-bold mb-2">{{ 'common.email' | translate }} *</label>
                 <input id="email" type="email" pInputText formControlName="email" class="w-full" required />
-                <small *ngIf="submitted() && userForm.get('email')?.invalid" class="p-error">Valid email is required.</small>
+                <small *ngIf="submitted() && userForm.get('email')?.invalid" class="p-error">{{ 'user.validEmailRequired' | translate }}</small>
             </div>
             
             <div class="w-full" *ngIf="showPassword()">
-                <label for="password" class="font-bold">Password *</label>
+                <label for="password" class="font-bold mb-2">{{ 'user.password' | translate }} *</label>
                 <input id="password" type="password" pInputText formControlName="password" class="w-full" required />
-                <small *ngIf="submitted() && userForm.get('password')?.invalid" class="p-error">Password must be at least 6 characters.</small>
+                <small *ngIf="submitted() && userForm.get('password')?.invalid" class="p-error">{{ 'user.passwordRequired' | translate }}</small>
             </div>
             
             <div class="w-full">
-                <label for="role" class="font-bold">Role *</label>
-                <p-dropdown [options]="roles" formControlName="role" placeholder="Select a role" class="w-full"></p-dropdown>
-                <small *ngIf="submitted() && userForm.get('role')?.invalid" class="p-error">Role is required.</small>
+                <label for="role" class="font-bold mb-2">{{ 'user.role' | translate }} *</label>
+                <p-dropdown [options]="roles" formControlName="role" [placeholder]="'user.selectRole' | translate" class="w-full"></p-dropdown>
+                <small *ngIf="submitted() && userForm.get('role')?.invalid" class="p-error">{{ 'user.roleRequired' | translate }}</small>
             </div>
             
             <div class="w-full">
-                <label for="phone" class="font-bold">Phone</label>
+                <label for="phone" class="font-bold mb-2">{{ 'order.phone' | translate }}</label>
                 <input id="phone" type="tel" pInputText formControlName="phone" class="w-full" />
             </div>
             
             <div class="w-full">
-                <label for="isActive" class="font-bold">Active Status</label>
+                <label for="isActive" class="font-bold mb-2">{{ 'user.activeStatus' | translate }}</label>
                 <div class="flex align-items-center">
                     <p-toggleSwitch formControlName="isActive" class="w-full"></p-toggleSwitch>
                 </div>
@@ -190,23 +190,23 @@
 
             <!-- Preferences -->
             <div class="col-span-2">
-                <h4 class="mb-3 text-lg font-semibold">Preferences</h4>
+                <h4 class="mb-3 text-lg font-semibold">{{ 'user.preferences' | translate }}</h4>
             </div>
             <ng-container [formGroupName]="'preferences'">
             <div class="w-full">
-                <label for="language" class="font-bold">Language</label>
-                <p-dropdown [options]="[{label: 'English', value: 'en'}, {label: 'Arabic', value: 'ar'}]" 
-                    formControlName="language" placeholder="Select language" class="w-full"></p-dropdown>
+                <label for="language" class="font-bold mb-2">{{ 'user.language' | translate }}</label>
+                <p-dropdown [options]="[{label: ('common.english' | translate), value: 'en'}, {label: ('common.arabic' | translate), value: 'ar'}]" 
+                    formControlName="language" [placeholder]="'user.selectLanguage' | translate" class="w-full"></p-dropdown>
             </div>
             
             <div class="w-full">
-                <label for="timezone" class="font-bold">Timezone</label>
+                <label for="timezone" class="font-bold mb-2">{{ 'user.timezone' | translate }}</label>
                 <p-dropdown [options]="[{label: 'UTC', value: 'UTC'}, {label: 'GMT+3', value: 'GMT+3'}]" 
-                    formControlName="timezone" placeholder="Select timezone" class="w-full"></p-dropdown>
+                    formControlName="timezone" [placeholder]="'user.selectTimezone' | translate" class="w-full"></p-dropdown>
             </div>
             
             <div class="w-full">
-                <label for="notifications" class="font-bold">Notifications</label>
+                <label for="notifications" class="font-bold mb-2">{{ 'user.notifications' | translate }}</label>
                 <div class="flex align-items-center">
                     <p-toggleSwitch formControlName="notifications" class="w-full"></p-toggleSwitch>
                 </div>
@@ -215,8 +215,8 @@
             <!-- Addresses -->
             <div class="col-span-2">
                 <div class="flex align-items-center justify-content-between mb-3">
-                    <h4 class="text-lg font-semibold">Addresses</h4>
-                    <button type="button" pButton pRipple label="Add Address" icon="pi pi-plus" class="p-button-sm" (click)="addAddress()"></button>
+                    <h4 class="text-lg font-semibold">{{ 'user.addresses' | translate }}</h4>
+                    <button type="button" pButton pRipple [label]="'user.addAddress' | translate" icon="pi pi-plus" class="p-button-sm" (click)="addAddress()"></button>
                 </div>
                 
                 <div formArrayName="addresses" class="space-y-3">
@@ -224,58 +224,58 @@
                         class="p-4 border-round border-1 border-gray-300">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                             <div class="w-full">
-                                <label class="font-bold">Address *</label>
-                                <input pInputText formControlName="address" class="w-full" placeholder="Street address" />
+                                <label class="font-bold mb-2">{{ 'user.addressRequired' | translate }}</label>
+                                <input pInputText formControlName="address" class="w-full" [placeholder]="'user.streetAddress' | translate" />
                             </div>
                             <div class="w-full">
-                                <label class="font-bold">City *</label>
-                                <input pInputText formControlName="city" class="w-full" placeholder="City" />
+                                <label class="font-bold mb-2">{{ 'user.cityRequired' | translate }}</label>
+                                <input pInputText formControlName="city" class="w-full" [placeholder]="'statistics.customers.city' | translate" />
                             </div>
                             <div class="w-full">
-                                <label class="font-bold">State/Province *</label>
-                                <input pInputText formControlName="state" class="w-full" placeholder="State" />
+                                <label class="font-bold mb-2">{{ 'user.stateRequired' | translate }}</label>
+                                <input pInputText formControlName="state" class="w-full" [placeholder]="'statistics.customers.state' | translate" />
                             </div>
                             <div class="w-full">
-                                <label class="font-bold">ZIP Code *</label>
-                                <input pInputText formControlName="zipCode" class="w-full" placeholder="ZIP Code" />
+                                <label class="font-bold mb-2">{{ 'user.zipCodeRequired' | translate }}</label>
+                                <input pInputText formControlName="zipCode" class="w-full" [placeholder]="'user.zipCode' | translate" />
                             </div>
                             <div class="w-full">
-                                <label class="font-bold">Country *</label>
-                                <input pInputText formControlName="country" class="w-full" placeholder="Country" />
+                                <label class="font-bold mb-2">{{ 'user.countryRequired' | translate }}</label>
+                                <input pInputText formControlName="country" class="w-full" [placeholder]="'statistics.customers.country' | translate" />
                             </div>
                             <div class="w-full flex items-center gap-2">
-                                <label class="font-bold">Default Address</label>
+                                <label class="font-bold mb-2">{{ 'user.defaultAddress' | translate }}</label>
                                 <p-toggleSwitch formControlName="isDefault"></p-toggleSwitch>
                             </div>
                             <div class="w-full">
-                                <button type="button" pButton pRipple label="Remove Address" icon="pi pi-trash" 
+                                <button type="button" pButton pRipple [label]="'user.removeAddress' | translate" icon="pi pi-trash" 
                                     class="p-button-danger p-button-sm" (click)="removeAddress(i)"></button>
                             </div>
                         </div>
                     </div>
                 </div>
                 
-                <small *ngIf="submitted() && userForm.get('addresses')?.invalid" class="p-error">At least one address is required.</small>
+                <small *ngIf="submitted() && userForm.get('addresses')?.invalid" class="p-error">{{ 'user.atLeastOneAddress' | translate }}</small>
             </div>
         </div>
     </form>
     
     <ng-template pTemplate="footer">
-        <button pButton pRipple label="Cancel" icon="pi pi-times" class="p-button-text" (click)="hideDialog()"></button>
-        <button pButton pRipple label="Save" icon="pi pi-check" class="p-button-text" (click)="saveUser()" [loading]="loading()"></button>
+        <button pButton pRipple [label]="'common.cancel' | translate" icon="pi pi-times" class="p-button-text" (click)="hideDialog()"></button>
+        <button pButton pRipple [label]="'common.save' | translate" icon="pi pi-check" class="p-button-text" (click)="saveUser()" [loading]="loading()"></button>
     </ng-template>
 </p-dialog>
 
 <!-- Delete User Dialog -->
 <p-dialog [(visible)]="deleteUserDialog" [style]="{width: '450px'}" header="Confirm" [modal]="true">
     <div class="confirmation-content">
-        <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem"></i>
-        <span *ngIf="user()">Are you sure you want to delete <b>{{user().name}}</b>?</span>
+        <i class="pi pi-exclamation-triangle me-3" style="font-size: 2rem"></i>
+        <span *ngIf="user()">{{ 'common.confirmDeleteMessage' | translate:{item: user().name} }}</span>
     </div>
     <ng-template pTemplate="footer">
-        <button pButton pRipple label="No" icon="pi pi-times" class="p-button-text"
+        <button pButton pRipple [label]="'common.no' | translate" icon="pi pi-times" class="p-button-text"
             (click)="deleteUserDialog = false"></button>
-        <button pButton pRipple label="Yes" icon="pi pi-check" class="p-button-text" (click)="confirmDelete()"
+        <button pButton pRipple [label]="'common.yes' | translate" icon="pi pi-check" class="p-button-text" (click)="confirmDelete()"
             [loading]="loading()"></button>
     </ng-template>
 </p-dialog>
@@ -283,13 +283,13 @@
 <!-- Delete Selected Users Dialog -->
 <p-dialog [(visible)]="deleteUsersDialog" [style]="{width: '450px'}" header="Confirm" [modal]="true">
     <div class="confirmation-content">
-        <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem"></i>
-        <span>Are you sure you want to delete the selected users?</span>
+        <i class="pi pi-exclamation-triangle me-3" style="font-size: 2rem"></i>
+        <span>{{ 'user.confirmDeleteSelected' | translate }}</span>
     </div>
     <ng-template pTemplate="footer">
-        <button pButton pRipple label="No" icon="pi pi-times" class="p-button-text"
+        <button pButton pRipple [label]="'common.no' | translate" icon="pi pi-times" class="p-button-text"
             (click)="deleteUsersDialog = false"></button>
-        <button pButton pRipple label="Yes" icon="pi pi-check" class="p-button-text" (click)="deleteSelectedUsers()"
+        <button pButton pRipple [label]="'common.yes' | translate" icon="pi pi-check" class="p-button-text" (click)="deleteSelectedUsers()"
             [loading]="loading()"></button>
     </ng-template>
 </p-dialog> 

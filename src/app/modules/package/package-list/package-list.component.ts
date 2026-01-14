@@ -4,6 +4,7 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormArray, For
 
 // PrimeNG Services
 import { ConfirmationService, MessageService } from 'primeng/api';
+import { TranslateService, TranslateModule } from '@ngx-translate/core';
 
 // PrimeNG Modules
 import { Table, TableModule } from 'primeng/table';
@@ -76,7 +77,8 @@ interface Column {
         ToggleSwitchModule,
         EditorModule,
         Skeleton,
-        MultiLanguagePipe
+        MultiLanguagePipe,
+        TranslateModule
     ],
     providers: [MessageService, ConfirmationService, PackageService]
 })
@@ -101,10 +103,19 @@ export class PackageListComponent extends ComponentBase implements OnInit {
     categories = signal<ICategory[]>([]);
     brands!: any[];
     
-    variantTypes = [
-        { label: 'Color', value: 'color' },
-        { label: 'Size', value: 'size' }
-    ];
+    variantTypes: any[] = [];
+    
+    ngOnInit() {
+        this.initializeColumns();
+        this.initializeForm();
+        this.loadPackages();
+        this.loadProducts();
+        this.loadCategories();
+        this.variantTypes = [
+            { label: this.translate.instant('package.variantColor'), value: 'color' },
+            { label: this.translate.instant('package.variantSize'), value: 'size' }
+        ];
+    }
 
     packageForm!: FormGroup;
     currentPage = 1;
@@ -117,31 +128,25 @@ export class PackageListComponent extends ComponentBase implements OnInit {
         private messageService: MessageService,
         private confirmationService: ConfirmationService,
         private fb: FormBuilder,
-        private categoryService: CategoryService
+        private categoryService: CategoryService,
+        private translate: TranslateService
     ) {
         super();
     }
 
-    ngOnInit() {
-        this.initializeColumns();
-        this.initializeForm();
-        this.loadPackages();
-        this.loadProducts();
-        this.loadCategories();
-        }
     getImageUrl(filePath: string): string {
         return `${environment.baseUrl}/${filePath}`;
     }
 
     initializeColumns() {
         this.cols = [
-            { field: 'name', header: 'Name' },
-            { field: 'price', header: 'Price' },
-            { field: 'stock', header: 'Stock' },
-            { field: 'items', header: 'Items Count' },
-            { field: 'tags', header: 'Tags' },
-            { field: 'isActive', header: 'Status' },
-            { field: 'createdAt', header: 'Created Date' }
+            { field: 'name', header: this.translate.instant('common.name') },
+            { field: 'price', header: this.translate.instant('common.price') },
+            { field: 'stock', header: this.translate.instant('package.stock') },
+            { field: 'items', header: this.translate.instant('package.itemsCount') },
+            { field: 'tags', header: this.translate.instant('package.tags') },
+            { field: 'isActive', header: this.translate.instant('common.status') },
+            { field: 'createdAt', header: this.translate.instant('package.createdDate') }
         ];
 
         this.exportColumns = this.cols.map(col => ({ title: col.header, dataKey: col.field })) as unknown as Column[];
@@ -202,8 +207,8 @@ export class PackageListComponent extends ComponentBase implements OnInit {
                 error: (error) => {
                     this.messageService.add({
                         severity: 'error',
-                        summary: 'Error',
-                        detail: 'Failed to load packages'
+                        summary: this.translate.instant('common.error'),
+                        detail: this.translate.instant('package.failedToLoad')
                     });
                 }
             });
@@ -225,8 +230,8 @@ export class PackageListComponent extends ComponentBase implements OnInit {
                 error: (error) => {
                     this.messageService.add({
                         severity: 'error',
-                        summary: 'Error',
-                        detail: 'Failed to load products'
+                        summary: this.translate.instant('common.error'),
+                        detail: this.translate.instant('product.failedToLoad')
                     });
                 }
             });
@@ -378,8 +383,8 @@ export class PackageListComponent extends ComponentBase implements OnInit {
                     if (response.success) {
                         this.messageService.add({
                             severity: 'success',
-                            summary: 'Success',
-                            detail: 'Package created successfully'
+                            summary: this.translate.instant('common.success'),
+                            detail: this.translate.instant('package.createdSuccessfully')
                         });
                         this.hideDialog();
                         this.loadPackages();
@@ -388,8 +393,8 @@ export class PackageListComponent extends ComponentBase implements OnInit {
                 error: (error) => {
                     this.messageService.add({
                         severity: 'error',
-                        summary: 'Error',
-                        detail: 'Failed to create package'
+                        summary: this.translate.instant('common.error'),
+                        detail: this.translate.instant('package.failedToCreate')
                     });
                 }
             });
@@ -407,8 +412,8 @@ export class PackageListComponent extends ComponentBase implements OnInit {
                     if (response.success) {
                         this.messageService.add({
                             severity: 'success',
-                            summary: 'Success',
-                            detail: 'Package updated successfully'
+                            summary: this.translate.instant('common.success'),
+                            detail: this.translate.instant('package.updatedSuccessfully')
                         });
                         this.hideDialog();
                         this.loadPackages();
@@ -417,8 +422,8 @@ export class PackageListComponent extends ComponentBase implements OnInit {
                 error: (error) => {
                     this.messageService.add({
                         severity: 'error',
-                        summary: 'Error',
-                        detail: 'Failed to update package'
+                        summary: this.translate.instant('common.error'),
+                        detail: this.translate.instant('package.failedToUpdate')
                     });
                 }
             });
@@ -441,8 +446,8 @@ export class PackageListComponent extends ComponentBase implements OnInit {
                     if (response.success) {
                         this.messageService.add({
                             severity: 'success',
-                            summary: 'Success',
-                            detail: 'Package deleted successfully'
+                            summary: this.translate.instant('common.success'),
+                            detail: this.translate.instant('package.deletedSuccessfully')
                         });
                         this.deletePackageDialog = false;
                         this.loadPackages();
@@ -451,8 +456,8 @@ export class PackageListComponent extends ComponentBase implements OnInit {
                 error: (error) => {
                     this.messageService.add({
                         severity: 'error',
-                        summary: 'Error',
-                        detail: 'Failed to delete package'
+                        summary: this.translate.instant('common.error'),
+                        detail: this.translate.instant('package.failedToDelete')
                     });
                 }
             });
@@ -472,8 +477,8 @@ export class PackageListComponent extends ComponentBase implements OnInit {
             .then(() => {
                 this.messageService.add({
                     severity: 'success',
-                    summary: 'Success',
-                    detail: 'Selected packages deleted successfully'
+                    summary: this.translate.instant('common.success'),
+                    detail: this.translate.instant('package.selectedPackagesDeleted')
                 });
                 this.deletePackagesDialog = false;
                 this.selectedPackages.set([]);
@@ -482,8 +487,8 @@ export class PackageListComponent extends ComponentBase implements OnInit {
             .catch(() => {
                 this.messageService.add({
                     severity: 'error',
-                    summary: 'Error',
-                    detail: 'Failed to delete some packages'
+                    summary: this.translate.instant('common.error'),
+                    detail: this.translate.instant('package.failedToDeleteSome')
                 });
             })
             .finally(() => {
@@ -506,7 +511,7 @@ export class PackageListComponent extends ComponentBase implements OnInit {
     }
 
     getStatusLabel(status: boolean): string {
-        return status ? 'Active' : 'Inactive';
+        return status ? this.translate.instant('common.active') : this.translate.instant('common.inactive');
     }
 
     getItemsCount(items: any[]): number {

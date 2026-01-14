@@ -30,6 +30,8 @@ import { BaseResponse } from '../../../core/models/baseResponse';
 import { ComponentBase } from '../../../core/directives/component-base.directive';
 import { finalize, takeUntil } from 'rxjs';
 import { MultiLanguagePipe } from '../../../core/pipes/multi-language.pipe';
+import { TranslateService, TranslateModule } from '@ngx-translate/core';
+import { inject } from '@angular/core';
 
 interface Column {
     field: string;
@@ -61,7 +63,8 @@ interface Column {
         ToggleSwitchModule,
         TooltipModule,
         InputNumberModule,
-        OrderListModule
+        OrderListModule,
+        TranslateModule
     ],
     providers: [MessageService, ConfirmationService, MenuLinkService]
 })
@@ -72,20 +75,11 @@ export class MenuLinkListComponent extends ComponentBase implements OnInit {
     loading = signal<boolean>(false);
     menuLinks = signal<IMenuLink[]>([]);
 
-    typeOptions = [
-        { label: 'Text Link', value: MenuLinkType.TEXT },
-        { label: 'Dropdown', value: MenuLinkType.DROPDOWN }
-    ];
+    translate = inject(TranslateService);
 
-    statusOptions = [
-        { label: 'Active', value: MenuLinkStatus.ACTIVE },
-        { label: 'Inactive', value: MenuLinkStatus.INACTIVE }
-    ];
-
-    methodOptions = [
-        { label: 'GET', value: 'GET' },
-        { label: 'POST', value: 'POST' }
-    ];
+    typeOptions: any[] = [];
+    statusOptions: any[] = [];
+    methodOptions: any[] = [];
 
     @ViewChild('dt') dt: Table | undefined;
     cols!: Column[];
@@ -102,13 +96,40 @@ export class MenuLinkListComponent extends ComponentBase implements OnInit {
     ngOnInit() {
         this.buildForm();
         this.loadMenuLinks();
+        this.initializeOptions();
+        this.updateColumns();
+        
+        this.translate.onLangChange.subscribe(() => {
+            this.initializeOptions();
+            this.updateColumns();
+        });
+    }
+
+    initializeOptions() {
+        this.typeOptions = [
+            { label: this.translate.instant('menuLink.type.textLink'), value: MenuLinkType.TEXT },
+            { label: this.translate.instant('menuLink.type.dropdown'), value: MenuLinkType.DROPDOWN }
+        ];
+
+        this.statusOptions = [
+            { label: this.translate.instant('common.active'), value: MenuLinkStatus.ACTIVE },
+            { label: this.translate.instant('common.inactive'), value: MenuLinkStatus.INACTIVE }
+        ];
+
+        this.methodOptions = [
+            { label: 'GET', value: 'GET' },
+            { label: 'POST', value: 'POST' }
+        ];
+    }
+
+    updateColumns() {
         this.cols = [
-            { field: 'key', header: 'Key' },
-            { field: 'title', header: 'Title' },
-            { field: 'type', header: 'Type' },
-            { field: 'status', header: 'Status' },
-            { field: 'order', header: 'Order' },
-            { field: 'actions', header: 'Actions' }
+            { field: 'key', header: this.translate.instant('menuLink.key') },
+            { field: 'title', header: this.translate.instant('menuLink.title') },
+            { field: 'type', header: this.translate.instant('menuLink.type.label') },
+            { field: 'status', header: this.translate.instant('common.status') },
+            { field: 'order', header: this.translate.instant('menuLink.order') },
+            { field: 'actions', header: this.translate.instant('common.actions') }
         ];
     }
 
@@ -182,7 +203,7 @@ export class MenuLinkListComponent extends ComponentBase implements OnInit {
                 this.menuLinks.set(res.data);
             },
             error: () => this.messageService.add({
-                severity: 'error', summary: 'Error', detail: 'Failed to load menu links', life: 3000
+                severity: 'error', summary: this.translate.instant('common.error'), detail: this.translate.instant('menuLink.failedToLoad'), life: 3000
             })
         });
     }
@@ -227,16 +248,24 @@ export class MenuLinkListComponent extends ComponentBase implements OnInit {
 
     deleteMenuLink(menuLink: IMenuLink) {
         this.confirmationService.confirm({
-            message: `Are you sure you want to delete "${menuLink.key}"?`,
-            header: 'Confirm',
+            message: this.translate.instant('menuLink.confirmDelete', { key: menuLink.key }),
+            header: this.translate.instant('common.confirm'),
             icon: 'pi pi-exclamation-triangle',
             accept: () => {
                 this.menuLinkService.deleteMenuLink(menuLink._id!).pipe(takeUntil(this.destroy$)).subscribe({
                     next: () => {
                         this.loadMenuLinks();
-                        this.messageService.add({ severity: 'success', summary: 'Deleted', detail: 'Menu link deleted' });
+                        this.messageService.add({ 
+                            severity: 'success', 
+                            summary: this.translate.instant('common.delete'), 
+                            detail: this.translate.instant('menuLink.deletedSuccessfully') 
+                        });
                     },
-                    error: () => this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Delete failed' })
+                    error: () => this.messageService.add({ 
+                        severity: 'error', 
+                        summary: this.translate.instant('common.error'), 
+                        detail: this.translate.instant('menuLink.failedToDelete') 
+                    })
                 });
             }
         });
@@ -247,7 +276,7 @@ export class MenuLinkListComponent extends ComponentBase implements OnInit {
 
         if (this.menuLinkForm.invalid) {
             this.messageService.add({
-                severity: 'error', summary: 'Error', detail: 'Please fix form errors', life: 3000
+                severity: 'error', summary: this.translate.instant('common.error'), detail: this.translate.instant('menuLink.fixFormErrors'), life: 3000
             });
             return;
         }
@@ -271,14 +300,14 @@ export class MenuLinkListComponent extends ComponentBase implements OnInit {
                 this.loadMenuLinks();
                 this.messageService.add({
                     severity: 'success',
-                    summary: formValue._id ? 'Updated' : 'Created',
-                    detail: `Menu link ${formValue._id ? 'updated' : 'created'} successfully`
+                    summary: formValue._id ? this.translate.instant('common.update') : this.translate.instant('common.create'),
+                    detail: formValue._id ? this.translate.instant('menuLink.updatedSuccessfully') : this.translate.instant('menuLink.createdSuccessfully')
                 });
                 this.hideDialog();
             },
             error: (error) => {
                 this.messageService.add({
-                    severity: 'error', summary: 'Error', detail: error.error?.message || 'Save failed', life: 3000
+                    severity: 'error', summary: this.translate.instant('common.error'), detail: error.error?.message || this.translate.instant('menuLink.failedToSave'), life: 3000
                 });
             }
         });
@@ -300,6 +329,18 @@ export class MenuLinkListComponent extends ComponentBase implements OnInit {
 
     getTypeSeverity(type: MenuLinkType) {
         return type === MenuLinkType.TEXT ? 'info' : 'warning';
+    }
+
+    getTypeLabel(type: MenuLinkType): string {
+        return type === MenuLinkType.TEXT 
+            ? this.translate.instant('menuLink.type.text') 
+            : this.translate.instant('menuLink.type.dropdown');
+    }
+
+    getStatusLabel(status: MenuLinkStatus): string {
+        return status === MenuLinkStatus.ACTIVE 
+            ? this.translate.instant('common.active') 
+            : this.translate.instant('common.inactive');
     }
 
     get getType() {

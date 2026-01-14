@@ -63,6 +63,80 @@
     }
 }
 
+/* RTL layout fixes */
+[dir='rtl'] {
+    @media (min-width: 992px) {
+        .layout-wrapper {
+            &.layout-overlay {
+                .layout-main-container {
+                    margin-left: 0;
+                    padding-left: 2rem;
+                }
+
+                .layout-sidebar {
+                    left: auto;
+                    right: 0;
+                    transform: translateX(100%);
+                    border-right: 0;
+                    border-left: 1px solid var(--surface-border);
+                    border-top-left-radius: var(--content-border-radius);
+                    border-bottom-left-radius: var(--content-border-radius);
+                    border-top-right-radius: 0;
+                    border-bottom-right-radius: 0;
+                }
+
+                &.layout-overlay-active {
+                    .layout-sidebar {
+                        transform: translateX(0);
+                    }
+                }
+            }
+
+            &.layout-static {
+                .layout-main-container {
+                    margin-left: 0;
+                    margin-right: 22rem;
+                }
+
+                &.layout-static-inactive {
+                    .layout-sidebar {
+                        transform: translateX(100%);
+                        left: auto;
+                        right: 0;
+                    }
+
+                    .layout-main-container {
+                        margin-right: 0;
+                        padding-right: 2rem;
+                    }
+                }
+            }
+        }
+    }
+
+    @media (max-width: 991px) {
+        .layout-wrapper {
+            .layout-main-container {
+                margin-left: 0;
+                padding-left: 2rem;
+                padding-right: 2rem;
+            }
+
+            .layout-sidebar {
+                left: auto;
+                right: 0;
+                transform: translateX(100%);
+            }
+
+            &.layout-mobile-active {
+                .layout-sidebar {
+                    transform: translateX(0);
+                }
+            }
+        }
+    }
+}
+
 @media (max-width: 991px) {
     .blocked-scroll {
         overflow: hidden;

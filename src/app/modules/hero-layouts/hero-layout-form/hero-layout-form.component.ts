@@ -2,6 +2,8 @@ import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, FormArray, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { TranslateService, TranslateModule } from '@ngx-translate/core';
+import { inject } from '@angular/core';
 
 // PrimeNG
 import { ButtonModule } from 'primeng/button';
@@ -39,7 +41,8 @@ import { TextareaModule } from 'primeng/textarea';
     InputSwitchModule,
     TextareaModule,
     HeroGridBuilderComponent,
-    UploadFilesComponent
+    UploadFilesComponent,
+    TranslateModule
   ],
   templateUrl: './hero-layout-form.component.html',
   styleUrls: ['./hero-layout-form.component.scss'],
@@ -51,6 +54,7 @@ export class HeroLayoutFormComponent implements OnInit {
   heroLayoutForm!: FormGroup;
   heroLayoutId: string | null = null;
   isEditMode = false;
+  translate = inject(TranslateService);
 
   constructor(
     private fb: FormBuilder,
@@ -162,8 +166,8 @@ export class HeroLayoutFormComponent implements OnInit {
       error: (error) => {
         this.messageService.add({
           severity: 'error',
-          summary: 'Error',
-          detail: 'Failed to load hero layout'
+          summary: this.translate.instant('common.error'),
+          detail: this.translate.instant('heroLayout.failedToLoad')
         });
         this.loading.set(false);
         this.router.navigate(['/hero-layouts']);
@@ -222,16 +226,16 @@ export class HeroLayoutFormComponent implements OnInit {
         next: (response) => {
           this.messageService.add({
             severity: 'success',
-            summary: 'Success',
-            detail: 'Hero layout updated successfully'
+            summary: this.translate.instant('common.success'),
+            detail: this.translate.instant('heroLayout.updatedSuccessfully')
           });
           this.router.navigate(['/hero-layouts']);
         },
         error: (error) => {
           this.messageService.add({
             severity: 'error',
-            summary: 'Error',
-            detail: error.error?.message || 'Failed to update hero layout'
+            summary: this.translate.instant('common.error'),
+            detail: error.error?.message || this.translate.instant('heroLayout.failedToUpdate')
           });
           this.loading.set(false);
         }
@@ -243,16 +247,16 @@ export class HeroLayoutFormComponent implements OnInit {
         next: (response) => {
           this.messageService.add({
             severity: 'success',
-            summary: 'Success',
-            detail: 'Hero layout created successfully'
+            summary: this.translate.instant('common.success'),
+            detail: this.translate.instant('heroLayout.createdSuccessfully')
           });
           this.router.navigate(['/hero-layouts']);
         },
         error: (error) => {
           this.messageService.add({
             severity: 'error',
-            summary: 'Error',
-            detail: error.error?.message || 'Failed to create hero layout'
+            summary: this.translate.instant('common.error'),
+            detail: error.error?.message || this.translate.instant('heroLayout.failedToCreate')
           });
           this.loading.set(false);
         }

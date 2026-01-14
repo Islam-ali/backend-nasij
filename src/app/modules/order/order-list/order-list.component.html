@@ -4,15 +4,15 @@
     <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
             <h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-                <i class="pi pi-shopping-cart mr-3 text-blue-600"></i>
-                Order Management
+                <i class="pi pi-shopping-cart me-3  text-blue-600"></i>
+                {{ 'order.manage' | translate }}
             </h1>
             <p class="text-gray-600 dark:text-gray-400">
-                Manage and track all customer orders efficiently
+                {{ 'order.description' | translate }}
             </p>
         </div>
         <div class="flex flex-col sm:flex-row gap-3">
-            <p-button severity="success" label="Create New Order" icon="pi pi-plus" size="large" (click)="openNew()"
+            <p-button severity="success" [label]="'order.new' | translate" icon="pi pi-plus" size="large" (click)="openNew()"
                 styleClass="p-button-raised">
             </p-button>
             <!-- <p-button severity="secondary" label="Export Orders" icon="pi pi-download" size="large"
@@ -31,9 +31,9 @@
             <div
                 class="flex flex-col md:flex-row md:justify-between md:items-center gap-4 p-6 border-b border-gray-200 dark:border-gray-700">
                 <div>
-                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-1">Orders List</h3>
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-1">{{ 'order.list' | translate }}</h3>
                     <p class="text-sm text-gray-600 dark:text-gray-400">
-                        Total: {{ pagination().total }} orders
+                        {{ 'order.totalOrdersCount' | translate:{total: pagination().total} }}
                     </p>
                 </div>
                 <div class="flex flex-col sm:flex-row gap-3">
@@ -44,10 +44,10 @@
                         <input pInputText type="text"
                         [ngModel]="orderNumberFilter()" 
                                 (ngModelChange)="onOrderNumberFilter($event)"
-                            placeholder="Search orders by number..." class="w-full" />
+                            [placeholder]="'order.searchPlaceholder' | translate" class="w-full" />
                     </p-iconField>
                     <p-button icon="pi pi-filter" severity="secondary" [outlined]="true" (click)="toggleFilters()"
-                        [label]="showFilters() ? 'Hide Filters' : 'Show Filters'">
+                        [label]="showFilters() ? ('common.hideFilters' | translate) : ('common.showFilters' | translate)">
                     </p-button>
                 </div>
             </div>
@@ -59,11 +59,11 @@
                         <!-- Order Status Filter -->
                         <div class="flex-1">
                                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                    <i class="pi pi-info-circle mr-2"></i>Order Status
+                                    <i class="pi pi-info-circle me-2"></i>{{ 'order.orderStatus' | translate }}
                                 </label>
                                 <p-dropdown [options]="statusOptions" [ngModel]="selectedOrderStatus()"
                                     (ngModelChange)="onOrderStatusFilter($event)" optionLabel="label"
-                                    optionValue="value" placeholder="All Statuses" [showClear]="true"
+                                    optionValue="value" [placeholder]="'order.allStatuses' | translate" [showClear]="true"
                                     styleClass="w-full">
                                 </p-dropdown>
                             </div>
@@ -71,11 +71,11 @@
                             <!-- Payment Status Filter -->
                             <div class="flex-1">
                                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                    <i class="pi pi-credit-card mr-2"></i>Payment Status
+                                    <i class="pi pi-credit-card me-2"></i>{{ 'order.paymentStatus' | translate }}
                                 </label>
                                 <p-dropdown [options]="paymentStatusOptions" [ngModel]="selectedPaymentStatus()"
                                     (ngModelChange)="onPaymentStatusFilter($event)" optionLabel="label"
-                                    optionValue="value" placeholder="All Payment Statuses" [showClear]="true"
+                                    optionValue="value" [placeholder]="'order.allPaymentStatuses' | translate" [showClear]="true"
                                     styleClass="w-full">
                                 </p-dropdown>
                             </div>
@@ -83,18 +83,18 @@
                             <!-- Payment Method Filter -->
                             <div class="flex-1">
                                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                    <i class="pi pi-wallet mr-2"></i>Payment Method
+                                    <i class="pi pi-wallet me-2"></i>{{ 'order.paymentMethod' | translate }}
                                 </label>
                                 <p-dropdown [options]="paymentMethodOptions" [ngModel]="selectedPaymentMethod()"
                                     (ngModelChange)="onPaymentMethodFilter($event)" optionLabel="label"
-                                    optionValue="value" placeholder="All Payment Methods" [showClear]="true"
+                                    optionValue="value" [placeholder]="'order.allPaymentMethods' | translate" [showClear]="true"
                                     styleClass="w-full">
                                 </p-dropdown>
                             </div>
 
                             <!-- Clear Filters Button -->
                             <div class="flex items-end">
-                            <p-button label="Clear Filters" icon="pi pi-filter-slash" severity="secondary"
+                            <p-button [label]="'common.clearFilters' | translate" icon="pi pi-filter-slash" severity="secondary"
                                 [outlined]="true" (click)="clearFilters()"
                                 [disabled]="!selectedOrderStatus() && !selectedPaymentStatus() && !selectedPaymentMethod() && !orderNumberFilter()">
                             </p-button>
@@ -110,25 +110,25 @@
                     <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
                 </th> -->
                 <th class="text-left p-4 font-semibold text-gray-700 dark:text-gray-300">
-                    <i class="pi pi-hashtag mr-2"></i>Order #
+                    <i class="pi pi-hashtag me-2"></i>{{ 'order.orderNumber' | translate }}
                 </th>
                 <th class="text-left p-4 font-semibold text-gray-700 dark:text-gray-300">
-                    <i class="pi pi-user mr-2"></i>Customer
+                    <i class="pi pi-user me-2"></i>{{ 'order.customer' | translate }}
                 </th>
                 <th class="text-right p-4 font-semibold text-gray-700 dark:text-gray-300">
-                    <i class="pi pi-dollar mr-2"></i>Total
+                    <i class="pi pi-dollar me-2"></i>{{ 'common.total' | translate }}
                 </th>
                 <th class="text-center p-4 font-semibold text-gray-700 dark:text-gray-300">
-                    <i class="pi pi-info-circle mr-2"></i>Status
+                    <i class="pi pi-info-circle me-2"></i>{{ 'common.status' | translate }}
                 </th>
                 <th class="text-center p-4 font-semibold text-gray-700 dark:text-gray-300">
-                    <i class="pi pi-credit-card mr-2"></i>Payment
+                    <i class="pi pi-credit-card me-2"></i>{{ 'order.payment' | translate }}
                 </th>
                 <th class="text-center p-4 font-semibold text-gray-700 dark:text-gray-300">
-                    <i class="pi pi-calendar mr-2"></i>Date
+                    <i class="pi pi-calendar me-2"></i>{{ 'common.date' | translate }}
                 </th>
                 <th class="text-center p-4 font-semibold text-gray-700 dark:text-gray-300">
-                    <i class="pi pi-cog mr-2"></i>Actions
+                    <i class="pi pi-cog me-2"></i>{{ 'common.actions' | translate }}
                 </th>
             </tr>
         </ng-template>
@@ -157,7 +157,7 @@
                 <td class="p-4">
                     <div class="flex items-center">
                         <div
-                            class="w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center mr-3">
+                            class="w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center me-3">
                             <i class="pi pi-shopping-cart text-blue-600 dark:text-blue-400 text-sm"></i>
                         </div>
                         <div>
@@ -169,15 +169,15 @@
                 <td class="p-4">
                     <div class="flex items-center">
                         <div
-                            class="w-8 h-8 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center mr-3">
+                            class="w-8 h-8 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center me-3">
                             <i class="pi pi-user text-green-600 dark:text-green-400 text-sm"></i>
                         </div>
                         <div>
                             <div class="font-medium text-gray-900 dark:text-white">
-                                {{ order.shippingAddress?.fullName || 'Unknown Customer' }}
+                                {{ order.shippingAddress?.fullName || ('order.unknownCustomer' | translate) }}
                             </div>
                             <div class="text-xs text-gray-500 dark:text-gray-400">
-                                {{ order.shippingAddress?.phone || 'No phone' }}
+                                {{ order.shippingAddress?.phone || ('order.noPhone' | translate) }}
                             </div>
                         </div>
                     </div>
@@ -187,20 +187,20 @@
                         {{ order.total | currency:'USD':'symbol':'1.2-2' }}
                     </div>
                     <div class="text-xs text-gray-500 dark:text-gray-400">
-                        {{ order.items?.length || 0 }} items
+                        {{ order.items?.length || 0 }} {{ 'common.items' | translate }}
                     </div>
                 </td>
                 <td class="p-4 text-center">
-                    <p-tag [value]="order.orderStatus | titlecase" [severity]="getSeverity(order.orderStatus)"
+                    <p-tag [value]="getStatusLabel(order.orderStatus)" [severity]="getSeverity(order.orderStatus)"
                         styleClass="px-3 py-1">
                     </p-tag>
                 </td>
                 <td class="p-4 text-center">
                     <div class="flex flex-col items-center gap-1">
-                        <p-tag [value]="order.paymentStatus | titlecase"
+                        <p-tag [value]="getPaymentStatusLabel(order.paymentStatus)"
                             [severity]="getPaymentSeverity(order.paymentStatus)" styleClass="px-2 py-1 text-xs">
                         </p-tag>
-                        <p-tag [value]="order.paymentMethod | titlecase"
+                        <p-tag [value]="getPaymentMethodLabel(order.paymentMethod)"
                             [severity]="getPaymentMethodSeverity(order.paymentMethod)" styleClass="px-2 py-1 text-xs">
                         </p-tag>
                     </div>
@@ -220,10 +220,10 @@
                         </p-button> -->
                         <!-- Timeline button removed -->
                         <p-button icon="pi pi-pencil" [rounded]="true" [outlined]="true" severity="success" size="small"
-                            pTooltip="Edit Order" (click)="editOrder(order)">
+                             (click)="editOrder(order)">
                         </p-button>
                         <p-button icon="pi pi-trash" [rounded]="true" [outlined]="true" severity="danger" size="small"
-                            pTooltip="Delete Order" (click)="deleteOrder(order)">
+                            (click)="deleteOrder(order)">
                         </p-button>
                     </div>
                 </td>
@@ -239,11 +239,11 @@
                             <i class="pi pi-shopping-cart text-2xl text-gray-400"></i>
                         </div>
                         <div class="text-center">
-                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">No orders found</h3>
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">{{ 'order.noOrdersFound' | translate }}</h3>
                             <p class="text-gray-500 dark:text-gray-400 mb-4">
-                                Start by creating your first order or adjust your search criteria.
+                                {{ 'order.noOrdersFoundDescription' | translate }}
                             </p>
-                            <p-button label="Create New Order" icon="pi pi-plus" severity="success" (click)="openNew()">
+                            <p-button [label]="'order.new' | translate" icon="pi pi-plus" severity="success" (click)="openNew()">
                             </p-button>
                         </div>
                     </div>
@@ -267,7 +267,7 @@
 
 <!-- Order Dialog -->
 <p-dialog [(visible)]="orderDialog" [style]="{width: '90vw', maxWidth: '1200px'}"
-    [header]="orderForm.get('_id')?.value ? 'Edit Order' : 'Create New Order'" [modal]="true" [closable]="true"
+    [header]="orderForm.get('_id')?.value ? ('order.dialogEdit' | translate) : ('order.dialogNew' | translate)" [modal]="true" [closable]="true"
     [resizable]="true" [draggable]="true" [dismissableMask]="true"
     [contentStyle]="{'max-height': '90vh', 'padding': '0'}" [styleClass]="'order-dialog'">
     @if(orderDialog){
@@ -281,8 +281,8 @@
                         <i class="pi pi-shopping-cart text-blue-600 dark:text-blue-400"></i>
                     </div>
                     <div>
-                        <h3 class="text-xl font-bold text-gray-900 dark:text-white">Order Information</h3>
-                        <p class="text-sm text-gray-600 dark:text-gray-400">Basic order details and status</p>
+                        <h3 class="text-xl font-bold text-gray-900 dark:text-white">{{ 'order.orderInformation' | translate }}</h3>
+                        <p class="text-sm text-gray-600 dark:text-gray-400">{{ 'order.basicOrderDetails' | translate }}</p>
                     </div>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -296,42 +296,42 @@
 
                     <div class="space-y-2">
                         <label for="orderStatus" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                            <i class="pi pi-info-circle mr-2"></i>Order Status
+                            <i class="pi pi-info-circle me-2"></i>{{ 'order.orderStatus' | translate }}
                         </label>
                         <p-dropdown id="orderStatus" [options]="statusOptions" formControlName="orderStatus"
                             optionLabel="label" optionValue="value" [style]="{'width':'100%'}"
-                            placeholder="Select status" styleClass="w-full">
+                            [placeholder]="'order.selectStatus' | translate" styleClass="w-full">
                         </p-dropdown>
                     </div>
 
                     <div class="space-y-2">
                         <label for="paymentStatus" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                            <i class="pi pi-credit-card mr-2"></i>Payment Status
+                            <i class="pi pi-credit-card me-2"></i>{{ 'order.paymentStatus' | translate }}
                         </label>
                         <p-dropdown id="paymentStatus" [options]="paymentStatusOptions" formControlName="paymentStatus"
                             optionLabel="label" optionValue="value" [style]="{'width':'100%'}"
-                            placeholder="Select payment status" styleClass="w-full">
+                            [placeholder]="'order.selectPaymentStatus' | translate" styleClass="w-full">
                         </p-dropdown>
                     </div>
 
                     <div class="space-y-2">
                         <label for="paymentMethod" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                            <i class="pi pi-wallet mr-2"></i>Payment Method
+                            <i class="pi pi-wallet me-2"></i>{{ 'order.paymentMethod' | translate }}
                         </label>
                         <p-dropdown id="paymentMethod" [options]="paymentMethodOptions" formControlName="paymentMethod"
                             optionLabel="label" optionValue="value" [style]="{'width':'100%'}"
-                            placeholder="Select payment method" styleClass="w-full">
+                            [placeholder]="'order.selectPaymentMethod' | translate" styleClass="w-full">
                         </p-dropdown>
                     </div>
 
                     <div class="space-y-2">
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                            <i class="pi pi-flag mr-2"></i>Deposit Order
+                            <i class="pi pi-flag me-2"></i>{{ 'order.depositOrder' | translate }}
                         </label>
                         <div class="flex items-center gap-3">
                             <p-checkbox formControlName="isDeposit" binary="true" inputId="isDepositToggle"></p-checkbox>
                             <label for="isDepositToggle" class="text-sm text-gray-600 dark:text-gray-400">
-                                Mark this order as a deposit (partial payment)
+                                {{ 'order.markAsDeposit' | translate }}
                             </label>
                         </div>
                     </div>
@@ -347,68 +347,62 @@
                         <i class="pi pi-map-marker text-green-600 dark:text-green-400"></i>
                     </div>
                     <div>
-                        <h3 class="text-xl font-bold text-gray-900 dark:text-white">Shipping Address</h3>
-                        <p class="text-sm text-gray-600 dark:text-gray-400">Customer delivery information</p>
+                        <h3 class="text-xl font-bold text-gray-900 dark:text-white">{{ 'order.shippingAddress' | translate }}</h3>
+                        <p class="text-sm text-gray-600 dark:text-gray-400">{{ 'order.customerDeliveryInfo' | translate }}</p>
                     </div>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" formGroupName="shippingAddress">
                     <div class="space-y-2">
                         <label for="fullName" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                            <i class="pi pi-user mr-2"></i>Full Name *
+                            <i class="pi pi-user me-2"></i>{{ 'order.fullName' | translate }} *
                         </label>
                         <input id="fullName" pInputText formControlName="fullName"
-                            placeholder="Enter customer full name" class="w-full"
+                            [placeholder]="'order.enterCustomerName' | translate" class="w-full"
                             [class.p-invalid]="submitted && orderForm.get('shippingAddress.fullName')?.invalid">
                         <small class="p-error" *ngIf="submitted && orderForm.get('shippingAddress.fullName')?.invalid">
-                            Full name is required
+                            {{ 'order.fullNameRequired' | translate }}
                         </small>
                     </div>
                     <div class="field">
-                        <label for="phone">Phone</label>
+                        <label for="phone">{{ 'order.phone' | translate }}</label>
                         <input id="phone" class="w-full" pInputText formControlName="phone"
                             [class.p-invalid]="submitted && orderForm.get('shippingAddress.phone')?.invalid">
                         <small class="p-error"
-                            *ngIf="submitted && orderForm.get('shippingAddress.phone')?.invalid">Phone is
-                            required</small>
+                            *ngIf="submitted && orderForm.get('shippingAddress.phone')?.invalid">{{ 'order.phoneRequired' | translate }}</small>
                     </div>
 
                     <div class="field col-12">
-                        <label for="country">Country</label>
+                        <label for="country">{{ 'order.country' | translate }}</label>
                         <p-dropdown id="country" styleClass="w-full" [options]="countryOptions()"
                             formControlName="country" optionLabel="name.en" optionValue="_id" [style]="{'width':'100%'}"
                             (onChange)="loadStates()">
                         </p-dropdown>
                         <small class="p-error"
-                            *ngIf="submitted && orderForm.get('shippingAddress.country')?.invalid">Country is
-                            required</small>
+                            *ngIf="submitted && orderForm.get('shippingAddress.country')?.invalid">{{ 'order.countryRequired' | translate }}</small>
                     </div>
                     <!-- set shipping cost based on state -->
                     <div class="field">
-                        <label for="state">State</label>
+                        <label for="state">{{ 'order.state' | translate }}</label>
                         <p-dropdown id="state" styleClass="w-full" [options]="stateOptions()" formControlName="state"
                             optionLabel="name.en" optionValue="_id" [style]="{'width':'100%'}"
                             (onChange)="setShippingCost()">
                         </p-dropdown>
                         <small class="p-error"
-                            *ngIf="submitted && orderForm.get('shippingAddress.state')?.invalid">State is
-                            required</small>
+                            *ngIf="submitted && orderForm.get('shippingAddress.state')?.invalid">{{ 'order.stateRequired' | translate }}</small>
                     </div>
 
                     <div class="field">
-                        <label for="address">address</label>
+                        <label for="address">{{ 'order.address' | translate }}</label>
                         <input id="address" pInputText class="w-full" formControlName="address"
                             [class.p-invalid]="submitted && orderForm.get('shippingAddress.address')?.invalid">
                         <small class="p-error"
-                            *ngIf="submitted && orderForm.get('shippingAddress.address')?.invalid">address
-                            is
-                            required</small>
+                            *ngIf="submitted && orderForm.get('shippingAddress.address')?.invalid">{{ 'order.addressRequired' | translate }}</small>
                     </div>
                     <div class="field">
-                        <label for="city">City</label>
+                        <label for="city">{{ 'order.city' | translate }}</label>
                         <input id="city" pInputText class="w-full" formControlName="city"
                             [class.p-invalid]="submitted && orderForm.get('shippingAddress.city')?.invalid">
-                        <small class="p-error" *ngIf="submitted && orderForm.get('shippingAddress.city')?.invalid">City
-                            is required</small>
+                        <small class="p-error" *ngIf="submitted && orderForm.get('shippingAddress.city')?.invalid">{{ 'order.cityRequired' | translate }}</small>
                     </div>
 
 
@@ -425,17 +419,17 @@
                             <i class="pi pi-shopping-bag text-purple-600 dark:text-purple-400"></i>
                         </div>
                         <div>
-                            <h3 class="text-xl font-bold text-gray-900 dark:text-white">Order Items</h3>
+                            <h3 class="text-xl font-bold text-gray-900 dark:text-white">{{ 'order.orderItems' | translate }}</h3>
                             <p class="text-sm text-gray-600 dark:text-gray-400">
-                                Products and packages in this order
+                                {{ 'order.productsAndPackages' | translate }}
                                 <span
-                                    class="ml-2 px-2 py-1 bg-purple-100 dark:bg-purple-800 text-purple-800 dark:text-purple-200 rounded-full text-xs font-semibold">
+                                    class="ms-2 px-2 py-1 bg-purple-100 dark:bg-purple-800 text-purple-800 dark:text-purple-200 rounded-full text-xs font-semibold">
                                     {{ items.length }} {{ items.length === 1 ? 'Item' : 'Items' }}
                                 </span>
                             </p>
                         </div>
                     </div>
-                    <p-button icon="pi pi-plus" label="Add Item" severity="success" size="large" (click)="addItem()"
+                    <p-button icon="pi pi-plus" [label]="'order.addItem' | translate" severity="success" size="large" (click)="addItem()"
                         styleClass="p-button-raised shadow-lg hover:shadow-xl transition-shadow">
                     </p-button>
                 </div>
@@ -457,10 +451,10 @@
                                         </div>
                                         <div>
                                             <h4 class="font-bold text-gray-900 dark:text-white text-lg">
-                                                Item #{{ rowIndex + 1 }}
+                                                {{ 'order.itemNumberDisplay' | translate }}{{ rowIndex + 1 }}
                                             </h4>
                                             <p class="text-sm text-gray-500 dark:text-gray-400">
-                                                {{ item.get('itemType')?.value === 'Package' ? 'Package Deal' : 'Single Product' }}
+                                                {{ item.get('itemType')?.value === 'Package' ? ('order.packageDeal' | translate) : ('order.singleProduct' | translate) }}
                                             </p>
                                         </div>
                                     </div>
@@ -482,19 +476,16 @@
                                         <div class="space-y-2">
                                             <label
                                                 class="flex items-center text-sm font-semibold text-gray-700 dark:text-gray-300">
-                                                <i class="pi pi-tag mr-2 text-purple-600"></i>
-                                                Item Type *
+                                                <i class="pi pi-tag me-2 text-purple-600"></i>
+                                                {{ 'order.itemTypeLabel' | translate }} *
                                             </label>
-                                            <p-dropdown formControlName="itemType" [options]="[
-                                        {label: '📦 Package', value: 'Package'},
-                                        {label: '🛍️ Product', value: 'Product'}
-                                    ]" appendTo="body" optionLabel="label" optionValue="value"
-                                                placeholder="Select Type" styleClass="w-full"
+                                            <p-dropdown formControlName="itemType" [options]="getItemTypeOptions()" appendTo="body" optionLabel="label" optionValue="value"
+                                                [placeholder]="'order.selectItemType' | translate" styleClass="w-full"
                                                 [class.p-invalid]="submitted && item.get('itemType')?.invalid"
                                                 (onChange)="onItemChange($event, rowIndex)">
                                             </p-dropdown>
                                             <small class="p-error" *ngIf="submitted && item.get('itemType')?.invalid">
-                                                Item type is required
+                                                {{ 'order.itemTypeRequired' | translate }}
                                             </small>
                                         </div>
 
@@ -502,20 +493,19 @@
                                         <div class="space-y-2">
                                             <label
                                                 class="flex items-center text-sm font-semibold text-gray-700 dark:text-gray-300">
-                                                <i class="pi pi-box mr-2 text-blue-600"></i>
-                                                Select {{ item.get('itemType')?.value === 'Package' ? 'Package' :
-                                                'Product' }} *
+                                                <i class="pi pi-box me-2 text-blue-600"></i>
+                                                {{ getSelectItemLabel(item.get('itemType')?.value) }} *
                                             </label>
                                             <p-dropdown formControlName="itemId"
                                                 [options]="item.get('itemType')?.value === 'Package' ? packages() : products()"
                                                 appendTo="body" optionLabel="name.en" optionValue="_id"
-                                                placeholder="Search and select..." styleClass="w-full" [filter]="true"
+                                                [placeholder]="'order.searchAndSelect' | translate" styleClass="w-full" [filter]="true"
                                                 filterBy="name.en,name.ar"
                                                 [class.p-invalid]="submitted && item.get('itemId')?.invalid"
                                                 (onChange)="onItemChange($event,rowIndex)" [showClear]="true">
                                             </p-dropdown>
                                             <small class="p-error" *ngIf="submitted && item.get('itemId')?.invalid">
-                                                Please select an item
+                                                {{ 'order.pleaseSelectItem' | translate }}
                                             </small>
                                         </div>
 
@@ -523,12 +513,12 @@
                                         <div class="space-y-2" *ngIf="item.get('itemType')?.value === 'Product'">
                                             <label
                                                 class="flex items-center text-sm font-semibold text-gray-700 dark:text-gray-300">
-                                                <i class="pi pi-palette mr-2 text-green-600"></i>
-                                                Product Variants
+                                                <i class="pi pi-palette me-2 text-green-600"></i>
+                                                {{ 'order.productVariants' | translate }}
                                             </label>
                                             <div class="flex items-center gap-3">
                                                 <p-button icon="pi pi-tag"
-                                                    [label]="item.get('selectedVariants')?.value?.length > 0 ? 'Edit Variants (' + item.get('selectedVariants')?.value?.length + ')' : 'Add Variants'"
+                                                    [label]="getVariantsButtonLabel(item.get('selectedVariants')?.value?.length)"
                                                     [severity]="item.get('selectedVariants')?.value?.length > 0 ? 'success' : 'secondary'"
                                                     [outlined]="true" styleClass="flex-1"
                                                     (onClick)="openVariantDialog(rowIndex)"
@@ -541,7 +531,7 @@
                                                 class="mt-3 p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
                                                 <h6
                                                     class="text-sm font-semibold text-green-800 dark:text-green-200 mb-2 flex items-center">
-                                                    <i class="pi pi-check-circle mr-2"></i>Selected Variants
+                                                    <i class="pi pi-check-circle me-2"></i>{{ 'order.selectedVariants' | translate }}
                                                 </h6>
                                                 <div class="flex flex-wrap gap-2">
                                                     <span *ngFor="let variant of item.get('selectedVariants')?.value"
@@ -562,10 +552,10 @@
                                             *ngIf="item.get('itemType')?.value === 'Package' && item.get('itemId')?.value">
                                             <label
                                                 class="flex items-center text-sm font-semibold text-gray-700 dark:text-gray-300">
-                                                <i class="pi pi-box mr-2 text-blue-600"></i>
-                                                Package Configuration
+                                                <i class="pi pi-box me-2 text-blue-600"></i>
+                                                {{ 'order.packageConfiguration' | translate }}
                                             </label>
-                                            <p-button icon="pi pi-cog" label="Configure Package Variants"
+                                            <p-button icon="pi pi-cog" [label]="'order.configurePackageVariants' | translate"
                                                 severity="info" [outlined]="true" styleClass="w-full"
                                                 (onClick)="editPackageVariants(rowIndex)">
                                             </p-button>
@@ -578,8 +568,8 @@
                                             class="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-lg p-4 border border-blue-200 dark:border-blue-800">
                                             <h5
                                                 class="font-bold text-blue-900 dark:text-blue-200 mb-4 flex items-center">
-                                                <i class="pi pi-calculator mr-2"></i>
-                                                Pricing Details
+                                                <i class="pi pi-calculator me-2"></i>
+                                                {{ 'order.pricingDetails' | translate }}
                                             </h5>
 
                                             <div class="grid grid-cols-2 gap-4">
@@ -587,7 +577,7 @@
                                                 <div class="space-y-2">
                                                     <label
                                                         class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                                        <i class="pi pi-dollar mr-1"></i>Price
+                                                        <i class="pi pi-dollar me-1"></i>{{ 'order.priceLabel' | translate }}
                                                     </label>
                                                     <p-inputNumber mode="currency" currency="USD" locale="en-US"
                                                         formControlName="price" (onInput)="calculateTotal()"
@@ -599,7 +589,7 @@
                                                 <div class="space-y-2">
                                                     <label
                                                         class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                                        <i class="pi pi-sort-numeric-up mr-1"></i>Quantity
+                                                        <i class="pi pi-sort-numeric-up me-1"></i>{{ 'order.quantityLabel' | translate }}
                                                     </label>
                                                     <p-inputNumber formControlName="quantity" [min]="1"
                                                         [showButtons]="true" (onInput)="calculateTotal()"
@@ -611,7 +601,7 @@
                                                 <div class="space-y-2">
                                                     <label
                                                         class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                                        <i class="pi pi-percentage mr-1"></i>Discount
+                                                        <i class="pi pi-percentage me-1"></i>{{ 'order.discountLabel' | translate }}
                                                     </label>
                                                     <p-inputNumber mode="currency" currency="USD" locale="en-US"
                                                         formControlName="discountPrice" (onInput)="calculateTotal()"
@@ -623,7 +613,7 @@
                                                 <div class="space-y-2">
                                                     <label
                                                         class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                                        <i class="pi pi-money-bill mr-1"></i>Total
+                                                        <i class="pi pi-money-bill me-1"></i>{{ 'order.totalLabel' | translate }}
                                                     </label>
                                                     <p-inputNumber mode="currency" currency="USD" locale="en-US"
                                                         formControlName="totalPrice" [readonly]="true"
@@ -641,8 +631,8 @@
                                     class="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-700">
                                     <h6
                                         class="text-sm font-bold text-blue-800 dark:text-blue-200 mb-3 flex items-center">
-                                        <i class="pi pi-box mr-2"></i>
-                                        Package Contents ({{ item.get('packageItems')?.value?.length }} products)
+                                        <i class="pi pi-box me-2"></i>
+                                        {{ 'order.packageContentsLabel' | translate }} ({{ 'order.productsCount' | translate:{count: item.get('packageItems')?.value?.length} }})
                                     </h6>
                                     <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                                         <div *ngFor="let packageItem of item.get('packageItems')?.value; let i = index"
@@ -654,7 +644,7 @@
                                                     </p>
                                                     <span
                                                         class="text-xs bg-blue-100 dark:bg-blue-800 text-blue-800 dark:text-blue-200 px-2 py-1 rounded mt-1 inline-block">
-                                                        Qty: {{ packageItem.quantity }}
+                                                        {{ 'order.quantityLabelShort' | translate }} {{ packageItem.quantity }}
                                                     </span>
                                                 </div>
                                             </div>
@@ -663,7 +653,7 @@
                                             <div *ngIf="packageItem.selectedVariants && packageItem.selectedVariants.length > 0"
                                                 class="mt-2 pt-2 border-t border-gray-200 dark:border-gray-600">
                                                 <p class="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
-                                                    Variants:</p>
+                                                    {{ 'order.variantsLabel' | translate }}</p>
                                                 <div class="flex flex-wrap gap-1">
                                                     <span *ngFor="let variant of packageItem.selectedVariants"
                                                         class="text-xs bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-2 py-1 rounded flex items-center gap-1">
@@ -678,7 +668,7 @@
                                             </div>
                                             <div *ngIf="!packageItem.selectedVariants || packageItem.selectedVariants.length === 0"
                                                 class="mt-2 pt-2 border-t border-gray-200 dark:border-gray-600">
-                                                <p class="text-xs text-gray-500 italic">No variants selected</p>
+                                                <p class="text-xs text-gray-500 italic">{{ 'order.noVariantsSelectedText' | translate }}</p>
                                             </div>
                                         </div>
                                     </div>
@@ -694,10 +684,9 @@
                             class="w-20 h-20 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
                             <i class="pi pi-shopping-bag text-4xl text-gray-400"></i>
                         </div>
-                        <h4 class="text-lg font-bold text-gray-900 dark:text-white mb-2">No items added yet</h4>
-                        <p class="text-gray-500 dark:text-gray-400 mb-4">Start by adding products or packages to this
-                            order</p>
-                        <p-button icon="pi pi-plus" label="Add First Item" severity="success" (click)="addItem()"
+                        <h4 class="text-lg font-bold text-gray-900 dark:text-white mb-2">{{ 'order.noItemsAddedText' | translate }}</h4>
+                        <p class="text-gray-500 dark:text-gray-400 mb-4">{{ 'order.startByAddingText' | translate }}</p>
+                        <p-button icon="pi pi-plus" [label]="'order.addFirstItemText' | translate" severity="success" (click)="addItem()"
                             styleClass="p-button-raised">
                         </p-button>
                     </div>
@@ -712,8 +701,8 @@
                         <i class="pi pi-calculator text-blue-600 dark:text-blue-400"></i>
                     </div>
                     <div>
-                        <h3 class="text-xl font-bold text-gray-900 dark:text-white">Order Summary</h3>
-                        <p class="text-sm text-gray-600 dark:text-gray-400">Final pricing and totals</p>
+                        <h3 class="text-xl font-bold text-gray-900 dark:text-white">{{ 'order.orderSummary' | translate }}</h3>
+                        <p class="text-sm text-gray-600 dark:text-gray-400">{{ 'order.finalPricing' | translate }}</p>
                     </div>
                 </div>
 
@@ -722,8 +711,8 @@
                     <div
                         class="flex justify-between items-center p-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md transition-shadow duration-200">
                         <div class="flex items-center">
-                            <i class="pi pi-shopping-cart mr-3 text-gray-600 dark:text-gray-400"></i>
-                            <span class="text-lg font-semibold text-gray-700 dark:text-gray-300">Subtotal</span>
+                            <i class="pi pi-shopping-cart me-3  text-gray-600 dark:text-gray-400"></i>
+                            <span class="text-lg font-semibold text-gray-700 dark:text-gray-300">{{ 'order.subtotalLabel' | translate }}</span>
                         </div>
                         <span class="text-xl font-bold text-gray-900 dark:text-white">
                             {{ orderForm.get('subtotal')?.value | currency:'USD':'symbol':'1.2-2' }}
@@ -734,8 +723,8 @@
                     <div
                         class="flex justify-between items-center p-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md transition-shadow duration-200">
                         <div class="flex items-center">
-                            <i class="pi pi-percentage mr-3 text-gray-600 dark:text-gray-400"></i>
-                            <span class="text-lg font-semibold text-gray-700 dark:text-gray-300">Tax</span>
+                            <i class="pi pi-percentage me-3  text-gray-600 dark:text-gray-400"></i>
+                            <span class="text-lg font-semibold text-gray-700 dark:text-gray-300">{{ 'order.taxLabel' | translate }}</span>
                         </div>
                         <span class="text-xl font-bold text-gray-900 dark:text-white">
                             {{ orderForm.get('tax')?.value | currency:'USD':'symbol':'1.2-2' }}
@@ -746,8 +735,8 @@
                     <div
                         class="flex justify-between items-center p-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md transition-shadow duration-200">
                         <div class="flex items-center">
-                            <i class="pi pi-truck mr-3 text-gray-600 dark:text-gray-400"></i>
-                            <span class="text-lg font-semibold text-gray-700 dark:text-gray-300">Shipping</span>
+                            <i class="pi pi-truck me-3  text-gray-600 dark:text-gray-400"></i>
+                            <span class="text-lg font-semibold text-gray-700 dark:text-gray-300">{{ 'order.shippingLabel' | translate }}</span>
                         </div>
                         <span class="text-xl font-bold text-gray-900 dark:text-white">
                             {{ orderForm.get('shippingCost')?.value | currency:'USD':'symbol':'1.2-2' }}
@@ -758,8 +747,8 @@
                     <div
                         class="flex justify-between items-center p-6 bg-gradient-to-r from-blue-500 to-blue-600 dark:from-blue-600 dark:to-blue-700 rounded-lg shadow-lg border-2 border-blue-400 dark:border-blue-500">
                         <div class="flex items-center">
-                            <i class="pi pi-dollar mr-3 text-white"></i>
-                            <span class="text-2xl font-bold text-white">Total</span>
+                            <i class="pi pi-dollar me-3  text-white"></i>
+                            <span class="text-2xl font-bold text-white">{{ 'order.totalLabelSummary' | translate }}</span>
                         </div>
                         <span class="text-3xl font-bold text-white">
                             {{ orderForm.get('total')?.value | currency:'USD':'symbol':'1.2-2' }}
@@ -778,8 +767,8 @@
                         <i class="pi pi-money-bill text-yellow-600 dark:text-yellow-400"></i>
                     </div>
                     <div>
-                        <h3 class="text-xl font-bold text-gray-900 dark:text-white">Cash Payment Details</h3>
-                        <p class="text-sm text-gray-600 dark:text-gray-400">Track cash payments and change</p>
+                        <h3 class="text-xl font-bold text-gray-900 dark:text-white">{{ 'order.cashPaymentDetails' | translate }}</h3>
+                        <p class="text-sm text-gray-600 dark:text-gray-400">{{ 'order.trackCashPayments' | translate }}</p>
                     </div>
                 </div>
                 <ng-container [formGroup]="cashPayment">
@@ -790,7 +779,7 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div class="space-y-2">
                                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                    <i class="pi pi-money-bill mr-2"></i>Amount Paid
+                                    <i class="pi pi-money-bill me-2"></i>{{ 'order.amountPaidLabel' | translate }}
                                 </label>
                                 <p-inputNumber mode="currency" currency="USD" locale="en-US"
                                     formControlName="amountPaid" (onInput)="calculateChangeDue()" class="w-full"
@@ -799,7 +788,7 @@
                             </div>
                             <div class="space-y-2">
                                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                    <i class="pi pi-calculator mr-2"></i>Change Due
+                                    <i class="pi pi-calculator me-2"></i>{{ 'order.changeDueLabel' | translate }}
                                 </label>
                                 <p-inputNumber mode="currency" currency="USD" locale="en-US" formControlName="changeDue"
                                     [readonly]="true" class="w-full bg-gray-50 dark:bg-gray-700">
@@ -811,7 +800,7 @@
                         @if(orderForm.get('paymentMethod')?.value === PaymentMethod.VODAFONE_CASH || orderForm.get('isDeposit')?.value) {        
                         <div class="space-y-2">
                             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                <i class="pi pi-image mr-2"></i>Payment Screenshot
+                                <i class="pi pi-image me-2"></i>{{ 'order.paymentScreenshotLabel' | translate }}
                             </label>
                             <div class="flex items-center gap-4">
                                 <input type="file" accept="image/*" (change)="onPaymentImageChange($event)"
@@ -842,16 +831,16 @@
                         <i class="pi pi-file-edit text-gray-600 dark:text-gray-400"></i>
                     </div>
                     <div>
-                        <h3 class="text-xl font-bold text-gray-900 dark:text-white">Order Notes</h3>
-                        <p class="text-sm text-gray-600 dark:text-gray-400">Additional information and comments</p>
+                        <h3 class="text-xl font-bold text-gray-900 dark:text-white">{{ 'order.orderNotes' | translate }}</h3>
+                        <p class="text-sm text-gray-600 dark:text-gray-400">{{ 'order.additionalInformation' | translate }}</p>
                     </div>
                 </div>
                 <div class="space-y-2">
                     <label for="notes" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                        <i class="pi pi-comment mr-2"></i>Notes
+                        <i class="pi pi-comment me-2"></i>{{ 'order.notesLabel' | translate }}
                     </label>
                     <textarea id="notes" pTextarea formControlName="notes" rows="4" class="w-full"
-                        placeholder="Enter any additional notes or special instructions...">
+                        [placeholder]="'order.enterNotesPlaceholder' | translate">
                     </textarea>
                 </div>
             </div>
@@ -863,12 +852,12 @@
     <ng-template pTemplate="footer">
         <div
             class="flex flex-col sm:flex-row justify-end gap-3 p-6 bg-gray-50 dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
-            <p-button label="Cancel" icon="pi pi-times" (click)="hideDialog()" severity="secondary" [outlined]="true"
+            <p-button [label]="'order.cancel' | translate" icon="pi pi-times" (click)="hideDialog()" severity="secondary" [outlined]="true"
                 size="large">
             </p-button>
-            <p-button [label]="orderForm.get('_id')?.value ? 'Update Order' : 'Create Order'" icon="pi pi-check"
-                (click)="saveOrder()" [loading]="loading()" severity="success" size="large">
-            </p-button>
+                    <p-button [label]="orderForm.get('_id')?.value ? ('order.updateOrder' | translate) : ('order.createOrder' | translate)" icon="pi pi-check"
+                        (click)="saveOrder()" [loading]="loading()" severity="success" size="large">
+                    </p-button>
         </div>
     </ng-template>
 </p-dialog>
@@ -880,7 +869,7 @@
 <p-confirmDialog [style]="{width: '450px'}"></p-confirmDialog>
 
 <!-- Variant Edit Dialog -->
-<p-dialog [(visible)]="variantDialog" [style]="{width: '60vw'}" header="Edit Product Variants" [modal]="true"
+<p-dialog [(visible)]="variantDialog" [style]="{width: '60vw'}" [header]="'order.editProductVariantsDialog' | translate" [modal]="true"
     [closable]="true" [resizable]="true" [draggable]="true" [dismissableMask]="true"
     [contentStyle]="{'max-height': '80vh'}">
 
@@ -889,22 +878,22 @@
         <!-- Product Info -->
         <div class="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
             <h4 class="font-semibold text-blue-800 dark:text-blue-200 mb-2">
-                <i class="pi pi-box mr-2"></i>Product: {{ getSelectedProductName() }}
+                <i class="pi pi-box me-2"></i>{{ 'order.productLabel' | translate }} {{ getSelectedProductName() }}
             </h4>
             <p class="text-sm text-blue-600 dark:text-blue-300">
-                Current variants: {{ getCurrentVariantsCount() }}
+                {{ 'order.currentVariantsCount' | translate }} {{ getCurrentVariantsCount() }}
             </p>
         </div>
 
         <!-- Available Variants -->
         <div class="space-y-3">
             <h5 class="font-semibold text-gray-800 dark:text-gray-200">
-                <i class="pi pi-tag mr-2"></i>Available Variants
+                <i class="pi pi-tag me-2"></i>{{ 'order.availableVariantsLabel' | translate }}
             </h5>
 
             <div *ngIf="availableVariants.length === 0" class="text-center py-8 text-gray-500">
                 <i class="pi pi-info-circle text-2xl mb-2"></i>
-                <p>No variants available for this product</p>
+                <p>{{ 'order.noVariantsAvailableText' | translate }}</p>
             </div>
 
             <div *ngFor="let variant of availableVariants"
@@ -935,7 +924,7 @@
         <!-- Selected Variants Summary -->
         <div *ngIf="getSelectedVariantsSummary().length > 0" class="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg">
             <h5 class="font-semibold text-green-800 dark:text-green-200 mb-3">
-                <i class="pi pi-check-circle mr-2"></i>Selected Variants
+                <i class="pi pi-check-circle me-2"></i>{{ 'order.selectedVariantsLabel' | translate }}
             </h5>
             <div class="flex flex-wrap gap-2">
                 <span *ngFor="let variant of getSelectedVariantsSummary()"
@@ -945,7 +934,7 @@
                     <img *ngIf="variant.image?.url" [src]="variant.image.url" alt="Variant"
                         class="w-4 h-4 rounded object-cover variant-image"
                         (click)="previewImage(variant.image.url, variant.variant + ' - ' + (variant.value.en || variant.value))">
-                    <button type="button" class="text-green-600 hover:text-green-800 ml-1"
+                    <button type="button" class="text-green-600 hover:text-green-800 ms-1"
                         (click)="removeVariant(variant)">
                         <i class="pi pi-times text-xs"></i>
                     </button>
@@ -957,9 +946,9 @@
 
     <ng-template pTemplate="footer">
         <div class="flex justify-end gap-2">
-            <p-button label="Cancel" severity="secondary" icon="pi pi-times" (click)="closeVariantDialog()">
+            <p-button [label]="'order.cancel' | translate" severity="secondary" icon="pi pi-times" (click)="closeVariantDialog()">
             </p-button>
-            <p-button label="Save Variants" severity="success" icon="pi pi-check" (click)="saveVariants()">
+            <p-button [label]="'order.saveVariantsButton' | translate" severity="success" icon="pi pi-check" (click)="saveVariants()">
             </p-button>
         </div>
     </ng-template>
@@ -967,7 +956,7 @@
 
 
 <!-- Package Details Dialog -->
-<p-dialog [(visible)]="packageDetailsDialog" [style]="{width: '70vw'}" header="Package Details - Select Variants"
+<p-dialog [(visible)]="packageDetailsDialog" [style]="{width: '70vw'}" [header]="'order.packageDetailsDialog' | translate"
     [modal]="true" [closable]="true" [resizable]="true" [draggable]="true" [dismissableMask]="true"
     [contentStyle]="{'max-height': '80vh'}">
 
@@ -976,17 +965,17 @@
         <!-- Package Info -->
         <div class="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
             <h4 class="font-semibold text-blue-800 dark:text-blue-200 mb-2">
-                <i class="pi pi-box mr-2"></i>Package: {{ selectedPackageForDetails.name?.en }}
+                <i class="pi pi-box me-2"></i>{{ 'order.packageLabel' | translate }} {{ selectedPackageForDetails.name?.en }}
             </h4>
             <p class="text-sm text-blue-600 dark:text-blue-300">
-                Select variants for each product in this package
+                {{ 'order.selectVariantsForEachText' | translate }}
             </p>
         </div>
 
         <!-- Package Products -->
         <div class="space-y-3">
             <h5 class="font-semibold text-gray-800 dark:text-gray-200">
-                <i class="pi pi-list mr-2"></i>Package Products
+                <i class="pi pi-list me-2"></i>{{ 'order.packageProductsLabel' | translate }}
             </h5>
 
             <div *ngFor="let packageItem of tempPackageItems; let i = index"
@@ -997,14 +986,14 @@
                             {{ getProductName(packageItem.itemId) }}
                         </h6>
                         <p class="text-sm text-gray-600 dark:text-gray-400">
-                            Quantity: {{ packageItem.quantity }}
+                            {{ 'order.quantityLabelShort' | translate }} {{ packageItem.quantity }}
                         </p>
                     </div>
                     <div class="flex flex-col items-center gap-2 max-w-[200px]">
                         <p-inputNumber [(ngModel)]="packageItem.quantity" [min]="1" [max]="10" size="small">
                         </p-inputNumber>
                         <p-button [icon]="expandedProductIndex === i ? 'pi pi-chevron-up' : 'pi pi-chevron-down'"
-                            [label]="expandedProductIndex === i ? 'Hide Variants' : 'Show Variants'"
+                            [label]="expandedProductIndex === i ? ('order.hideVariantsButton' | translate) : ('order.showVariantsButton' | translate)"
                             styleClass="p-button-sm p-button-outlined" (onClick)="toggleProductVariants(i)">
                         </p-button>
                     </div>
@@ -1013,7 +1002,7 @@
                 <!-- Variants Selection (Expandable) -->
                 <div *ngIf="expandedProductIndex === i" class="mt-4 border-t border-gray-200 dark:border-gray-600 pt-4">
                     <h6 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-                        <i class="pi pi-tag mr-2"></i>Select Variants
+                        <i class="pi pi-tag me-2"></i>{{ 'order.selectVariantsLabel' | translate }}
                     </h6>
 
                     <div *ngFor="let variant of productVariantsCache[packageItem.productId] || []" class="mb-4">
@@ -1039,7 +1028,7 @@
                 <div *ngIf="getSelectedVariantsForProduct(i).length > 0"
                     class="mt-3 p-3 bg-green-50 dark:bg-green-900/20 rounded">
                     <h6 class="text-sm font-medium text-green-800 dark:text-green-200 mb-2">
-                        Selected Variants:
+                        {{ 'order.selectedVariantsColonText' | translate }}
                     </h6>
                     <div class="flex flex-wrap gap-2">
                         <span *ngFor="let variant of getSelectedVariantsForProduct(i)"
@@ -1049,7 +1038,7 @@
                             <img *ngIf="variant.image?.filePath" [src]="variant.image.filePath" alt="Variant"
                                 class="w-3 h-3 rounded object-cover variant-image"
                                 (click)="previewImage(variant.image.filePath, variant.variant + ' - ' + (variant.value?.en || variant.value))">
-                            <button type="button" class="text-green-600 hover:text-green-800 ml-1"
+                            <button type="button" class="text-green-600 hover:text-green-800 ms-1"
                                 (click)="removeProductVariant(i, variant)">
                                 <i class="pi pi-times text-xs"></i>
                             </button>
@@ -1060,7 +1049,7 @@
                 <div *ngIf="getSelectedVariantsForProduct(i).length === 0 && expandedProductIndex !== i"
                     class="mt-3 p-3 bg-gray-50 dark:bg-gray-800 rounded">
                     <p class="text-sm text-gray-500 dark:text-gray-400 italic">
-                        No variants selected
+                        {{ 'order.noVariantsSelectedTextShort' | translate }}
                     </p>
                 </div>
             </div>
@@ -1070,9 +1059,9 @@
 
     <ng-template pTemplate="footer">
         <div class="flex justify-end gap-2">
-            <p-button label="Cancel" severity="secondary" icon="pi pi-times" (click)="closePackageDetailsDialog()">
+            <p-button [label]="'order.cancel' | translate" severity="secondary" icon="pi pi-times" (click)="closePackageDetailsDialog()">
             </p-button>
-            <p-button label="Save Package Details" severity="success" icon="pi pi-check" (click)="savePackageDetails()">
+            <p-button [label]="'order.savePackageDetailsButton' | translate" severity="success" icon="pi pi-check" (click)="savePackageDetails()">
             </p-button>
         </div>
     </ng-template>
@@ -1090,10 +1079,10 @@
             class="max-w-full max-h-[70vh] object-contain rounded-lg shadow-lg">
 
         <div class="mt-4 flex justify-center gap-2">
-            <p-button label="Download" icon="pi pi-download" severity="secondary" (click)="downloadImage()"
+            <p-button [label]="'order.downloadButton' | translate" icon="pi pi-download" severity="secondary" (click)="downloadImage()"
                 [outlined]="true">
             </p-button>
-            <p-button label="Close" icon="pi pi-times" severity="secondary" (click)="closeImagePreview()"
+            <p-button [label]="'order.closeButton' | translate" icon="pi pi-times" severity="secondary" (click)="closeImagePreview()"
                 [outlined]="true">
             </p-button>
         </div>

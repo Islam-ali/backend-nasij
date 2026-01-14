@@ -4,7 +4,7 @@
 
     <p-toolbar styleClass="mb-4 gap-2" *ngIf="!loading()">
         <ng-template pTemplate="left">
-            <p-button label="New Hero Layout" icon="pi pi-plus" severity="success" (onClick)="openNew()" />
+            <p-button [label]="'heroLayout.new' | translate" icon="pi pi-plus" severity="success" (onClick)="openNew()" />
         </ng-template>
     </p-toolbar>
 
@@ -16,24 +16,24 @@
         
         <ng-template pTemplate="caption">
             <div class="flex items-center justify-between">
-                <h5 class="m-0">Hero Layouts</h5>
+                <h5 class="m-0">{{ 'heroLayout.title' | translate }}</h5>
                 <span class="p-input-icon-left">
                     <i class="pi pi-search"></i>
-                    <input pInputText type="text" (input)="onGlobalFilter(dt, $event)" placeholder="Search..." />
+                    <input pInputText type="text" (input)="onGlobalFilter(dt, $event)" [placeholder]="'common.search' | translate" />
                 </span>
             </div>
         </ng-template>
 
         <ng-template pTemplate="header">
             <tr>
-                <th pSortableColumn="name">Name <p-sortIcon field="name"></p-sortIcon></th>
-                <th pSortableColumn="sectionTitle">Section Title <p-sortIcon field="sectionTitle"></p-sortIcon></th>
-                <th>Items Count</th>
-                <th>Tags</th>
-                <th pSortableColumn="displayOrder">Order <p-sortIcon field="displayOrder"></p-sortIcon></th>
-                <th pSortableColumn="isActive">Status <p-sortIcon field="isActive"></p-sortIcon></th>
-                <th pSortableColumn="createdAt">Created At <p-sortIcon field="createdAt"></p-sortIcon></th>
-                <th style="width: 10rem">Actions</th>
+                <th pSortableColumn="name">{{ 'heroLayout.name' | translate }} <p-sortIcon field="name"></p-sortIcon></th>
+                <th pSortableColumn="sectionTitle">{{ 'heroLayout.sectionTitle' | translate }} <p-sortIcon field="sectionTitle"></p-sortIcon></th>
+                <th>{{ 'heroLayout.itemsCount' | translate }}</th>
+                <th>{{ 'heroLayout.tags' | translate }}</th>
+                <th pSortableColumn="displayOrder">{{ 'heroLayout.order' | translate }} <p-sortIcon field="displayOrder"></p-sortIcon></th>
+                <th pSortableColumn="isActive">{{ 'common.status' | translate }} <p-sortIcon field="isActive"></p-sortIcon></th>
+                <th pSortableColumn="createdAt">{{ 'heroLayout.createdAt' | translate }} <p-sortIcon field="createdAt"></p-sortIcon></th>
+                <th style="width: 10rem">{{ 'common.actions' | translate }}</th>
             </tr>
         </ng-template>
 
@@ -45,7 +45,7 @@
                     <small class="text-gray-500">{{ heroLayout.sectionTitle?.ar || '-' }}</small>
                 </td>
                 <td>
-                    <p-tag [value]="heroLayout.items?.length + ' items'" severity="info"></p-tag>
+                    <p-tag [value]="heroLayout.items?.length + ' ' + ('heroLayout.items' | translate)" severity="info"></p-tag>
                 </td>
                 <td>
                     <p-tag *ngFor="let tag of heroLayout.tags" [value]="tag" class="mr-1"></p-tag>
@@ -53,7 +53,7 @@
                 </td>
                 <td>{{ heroLayout.displayOrder }}</td>
                 <td>
-                    <p-tag [value]="heroLayout.isActive ? 'Active' : 'Inactive'" 
+                    <p-tag [value]="getStatusLabel(heroLayout.isActive)" 
                            [severity]="heroLayout.isActive ? 'success' : 'danger'">
                     </p-tag>
                 </td>
@@ -61,14 +61,14 @@
                 <td>
                     <div class="flex gap-2">
                         <p-button icon="pi pi-pencil" severity="info" [rounded]="true" [text]="true" 
-                                  (onClick)="editHeroLayout(heroLayout)" pTooltip="Edit"></p-button>
+                                  (onClick)="editHeroLayout(heroLayout)" [pTooltip]="'common.edit' | translate"></p-button>
                         <p-button icon="pi pi-trash" severity="danger" [rounded]="true" [text]="true" 
-                                  (onClick)="deleteHeroLayout(heroLayout)" pTooltip="Delete"></p-button>
+                                  (onClick)="deleteHeroLayout(heroLayout)" [pTooltip]="'common.delete' | translate"></p-button>
                         <p-button [icon]="heroLayout.isActive ? 'pi pi-eye-slash' : 'pi pi-eye'" 
                                   [severity]="heroLayout.isActive ? 'warn' : 'success'" 
                                   [rounded]="true" [text]="true" 
                                   (onClick)="toggleActive(heroLayout)" 
-                                  pTooltip="Toggle Active Status"></p-button>
+                                  [pTooltip]="'heroLayout.toggleActiveStatus' | translate"></p-button>
                     </div>
                 </td>
             </tr>
@@ -76,7 +76,7 @@
 
         <ng-template pTemplate="emptymessage">
             <tr>
-                <td colspan="8" class="text-center">No hero layouts found.</td>
+                <td colspan="8" class="text-center">{{ 'heroLayout.noHeroLayoutsFound' | translate }}</td>
             </tr>
         </ng-template>
     </p-table>

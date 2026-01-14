@@ -30,6 +30,8 @@ import { UploadFilesComponent } from '../../../shared/components/fields/upload-f
 import { ComponentBase } from '../../../core/directives/component-base.directive';
 import { finalize, takeUntil, forkJoin } from 'rxjs';
 import { BaseResponse, pagination } from '../../../core/models/baseResponse';
+import { TranslateService, TranslateModule } from '@ngx-translate/core';
+import { inject } from '@angular/core';
 
 interface Column {
   field: string;
@@ -61,6 +63,7 @@ interface Column {
     UploadFilesComponent,
     Paginator,
     ToggleSwitchModule,
+    TranslateModule
 ],
   templateUrl: './brand-list.component.html',
   styleUrls: ['./brand-list.component.scss'],
@@ -70,23 +73,21 @@ export class BrandListComponent extends ComponentBase implements OnInit {
   brandForm!: FormGroup;
   brandDialog = false;
   submitted = false;
-  selectedBrands: IBrand[] = [];
+  // PrimeNG p-table may set selection to null during initialization; keep it nullable to avoid NG0100
+  selectedBrands: IBrand[] | null = null;
   loading = signal(false);
   brands = signal<IBrand[]>([]);
+  isEditMode = signal(false);
   pagination = signal({
     page: 1,
     limit: 5,
     total: 0
   });
+  translate = inject(TranslateService);
   
   @ViewChild('dt') dt: Table | undefined;
   
-  cols: Column[] = [
-    { field: 'name', header: 'Name' },
-    { field: 'slug', header: 'Slug' },
-    { field: 'isActive', header: 'Status' },
-    { field: 'productCount', header: 'Products' }
-  ];
+  cols: Column[] = [];
 
   constructor(
     private fb: FormBuilder,
@@ -99,7 +100,20 @@ export class BrandListComponent extends ComponentBase implements OnInit {
 
   ngOnInit() {
     this.buildForm();
+    this.updateColumns();
+    this.translate.onLangChange.subscribe(() => {
+      this.updateColumns();
+    });
     this.loadBrands();
+  }
+
+  updateColumns() {
+    this.cols = [
+      { field: 'name', header: this.translate.instant('common.name') },
+      { field: 'slug', header: this.translate.instant('brand.slug') },
+      { field: 'isActive', header: this.translate.instant('brand.status') },
+      { field: 'productCount', header: this.translate.instant('brand.products') }
+    ];
   }
 
   buildForm() {
@@ -137,8 +151,8 @@ export class BrandListComponent extends ComponentBase implements OnInit {
       error: (err) => {
         this.messageService.add({
           severity: 'error',
-          summary: 'Error',
-          detail: 'Failed to load brands',
+          summary: this.translate.instant('common.error'),
+          detail: this.translate.instant('brand.failedToLoad'),
           life: 1000
         });
       }
@@ -150,10 +164,12 @@ export class BrandListComponent extends ComponentBase implements OnInit {
       isActive: true
     });
     this.submitted = false;
+    this.isEditMode.set(false);
     this.brandDialog = true;
   }
 
   editBrand(brand: IBrand) {
+    this.isEditMode.set(true);
     this.brandForm.reset(
       {
         name: {
@@ -175,20 +191,22 @@ export class BrandListComponent extends ComponentBase implements OnInit {
       name: brand.name,
       slug: brand.slug,
       description: brand.description,
-      logo: brand.logo ? [brand.logo] : [],
+      logo: brand.logo ? [brand.logo] : null,
       website: brand.website,
       isActive: brand.isActive
     });
+    this.submitted = false;
     this.brandDialog = true;
   }
 
   deleteSelected() {
+    const selected = this.selectedBrands ?? [];
     this.confirmationService.confirm({
-      message: `Are you sure you want to delete the selected ${this.selectedBrands.length} brands?`,
-      header: 'Confirm',
+      message: this.translate.instant('brand.confirmDeleteSelected', { count: selected.length }),
+      header: this.translate.instant('common.confirm'),
       icon: 'pi pi-exclamation-triangle',
       accept: () => {
-        const deleteObservables = this.selectedBrands.map(brand => 
+        const deleteObservables = selected.map(brand => 
           this.brandService.deleteBrand(brand._id!)
         );
 
@@ -196,18 +214,18 @@ export class BrandListComponent extends ComponentBase implements OnInit {
           next: () => {
             this.messageService.add({
               severity: 'success',
-              summary: 'Successful',
-              detail: 'Brands Deleted',
+              summary: this.translate.instant('common.success'),
+              detail: this.translate.instant('brand.deletedSuccessfully'),
               life: 1000
             });
-            this.selectedBrands = [];
+            this.selectedBrands = null;
             this.loadBrands();
           },
           error: (err: any) => {
             this.messageService.add({
               severity: 'error',
-              summary: 'Error',
-              detail: 'Failed to delete brands',
+              summary: this.translate.instant('common.error'),
+              detail: this.translate.instant('brand.failedToDelete'),
               life: 1000
             });
           }
@@ -217,17 +235,18 @@ export class BrandListComponent extends ComponentBase implements OnInit {
   }
 
   deleteBrand(brand: IBrand) {
+    const brandName = brand.name?.en || brand.name?.ar || '';
     this.confirmationService.confirm({
-      message: `Are you sure you want to delete ${brand.name}?`,
-      header: 'Confirm',
+      message: this.translate.instant('brand.confirmDelete', { name: brandName }),
+      header: this.translate.instant('common.confirm'),
       icon: 'pi pi-exclamation-triangle',
       accept: () => {
         this.brandService.deleteBrand(brand._id!).subscribe({
           next: () => {
             this.messageService.add({
               severity: 'success',
-              summary: 'Successful',
-              detail: 'Brand Deleted',
+              summary: this.translate.instant('common.success'),
+              detail: this.translate.instant('brand.deletedSuccessfully'),
               life: 1000
             });
             this.loadBrands();
@@ -235,8 +254,8 @@ export class BrandListComponent extends ComponentBase implements OnInit {
           error: (err: any) => {
             this.messageService.add({
               severity: 'error',
-              summary: 'Error',
-              detail: 'Failed to delete brand',
+              summary: this.translate.instant('common.error'),
+              detail: this.translate.instant('brand.failedToDelete'),
               life: 1000
             });
           }
@@ -265,8 +284,10 @@ export class BrandListComponent extends ComponentBase implements OnInit {
       next: (res: any) => {
         this.messageService.add({
           severity: 'success',
-          summary: 'Successful',
-          detail: `Brand ${brandData._id ? 'Updated' : 'Created'}`,
+          summary: this.translate.instant('common.success'),
+          detail: brandData._id 
+            ? this.translate.instant('brand.updatedSuccessfully')
+            : this.translate.instant('brand.createdSuccessfully'),
           life: 1000
         });
         this.loadBrands();
@@ -275,8 +296,10 @@ export class BrandListComponent extends ComponentBase implements OnInit {
       error: (err) => {
         this.messageService.add({
           severity: 'error',
-          summary: 'Error',
-          detail: `Failed to ${brandData._id ? 'update' : 'create'} brand`,
+          summary: this.translate.instant('common.error'),
+          detail: brandData._id 
+            ? this.translate.instant('brand.failedToUpdate')
+            : this.translate.instant('brand.failedToCreate'),
           life: 1000
         });
       }
@@ -286,6 +309,7 @@ export class BrandListComponent extends ComponentBase implements OnInit {
   hideDialog() {
     this.brandDialog = false;
     this.submitted = false;
+    this.isEditMode.set(false);
   }
 
   onGlobalFilter(event: any) {
@@ -296,5 +320,9 @@ export class BrandListComponent extends ComponentBase implements OnInit {
 
   get formControlLogo() {
     return this.brandForm.get('logo') as FormControl;
+  }
+
+  get logoValue() {
+    return this.brandForm.get('logo')?.value;
   }
 }

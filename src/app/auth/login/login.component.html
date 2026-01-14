@@ -6,32 +6,31 @@
             style="border-radius: 56px; padding: 0.3rem; background: linear-gradient(180deg, var(--primary-color) 10%, rgba(33, 150, 243, 0) 30%)">
             <div class="w-full bg-surface-0 dark:bg-surface-900 py-20 px-8 sm:px-20" style="border-radius: 53px">
                 <div class="text-center mb-8">
-                    <img src="images/logo.png" alt="Pledge Logo" class="mb-8 w-16 shrink-0 mx-auto">
-                    <div class="text-surface-900 dark:text-surface-0 text-3xl font-medium mb-4">Welcome to Pledge!
+                    <img src="/assets/images/logo.png" alt="Pledge Logo" class="mb-8 w-16 shrink-0 mx-auto">
+                    <div class="text-surface-900 dark:text-surface-0 text-3xl font-medium mb-4">{{ 'app.welcome' | translate }}
                     </div>
-                    <span class="text-muted-color font-medium">Sign in to continue</span>
+                    <span class="text-muted-color font-medium">{{ 'app.signInToContinue' | translate }}</span>
                 </div>
 
                 <div>
                     <label for="email1"
-                        class="block text-surface-900 dark:text-surface-0 text-xl font-medium mb-2">Email</label>
-                    <input pInputText id="email1" type="text" placeholder="Email address"
+                        class="block text-surface-900 dark:text-surface-0 text-xl font-medium mb-2">{{ 'auth.email' | translate }}</label>
+                    <input pInputText id="email1" type="text" [placeholder]="'auth.email' | translate"
                         class="w-full md:w-[30rem] mb-8" [(ngModel)]="email" />
 
                     <label for="password1"
-                        class="block text-surface-900 dark:text-surface-0 font-medium text-xl mb-2">Password</label>
-                    <p-password id="password1" [(ngModel)]="password" placeholder="Password" [toggleMask]="true"
+                        class="block text-surface-900 dark:text-surface-0 font-medium text-xl mb-2">{{ 'auth.password' | translate }}</label>
+                    <p-password id="password1" [(ngModel)]="password" [placeholder]="'auth.password' | translate" [toggleMask]="true"
                         styleClass="mb-4" [fluid]="true" [feedback]="false"></p-password>
 
                     <div class="flex items-center justify-between mt-2 mb-8 gap-8">
                         <div class="flex items-center">
                             <p-checkbox [(ngModel)]="checked" id="rememberme1" binary class="mr-2"></p-checkbox>
-                            <label for="rememberme1">Remember me</label>
+                            <label for="rememberme1">{{ 'app.rememberMe' | translate }}</label>
                         </div>
-                        <span class="font-medium no-underline ml-2 text-right cursor-pointer text-primary">Forgot
-                            password?</span>
+                        <span class="font-medium no-underline ms-2 text-right cursor-pointer text-primary">{{ 'app.forgotPassword' | translate }}</span>
                     </div>
-                    <p-button label="Sign In" styleClass="w-full"  (click)="onSubmit()"></p-button>
+                    <p-button [label]="'app.signIn' | translate" styleClass="w-full"  (click)="onSubmit()"></p-button>
                 </div>
             </div>
         </div>

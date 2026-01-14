@@ -1,9 +1,10 @@
-import { Component, OnInit, signal, ViewChild } from '@angular/core';
+import { Component, inject, OnInit, signal, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormArray, FormsModule, FormControl } from '@angular/forms';
 
 // PrimeNG Services
 import { ConfirmationService, MessageService } from 'primeng/api';
+import { TranslateService, TranslateModule } from '@ngx-translate/core';
 
 // PrimeNG Modules
 import { Table, TableModule } from 'primeng/table';
@@ -66,6 +67,8 @@ interface ExportColumn {
     imports: [
     CommonModule,
     ReactiveFormsModule,
+    FormsModule,
+    TranslateModule,
     TableModule,
     ButtonModule,
     RippleModule,
@@ -86,7 +89,8 @@ interface ExportColumn {
     PaginatorModule,
     CheckboxModule,
     FormsModule,
-    MultiLanguagePipe
+    MultiLanguagePipe,
+    TranslateModule
 ],
     providers: [MessageService, ConfirmationService, OrderService, PackageService, UploadFilesService]  
 })
@@ -105,7 +109,7 @@ export class OrderListComponent extends ComponentBase implements OnInit {
         pages: 0
     });
     loadingExport: boolean = false;
-
+    translate = inject(TranslateService);   
     // Filter properties
     selectedOrderStatus = signal<OrderStatus | null>(null);
     selectedPaymentStatus = signal<PaymentStatus | null>(null);
@@ -139,28 +143,10 @@ export class OrderListComponent extends ComponentBase implements OnInit {
     previewImageUrl: string = '';
     previewImageTitle: string = '';
 
-    statusOptions = [
-        { label: 'قيد الانتظار', value: OrderStatus.PENDING },
-        { label: 'تم التأكيد', value: OrderStatus.CONFIRMED },
-        { label: 'تم الشحن', value: OrderStatus.SHIPPED },
-        { label: 'تم التسليم', value: OrderStatus.DELIVERED },
-        { label: 'تم الإلغاء', value: OrderStatus.CANCELLED },
-        { label: 'تم التأجيل', value: OrderStatus.POSTPONED },
-        { label: 'تم الإرجاع', value: OrderStatus.RETURNED }        
-    ];
-
-    paymentStatusOptions = [
-        { label: 'قيد الانتظار', value: PaymentStatus.PENDING },
-        { label: 'تم الدفع', value: PaymentStatus.PAID },
-        { label: 'فشل الدفع', value: PaymentStatus.FAILED },
-        { label: 'تم الاسترجاع', value: PaymentStatus.REFUNDED }
-    ];
+    statusOptions: any[] = [];
+    paymentStatusOptions: any[] = [];
+    paymentMethodOptions: any[] = [];
     PaymentMethod = PaymentMethod;
-
-    paymentMethodOptions = [
-        { label: 'نقدي', value: PaymentMethod.CASH },
-        { label: 'فودافون كاش', value: PaymentMethod.VODAFONE_CASH }
-    ];
 
     countryOptions = signal<ICountry[]>([]);
     stateOptions = signal<IState[]>([]);
@@ -189,15 +175,45 @@ export class OrderListComponent extends ComponentBase implements OnInit {
         this.loadProducts();
         this.loadPackages();
         this.loadCountries();
+        this.initializeOptions();
         this.cols = [
-            { field: 'orderNumber', header: 'Order #' },
-            { field: 'customer', header: 'Customer' },
-            { field: 'total', header: 'Total' },
-            { field: 'status', header: 'Status' },
-            { field: 'paymentStatus', header: 'Payment Status' },
-            { field: 'createdAt', header: 'Date' }
+            { field: 'orderNumber', header: this.translate.instant('order.orderNumber') },
+            { field: 'customer', header: this.translate.instant('order.customer') },
+            { field: 'total', header: this.translate.instant('common.total') },
+            { field: 'status', header: this.translate.instant('common.status') },
+            { field: 'paymentStatus', header: this.translate.instant('order.paymentStatus') },
+            { field: 'createdAt', header: this.translate.instant('common.date') }
         ];
         this.exportColumns = this.cols.map(col => ({ title: col.header, dataKey: col.field }));
+        
+        // Update options when language changes
+        this.translate.onLangChange.subscribe(() => {
+            this.initializeOptions();
+        });
+    }
+
+    initializeOptions() {
+        this.statusOptions = [
+            { label: this.translate.instant('order.pending'), value: OrderStatus.PENDING },
+            { label: this.translate.instant('order.confirmed'), value: OrderStatus.CONFIRMED },
+            { label: this.translate.instant('order.shipped'), value: OrderStatus.SHIPPED },
+            { label: this.translate.instant('order.delivered'), value: OrderStatus.DELIVERED },
+            { label: this.translate.instant('order.cancelled'), value: OrderStatus.CANCELLED },
+            { label: this.translate.instant('order.postponed'), value: OrderStatus.POSTPONED },
+            { label: this.translate.instant('order.returned'), value: OrderStatus.RETURNED }        
+        ];
+
+        this.paymentStatusOptions = [
+            { label: this.translate.instant('order.pending'), value: PaymentStatus.PENDING },
+            { label: this.translate.instant('order.paid'), value: PaymentStatus.PAID },
+            { label: this.translate.instant('order.failed'), value: PaymentStatus.FAILED },
+            { label: this.translate.instant('order.refunded'), value: PaymentStatus.REFUNDED }
+        ];
+
+        this.paymentMethodOptions = [
+            { label: this.translate.instant('order.cash'), value: PaymentMethod.CASH },
+            { label: this.translate.instant('order.vodafoneCash'), value: PaymentMethod.VODAFONE_CASH }
+        ];
     }
     loadCountries() {
         this.countryService.getCountries().subscribe((countries: any) => {
@@ -341,6 +357,57 @@ export class OrderListComponent extends ComponentBase implements OnInit {
         }
     }
 
+    getStatusLabel(status: OrderStatus): string {
+        const statusMap: { [key: string]: string } = {
+            [OrderStatus.PENDING]: 'order.pending',
+            [OrderStatus.CONFIRMED]: 'order.confirmed',
+            [OrderStatus.SHIPPED]: 'order.shipped',
+            [OrderStatus.DELIVERED]: 'order.delivered',
+            [OrderStatus.CANCELLED]: 'order.cancelled',
+            [OrderStatus.POSTPONED]: 'order.postponed',
+            [OrderStatus.RETURNED]: 'order.returned'
+        };
+        return this.translate.instant(statusMap[status] || 'order.pending');
+    }
+
+    getPaymentStatusLabel(status: PaymentStatus): string {
+        const statusMap: { [key: string]: string } = {
+            [PaymentStatus.PENDING]: 'order.pending',
+            [PaymentStatus.PAID]: 'order.paid',
+            [PaymentStatus.FAILED]: 'order.failed',
+            [PaymentStatus.REFUNDED]: 'order.refunded'
+        };
+        return this.translate.instant(statusMap[status] || 'order.pending');
+    }
+
+    getPaymentMethodLabel(method: PaymentMethod): string {
+        const methodMap: { [key: string]: string } = {
+            [PaymentMethod.CASH]: 'order.cash',
+            [PaymentMethod.VODAFONE_CASH]: 'order.vodafoneCash',
+            [PaymentMethod.PAYMOB]: 'order.paymob'
+        };
+        return this.translate.instant(methodMap[method] || 'order.cash');
+    }
+
+    getItemTypeOptions(): any[] {
+        return [
+            { label: '📦 ' + this.translate.instant('order.package'), value: 'Package' },
+            { label: '🛍️ ' + this.translate.instant('order.product'), value: 'Product' }
+        ];
+    }
+
+    getSelectItemLabel(itemType: string): string {
+        const type = itemType === 'Package' ? this.translate.instant('order.package') : this.translate.instant('order.product');
+        return this.translate.instant('order.selectItem', { type });
+    }
+
+    getVariantsButtonLabel(variantsCount: number): string {
+        if (variantsCount > 0) {
+            return this.translate.instant('order.editVariants') + ' (' + variantsCount + ')';
+        }
+        return this.translate.instant('order.addVariants');
+    }
+
     viewPaymentImage(imageUrl: string): void {
         // Open image in a new window/tab
         window.open(imageUrl, '_blank');
@@ -447,8 +514,8 @@ export class OrderListComponent extends ComponentBase implements OnInit {
             },
             error: () => this.messageService.add({
                 severity: 'error',
-                summary: 'Error',
-                detail: 'Failed to load orders',
+                summary: this.translate.instant('common.error'),
+                detail: this.translate.instant('order.failedToLoad'),
                 life: 1000
             })
         });
@@ -462,8 +529,8 @@ export class OrderListComponent extends ComponentBase implements OnInit {
             },
             error: () => this.messageService.add({
                 severity: 'error',
-                summary: 'Error',
-                detail: 'Failed to load products',
+                summary: this.translate.instant('common.error'),
+                detail: this.translate.instant('product.failedToLoad'),
                 life: 1000
             })
         });
@@ -478,8 +545,8 @@ export class OrderListComponent extends ComponentBase implements OnInit {
             },
             error: () => this.messageService.add({
                 severity: 'error',
-                summary: 'Error',
-                detail: 'Failed to load packages',
+                summary: this.translate.instant('common.error'),
+                detail: this.translate.instant('package.failedToLoad'),
                 life: 1000
             })
         });
@@ -639,8 +706,8 @@ export class OrderListComponent extends ComponentBase implements OnInit {
         if (!order._id) return;
 
         this.confirmationService.confirm({
-            message: `Are you sure you want to delete order #${order.orderNumber}?`,
-            header: 'Confirm',
+            message: this.translate.instant('order.confirmDelete', { orderNumber: order.orderNumber }),
+            header: this.translate.instant('common.confirm'),
             icon: 'pi pi-exclamation-triangle',
             accept: () => {
                 this.orderService.deleteOrder(order._id!).pipe(takeUntil(this.destroy$)).subscribe({
@@ -648,14 +715,14 @@ export class OrderListComponent extends ComponentBase implements OnInit {
                         this.loadOrders();
                         this.messageService.add({
                             severity: 'success',
-                            summary: 'Deleted',
-                            detail: 'Order deleted successfully'
+                            summary: this.translate.instant('common.delete'),
+                            detail: this.translate.instant('order.deletedSuccessfully')
                         });
                     },
                     error: () => this.messageService.add({
                         severity: 'error',
-                        summary: 'Error',
-                        detail: 'Failed to delete order'
+                        summary: this.translate.instant('common.error'),
+                        detail: this.translate.instant('order.failedToDelete')
                     })
                 });
             }
@@ -667,8 +734,8 @@ export class OrderListComponent extends ComponentBase implements OnInit {
         if (this.orderForm.invalid) {
             this.messageService.add({
                 severity: 'error',
-                summary: 'Error',
-                detail: 'Please fill in all required fields',
+                summary: this.translate.instant('common.error'),
+                detail: this.translate.instant('order.fillRequiredFields'),
                 life: 1000
             });
             return;
@@ -688,8 +755,8 @@ export class OrderListComponent extends ComponentBase implements OnInit {
                 this.loadOrders();
                 this.messageService.add({
                     severity: 'success',
-                    summary: cleanedData._id ? 'Updated' : 'Created',
-                    detail: `Order ${cleanedData._id ? 'updated' : 'created'} successfully`
+                    summary: cleanedData._id ? this.translate.instant('common.update') : this.translate.instant('common.create'),
+                    detail: cleanedData._id ? this.translate.instant('order.updatedSuccessfully') : this.translate.instant('order.createdSuccessfully')
                 });
                 this.hideDialog();
             },
@@ -697,8 +764,8 @@ export class OrderListComponent extends ComponentBase implements OnInit {
                 console.error('Error saving order:', error);
                 this.messageService.add({
                     severity: 'error',
-                    summary: 'Error',
-                    detail: error.error?.message || 'Failed to save order',
+                    summary: this.translate.instant('common.error'),
+                    detail: error.error?.message || this.translate.instant('order.failedToSave'),
                     life: 1000
                 });
             }
@@ -821,14 +888,14 @@ export class OrderListComponent extends ComponentBase implements OnInit {
                 this.loadOrders();
                 this.messageService.add({
                     severity: 'success',
-                    summary: 'Updated',
-                    detail: 'Order status updated successfully'
+                    summary: this.translate.instant('common.update'),
+                    detail: this.translate.instant('order.orderStatusUpdated')
                 });
             },
             error: () => this.messageService.add({
                 severity: 'error',
-                summary: 'Error',
-                detail: 'Failed to update order status'
+                summary: this.translate.instant('common.error'),
+                detail: this.translate.instant('order.failedToUpdateStatus')
             })
         });
     }
@@ -841,14 +908,14 @@ export class OrderListComponent extends ComponentBase implements OnInit {
                 this.loadOrders();
                 this.messageService.add({
                     severity: 'success',
-                    summary: 'Updated',
-                    detail: 'Payment status updated successfully'
+                    summary: this.translate.instant('common.update'),
+                    detail: this.translate.instant('order.paymentStatusUpdated')
                 });
             },
             error: () => this.messageService.add({
                 severity: 'error',
-                summary: 'Error',
-                detail: 'Failed to update payment status'
+                summary: this.translate.instant('common.error'),
+                detail: this.translate.instant('order.failedToUpdatePaymentStatus')
             })
         });
     }
@@ -896,8 +963,8 @@ export class OrderListComponent extends ComponentBase implements OnInit {
         if (!productId) {
             this.messageService.add({
                 severity: 'warn',
-                summary: 'Warning',
-                detail: 'Please select a product first'
+                summary: this.translate.instant('common.warning'),
+                detail: this.translate.instant('order.selectProductFirst')
             });
             return;
         }
@@ -1104,8 +1171,8 @@ export class OrderListComponent extends ComponentBase implements OnInit {
         
         this.messageService.add({
             severity: 'success',
-            summary: 'Success',
-            detail: 'Variants updated successfully'
+            summary: this.translate.instant('common.success'),
+            detail: this.translate.instant('order.variantsUpdated')
         });
         
         this.closeVariantDialog();
@@ -1123,8 +1190,8 @@ export class OrderListComponent extends ComponentBase implements OnInit {
         if (!packageProduct || !packageProduct.productId) {
             this.messageService.add({
                 severity: 'warn',
-                summary: 'Warning',
-                detail: 'Package product not found'
+                summary: this.translate.instant('common.warning'),
+                detail: this.translate.instant('order.packageProductNotFound')
             });
             return;
         }
@@ -1280,8 +1347,8 @@ export class OrderListComponent extends ComponentBase implements OnInit {
         
         this.messageService.add({
             severity: 'success',
-            summary: 'Success',
-            detail: 'Package variants updated successfully'
+            summary: this.translate.instant('common.success'),
+            detail: this.translate.instant('order.packageVariantsUpdated')
         });
         
         this.closePackageVariantDialog();
@@ -1525,8 +1592,8 @@ export class OrderListComponent extends ComponentBase implements OnInit {
             
             this.messageService.add({
                 severity: 'success',
-                summary: 'Success',
-                detail: 'Package details saved successfully'
+                summary: this.translate.instant('common.success'),
+                detail: this.translate.instant('order.packageDetailsSaved')
             });
             
             this.closePackageDetailsDialog();
@@ -1608,8 +1675,8 @@ export class OrderListComponent extends ComponentBase implements OnInit {
             this.loadingExportSignal.set(false);
             this.messageService.add({
                 severity: 'success',
-                summary: 'Export Complete',
-                detail: 'Orders exported successfully'
+                summary: this.translate.instant('order.exportComplete'),
+                detail: this.translate.instant('order.ordersExported')
             });
         }, 2000);
     }
@@ -1618,8 +1685,8 @@ export class OrderListComponent extends ComponentBase implements OnInit {
         // TODO: Implement order details view
         this.messageService.add({
             severity: 'info',
-            summary: 'Order Details',
-            detail: `Viewing details for order #${order.orderNumber}`
+            summary: this.translate.instant('order.orderDetails'),
+            detail: this.translate.instant('order.viewingDetails', { orderNumber: order.orderNumber })
         });
     }
 
@@ -1691,8 +1758,8 @@ export class OrderListComponent extends ComponentBase implements OnInit {
   
             this.messageService.add({
               severity: 'success',
-              summary: 'Success',
-              detail: `${this.fileUpload.name} uploaded successfully`
+              summary: this.translate.instant('common.success'),
+              detail: this.translate.instant('order.uploadedSuccessfully', { fileName: this.fileUpload.name })
             });
   
             const responseData = event.body?.data;
@@ -1721,8 +1788,8 @@ export class OrderListComponent extends ComponentBase implements OnInit {
   
           this.messageService.add({
             severity: 'error',
-            summary: 'Error',
-            detail: `Failed to upload ${this.fileUpload.name}`
+            summary: this.translate.instant('common.error'),
+            detail: this.translate.instant('order.failedToUpload', { fileName: this.fileUpload.name })
           });
         }
       });

@@ -7,6 +7,7 @@ import { CheckboxModule } from 'primeng/checkbox';
 import { InputTextModule } from 'primeng/inputtext';
 import { PasswordModule } from 'primeng/password';
 import { RippleModule } from 'primeng/ripple';
+import { TranslateModule } from '@ngx-translate/core';
 import { AppFloatingConfigurator } from '../../layout/component/app.floatingconfigurator';
 import { LoginService } from '../services/login.service';
 import { MessageService } from 'primeng/api';
@@ -16,7 +17,7 @@ import { MessageService } from 'primeng/api';
   templateUrl: './login.component.html',
   styleUrl: './login.component.scss',
   standalone: true,
-  imports: [ButtonModule, CheckboxModule, InputTextModule, PasswordModule, FormsModule, RippleModule, AppFloatingConfigurator],
+  imports: [ButtonModule, CheckboxModule, InputTextModule, PasswordModule, FormsModule, RippleModule, TranslateModule, AppFloatingConfigurator],
   providers: [LoginService, MessageService]
 })
 export class LoginComponent {

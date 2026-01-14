@@ -34,6 +34,8 @@ import { FallbackImgDirective } from '../../../core/directives/fallback-img.dire
 import { MultiLanguagePipe } from '../../../core/pipes/multi-language.pipe';
 import { SupportedLanguage } from '../../../../app/interfaces/banner.interface';
 import { environment } from '../../../../environments/environment';
+import { TranslateService, TranslateModule } from '@ngx-translate/core';
+import { inject } from '@angular/core';
 
 interface Column {
   field: string;
@@ -66,7 +68,8 @@ interface Column {
     UploadFilesComponent,
     Paginator,
     FallbackImgDirective,
-    MultiLanguagePipe
+    MultiLanguagePipe,
+    TranslateModule
 ],
   templateUrl: './catgory-list.component.html',
   styleUrls: ['./catgory-list.component.scss'],
@@ -92,17 +95,11 @@ export class CatgoryListComponent extends ComponentBase implements OnInit {
     { label: 'English', value: 'en' },
     { label: 'العربية', value: 'ar' }
   ]);
+  translate = inject(TranslateService);
   
   @ViewChild('dt') dt: Table | undefined;
   
-  cols: Column[] = [
-    { field: 'image', header: 'Image' },
-    { field: 'name', header: 'Name' },
-    { field: 'slug', header: 'Slug' },
-    { field: 'sortOrder', header: 'Sort Order' },
-    { field: 'isActive', header: 'Status' },
-    { field: 'productCount', header: 'Products' },
-  ];
+  cols: Column[] = [];
 
   constructor(
     private fb: FormBuilder,
@@ -115,8 +112,23 @@ export class CatgoryListComponent extends ComponentBase implements OnInit {
 
   ngOnInit() {
     this.buildForm();
+    this.updateColumns();
+    this.translate.onLangChange.subscribe(() => {
+      this.updateColumns();
+    });
     this.loadCategories();
     this.listCategories();
+  }
+
+  updateColumns() {
+    this.cols = [
+      { field: 'image', header: this.translate.instant('category.image') },
+      { field: 'name', header: this.translate.instant('common.name') },
+      { field: 'slug', header: this.translate.instant('category.slug') },
+      { field: 'sortOrder', header: this.translate.instant('category.sortOrder') },
+      { field: 'isActive', header: this.translate.instant('category.status') },
+      { field: 'productCount', header: this.translate.instant('category.products') },
+    ];
   }
 
   getImageUrl(filePath: string): string {
@@ -156,8 +168,8 @@ export class CatgoryListComponent extends ComponentBase implements OnInit {
       error: (err) => {
         this.messageService.add({
           severity: 'error',
-          summary: 'Error',
-          detail: 'Failed to load categories',
+          summary: this.translate.instant('common.error'),
+          detail: this.translate.instant('category.failedToLoad'),
           life: 1000
         });
       }
@@ -219,17 +231,18 @@ export class CatgoryListComponent extends ComponentBase implements OnInit {
   }
 
   deleteCategory(category: ICategory) {
+    const categoryName = category.name[this.currentLanguage()] || category.name.en || category.name.ar || '';
     this.confirmationService.confirm({
-      message: `Are you sure you want to delete ${category.name[this.currentLanguage()] || category.name.en || category.name.ar || ''}?`,
-      header: 'Confirm',
+      message: this.translate.instant('category.confirmDelete', { name: categoryName }),
+      header: this.translate.instant('common.confirm'),
       icon: 'pi pi-exclamation-triangle',
       accept: () => {
         this.categoryService.deleteCategory(category._id!).subscribe({
           next: () => {
             this.messageService.add({
               severity: 'success',
-              summary: 'Successful',
-              detail: 'Category Deleted',
+              summary: this.translate.instant('common.success'),
+              detail: this.translate.instant('category.deletedSuccessfully'),
               life: 1000
             });
             this.loadCategories();
@@ -237,8 +250,8 @@ export class CatgoryListComponent extends ComponentBase implements OnInit {
           error: (err) => {
             this.messageService.add({
               severity: 'error',
-              summary: 'Error',
-              detail: 'Failed to delete category',
+              summary: this.translate.instant('common.error'),
+              detail: this.translate.instant('category.failedToDelete'),
               life: 1000
             });
           }
@@ -263,8 +276,10 @@ export class CatgoryListComponent extends ComponentBase implements OnInit {
       next: (res: any) => {
         this.messageService.add({
           severity: 'success',
-          summary: 'Successful',
-          detail: `Category ${categoryData._id ? 'Updated' : 'Created'}`,
+          summary: this.translate.instant('common.success'),
+          detail: categoryData._id 
+            ? this.translate.instant('category.updatedSuccessfully')
+            : this.translate.instant('category.createdSuccessfully'),
           life: 1000
         });
         this.loadCategories();
@@ -273,8 +288,10 @@ export class CatgoryListComponent extends ComponentBase implements OnInit {
       error: (err) => {
         this.messageService.add({
           severity: 'error',
-          summary: 'Error',
-          detail: `Failed to ${categoryData._id ? 'update' : 'create'} category`,
+          summary: this.translate.instant('common.error'),
+          detail: categoryData._id 
+            ? this.translate.instant('category.failedToUpdate')
+            : this.translate.instant('category.failedToCreate'),
           life: 1000
         });
       }

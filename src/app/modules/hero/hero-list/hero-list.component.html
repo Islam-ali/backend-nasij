@@ -4,7 +4,7 @@
 
         <p-toolbar styleClass="mb-4 gap-2">
             <ng-template pTemplate="left">
-                <button pButton pRipple label="New Hero Section" icon="pi pi-plus" class="p-button-success"
+                <button pButton pRipple [label]="'hero.new' | translate" icon="pi pi-plus" class="p-button-success"
                     (click)="openNew()"></button>
             </ng-template>
             <!-- <ng-template pTemplate="right">
@@ -20,26 +20,26 @@
                 <div class="flex items-center justify-between">
                     <div class="flex items-center gap-3">
                         <i class="pi pi-image text-2xl text-blue-600"></i>
-                        <h5 class="m-0 text-xl font-semibold text-gray-800">Manage Hero Sections</h5>
+                        <h5 class="m-0 text-xl font-semibold text-gray-800">{{ 'hero.manage' | translate }}</h5>
                     </div>
-                    <p-iconField iconPosition="left" class="ml-auto">
+                    <p-iconField iconPosition="left" class="ms-auto">
                         <p-inputIcon>
                             <i class="pi pi-search"></i>
                         </p-inputIcon>
-                        <input pInputText type="text" (input)="onGlobalFilter(dt , $event)" placeholder="Search..."
+                        <input pInputText type="text" (input)="onGlobalFilter(dt , $event)" [placeholder]="'common.search' | translate"
                             class="w-full sm:w-auto" />
                     </p-iconField>
                 </div>
             </ng-template>
             <ng-template pTemplate="header">
                 <tr>
-                    <th pSortableColumn="title">Title <p-sortIcon field="title"></p-sortIcon></th>
-                    <th pSortableColumn="subTitle">Subtitle <p-sortIcon field="subTitle"></p-sortIcon></th>
-                    <th>Image</th>
-                    <th>Video</th>
-                    <th pSortableColumn="isAlways">Type <p-sortIcon field="isAlways"></p-sortIcon></th>
-                    <th pSortableColumn="isActive">Status <p-sortIcon field="isActive"></p-sortIcon></th>
-                    <th>Actions</th>
+                    <th pSortableColumn="title">{{ 'hero.titleLabel' | translate }} <p-sortIcon field="title"></p-sortIcon></th>
+                    <th pSortableColumn="subTitle">{{ 'hero.subtitle' | translate }} <p-sortIcon field="subTitle"></p-sortIcon></th>
+                    <th>{{ 'hero.image' | translate }}</th>
+                    <th>{{ 'hero.video' | translate }}</th>
+                    <th pSortableColumn="isAlways">{{ 'hero.type' | translate }} <p-sortIcon field="isAlways"></p-sortIcon></th>
+                    <th pSortableColumn="isActive">{{ 'common.status' | translate }} <p-sortIcon field="isActive"></p-sortIcon></th>
+                    <th>{{ 'common.actions' | translate }}</th>
                 </tr>
             </ng-template>
             <ng-template pTemplate="body" let-hero>
@@ -81,80 +81,80 @@
                         </div>
                     </td>
                     <td>
-                        <p-tag [value]="hero.isAlways ? 'Always Active' : 'Scheduled'"
+                        <p-tag [value]="getTypeLabel(hero.isAlways)"
                             [severity]="getAlwaysSeverity(hero.isAlways)"></p-tag>
                     </td>
                     <td>
-                        <p-tag [value]="hero.isActive ? 'Active' : 'Inactive'"
+                        <p-tag [value]="getStatusLabel(hero.isActive)"
                             [severity]="getSeverity(hero.isActive)"></p-tag>
                     </td>
                     <td>
                         <div class="flex items-center justify-center gap-2">
                             <button pButton pRipple icon="pi pi-pencil" class="p-button-rounded p-button-success"
-                                (click)="editHero(hero)" pTooltip="Edit Hero Section" tooltipPosition="top"></button>
+                                (click)="editHero(hero)" [pTooltip]="'hero.editHeroSection' | translate" tooltipPosition="top"></button>
                             <button pButton pRipple icon="pi pi-trash" class="p-button-rounded p-button-warn"
-                                (click)="deleteHero(hero)" pTooltip="Delete Hero Section" tooltipPosition="top"></button>
+                                (click)="deleteHero(hero)" [pTooltip]="'hero.deleteHeroSection' | translate" tooltipPosition="top"></button>
                         </div>
                     </td>
                 </tr>
             </ng-template>
             <ng-template pTemplate="emptymessage">
                 <tr>
-                    <td colspan="6" class="text-center p-4">No heroes found.</td>
+                    <td colspan="6" class="text-center p-4">{{ 'hero.noHeroesFound' | translate }}</td>
                 </tr>
             </ng-template>
         </p-table>
 
         <p-paginator [rows]="pagination().limit" [totalRecords]="pagination().total" [showCurrentPageReport]="true"
-            currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries"
+            [currentPageReportTemplate]="'hero.paging' | translate"
             [rowsPerPageOptions]="[5, 10, 25, 50]" (onPageChange)="onPageChange($event)">
         </p-paginator>
     </div>
 
     <!-- Hero Dialog -->
     <p-dialog [(visible)]="heroDialog" [style]="{width: '70rem'}" [breakpoints]="{'1199px': '85vw', '575px': '95vw'}"
-        header="Hero Section Details" [modal]="true" styleClass="p-fluid">
+        [header]="'hero.heroSectionDetails' | translate" [modal]="true" styleClass="p-fluid">
         <ng-template pTemplate="content">
             <form [formGroup]="heroForm" class="space-y-6">
                 <!-- Basic Information Section -->
                 <div class="bg-gray-50 p-4 rounded-lg">
                     <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
-                        <i class="pi pi-info-circle mr-2 text-blue-600"></i>
-                        Basic Information
+                        <i class="pi pi-info-circle me-2 text-blue-600"></i>
+                        {{ 'hero.basicInformation' | translate }}
                     </h3>
                     
                     <!-- Title -->
                     <div class="field mb-4">
-                        <label class="font-bold text-gray-700 mb-3 block">Title *</label>
+                        <label class="font-bold text-gray-700 mb-3 block">{{ 'hero.titleLabelForm' | translate }} *</label>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4" formGroupName="title"    >
                             <div>
-                                <label for="titleEn" class="block text-sm text-gray-600 mb-1">English</label>
+                                <label for="titleEn" class="block text-sm text-gray-600 mb-1">{{ 'common.english' | translate }}</label>
                                 <input id="titleEn" pInputText type="text" formControlName="en" required autofocus
-                                    placeholder="Enter hero title in English" class="w-full" dir="ltr" />
-                                <small *ngIf="submitted && heroForm.get('title.en')?.invalid" class="p-error">English title is required.</small>
+                                    [placeholder]="'hero.titleEnPlaceholder' | translate" class="w-full" dir="ltr" />
+                                <small *ngIf="submitted && heroForm.get('title.en')?.invalid" class="p-error">{{ 'hero.titleEnRequired' | translate }}</small>
                             </div>
                             <div>
-                                <label for="titleAr" class="block text-sm text-gray-600 mb-1">العربية</label>
+                                <label for="titleAr" class="block text-sm text-gray-600 mb-1">{{ 'common.arabic' | translate }}</label>
                                 <input id="titleAr" pInputText type="text" formControlName="ar" required
-                                    placeholder="أدخل عنوان البطل بالعربية" class="w-full" dir="rtl" />
-                                <small *ngIf="submitted && heroForm.get('title.ar')?.invalid" class="p-error">العنوان العربي مطلوب.</small>
+                                    [placeholder]="'hero.titleArPlaceholder' | translate" class="w-full" dir="rtl" />
+                                <small *ngIf="submitted && heroForm.get('title.ar')?.invalid" class="p-error">{{ 'hero.titleArRequired' | translate }}</small>
                             </div>
                         </div>
                     </div>
 
                     <!-- Subtitle -->
                     <div class="field mb-4">
-                        <label class="font-bold text-gray-700 mb-3 block">Subtitle</label>
+                        <label class="font-bold text-gray-700 mb-3 block">{{ 'hero.subtitleLabel' | translate }}</label>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4" formGroupName="subTitle">
                             <div>
-                                <label for="subTitleEn" class="block text-sm text-gray-600 mb-1">English</label>
+                                <label for="subTitleEn" class="block text-sm text-gray-600 mb-1">{{ 'common.english' | translate }}</label>
                                 <input id="subTitleEn" pInputText type="text" formControlName="en"
-                                    placeholder="Enter subtitle in English (optional)" class="w-full" dir="ltr" />
+                                    [placeholder]="'hero.subtitleEnPlaceholder' | translate" class="w-full" dir="ltr" />
                             </div>
                             <div>
-                                <label for="subTitleAr" class="block text-sm text-gray-600 mb-1">العربية</label>
+                                <label for="subTitleAr" class="block text-sm text-gray-600 mb-1">{{ 'common.arabic' | translate }}</label>
                                 <input id="subTitleAr" pInputText type="text" formControlName="ar"
-                                    placeholder="أدخل العنوان الفرعي بالعربية (اختياري)" class="w-full" dir="rtl" />
+                                    [placeholder]="'hero.subtitleArPlaceholder' | translate" class="w-full" dir="rtl" />
                             </div>
                         </div>
                     </div>
@@ -163,43 +163,43 @@
                 <!-- Call to Action Section -->
                 <div class="bg-blue-50 p-4 rounded-lg">
                     <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
-                        <i class="pi pi-link mr-2 text-blue-600"></i>
-                        Call to Action
+                        <i class="pi pi-link me-2 text-blue-600"></i>
+                        {{ 'hero.callToAction' | translate }}
                     </h3>
                     
                     <!-- Button Text -->
                     <div class="field mb-4">
-                        <label class="font-bold text-gray-700 mb-3 block">Button Text</label>
+                        <label class="font-bold text-gray-700 mb-3 block">{{ 'hero.buttonText' | translate }}</label>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4" formGroupName="buttonName">
                             <div>
-                                <label for="buttonNameEn" class="block text-sm text-gray-600 mb-1">English</label>
+                                <label for="buttonNameEn" class="block text-sm text-gray-600 mb-1">{{ 'common.english' | translate }}</label>
                                 <input id="buttonNameEn" pInputText type="text" formControlName="en"
-                                    placeholder="e.g., Shop Now, Learn More" class="w-full" dir="ltr" />
+                                    [placeholder]="'hero.buttonTextEnPlaceholder' | translate" class="w-full" dir="ltr" />
                             </div>
                             <div>
-                                <label for="buttonNameAr" class="block text-sm text-gray-600 mb-1">العربية</label>
+                                <label for="buttonNameAr" class="block text-sm text-gray-600 mb-1">{{ 'common.arabic' | translate }}</label>
                                 <input id="buttonNameAr" pInputText type="text" formControlName="ar"
-                                    placeholder="مثل: تسوق الآن، تعلم المزيد" class="w-full" dir="rtl" />
+                                    [placeholder]="'hero.buttonTextArPlaceholder' | translate" class="w-full" dir="rtl" />
                             </div>
                         </div>
                     </div>
 
                     <!-- Button Link -->
                     <div class="field">
-                        <label for="buttonLink" class="font-bold text-gray-700">Button Link</label>
+                        <label for="buttonLink" class="font-bold text-gray-700">{{ 'hero.buttonLink' | translate }}</label>
                         <input id="buttonLink" pInputText type="text" formControlName="buttonLink"
-                            placeholder="e.g., /products, https://example.com" class="w-full" />
+                            [placeholder]="'hero.buttonLinkPlaceholder' | translate" class="w-full" />
                     </div>
                 </div>
 
                 <!-- Media Section -->
                 <div class="bg-green-50 p-4 rounded-lg">
                     <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
-                        <i class="pi pi-image mr-2 text-green-600"></i>
-                        Hero Image
+                        <i class="pi pi-image me-2 text-green-600"></i>
+                        {{ 'hero.heroImage' | translate }}
                     </h3>
                     <div class="field">
-                        <label for="image" class="font-bold text-gray-700 mb-2 block">Upload Hero Image</label>
+                        <label for="image" class="font-bold text-gray-700 mb-2 block">{{ 'hero.uploadHeroImage' | translate }}</label>
                         <app-upload-files id="image" [index]="0" [control]="formControlImage" [multiple]="false" [accept]="'*/*'"
                             [filesServer]="heroForm.get('image')?.value">
                         </app-upload-files>
@@ -207,11 +207,11 @@
                 </div>
                 <div class="bg-green-50 p-4 rounded-lg">
                     <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
-                        <i class="pi pi-video mr-2 text-green-600"></i>
-                        Hero Video
+                        <i class="pi pi-video me-2 text-green-600"></i>
+                        {{ 'hero.heroVideo' | translate }}
                     </h3>
                     <div class="field">
-                        <label for="video" class="font-bold text-gray-700 mb-2 block">Upload Hero Video</label>
+                        <label for="video" class="font-bold text-gray-700 mb-2 block">{{ 'hero.uploadHeroVideo' | translate }}</label>
                         <app-upload-files id="video" [index]="1" [control]="formControlVideo" [multiple]="false" [accept]="'*/*'"
                             [filesServer]="heroForm.get('video')?.value">
                         </app-upload-files>
@@ -221,25 +221,24 @@
                 <!-- Schedule Section -->
                 <div class="bg-purple-50 p-4 rounded-lg">
                     <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
-                        <i class="pi pi-calendar mr-2 text-purple-600"></i>
-                        Schedule Settings
+                        <i class="pi pi-calendar me-2 text-purple-600"></i>
+                        {{ 'hero.scheduleSettings' | translate }}
                     </h3>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div class="field">
-                            <label for="isAlways" class="font-bold text-gray-700">Display Type *</label>
+                            <label for="isAlways" class="font-bold text-gray-700">{{ 'hero.displayType' | translate }} *</label>
                             <p-dropdown id="isAlways" formControlName="isAlways" [options]="alwaysOptions"
-                                optionLabel="label" optionValue="value" placeholder="Select display type"
+                                optionLabel="label" optionValue="value" [placeholder]="'hero.selectDisplayType' | translate"
                                 class="w-full"></p-dropdown>
-                            <small *ngIf="submitted && heroForm.get('isAlways')?.invalid" class="p-error">Display type is
-                                required.</small>
+                            <small *ngIf="submitted && heroForm.get('isAlways')?.invalid" class="p-error">{{ 'hero.displayTypeRequired' | translate }}</small>
                         </div>
 
                         <div class="field">
-                            <label for="isActive" class="font-bold text-gray-700">Status</label>
-                            <div class="flex items-center space-x-3">
+                            <label for="isActive" class="font-bold text-gray-700">{{ 'hero.statusLabel' | translate }}</label>
+                            <div class="flex items-center gap-3">
                                 <p-toggleSwitch formControlName="isActive"></p-toggleSwitch>
-                                <span class="text-sm text-gray-600">{{ heroForm.get('isActive')?.value ? 'Active' :
-                                    'Inactive' }}</span>
+                                <span class="text-sm text-gray-600">{{ heroForm.get('isActive')?.value ? ('common.active' | translate) :
+                                    ('common.inactive' | translate) }}</span>
                             </div>
                         </div>
                     </div>
@@ -247,24 +246,22 @@
                     <!-- Date Range (only show for scheduled) -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4" *ngIf="!heroForm.get('isAlways')?.value">
                         <div class="field">
-                            <label for="startDate" class="font-bold text-gray-700">Start Date *</label>
+                            <label for="startDate" class="font-bold text-gray-700">{{ 'hero.startDate' | translate }} *</label>
                             <p-calendar id="startDate" formControlName="startDate" [showIcon]="true" dateFormat="dd/mm/yy"
-                                placeholder="Select start date" class="w-full"></p-calendar>
-                            <small *ngIf="submitted && heroForm.get('startDate')?.invalid" class="p-error">Start date is
-                                required for scheduled heroes.</small>
+                                [placeholder]="'hero.selectStartDate' | translate" class="w-full"></p-calendar>
+                            <small *ngIf="submitted && heroForm.get('startDate')?.invalid" class="p-error">{{ 'hero.startDateRequired' | translate }}</small>
                         </div>
                         <div class="field">
-                            <label for="endDate" class="font-bold text-gray-700">End Date *</label>
+                            <label for="endDate" class="font-bold text-gray-700">{{ 'hero.endDate' | translate }} *</label>
                             <p-calendar id="endDate" formControlName="endDate" [showIcon]="true" dateFormat="dd/mm/yy"
-                                placeholder="Select end date" class="w-full"></p-calendar>
-                            <small *ngIf="submitted && heroForm.get('endDate')?.invalid" class="p-error">End date is
-                                required for scheduled heroes.</small>
+                                [placeholder]="'hero.selectEndDate' | translate" class="w-full"></p-calendar>
+                            <small *ngIf="submitted && heroForm.get('endDate')?.invalid" class="p-error">{{ 'hero.endDateRequired' | translate }}</small>
                         </div>
                     </div>
                 </div>
                 <div class="field">
-                    <label for="order" class="font-bold text-gray-700">Order</label>
-                    <input id="order" pInputText type="number" formControlName="order" placeholder="Enter order"
+                    <label for="order" class="font-bold text-gray-700">{{ 'hero.order' | translate }}</label>
+                    <input id="order" pInputText type="number" formControlName="order" [placeholder]="'hero.orderPlaceholder' | translate"
                         class="w-full" />
                 </div>
             </form>
@@ -272,9 +269,9 @@
             <!-- footer -->
             <ng-template pTemplate="footer">
                 <div class="flex justify-end gap-2">
-                    <p-button label="Cancel" severity="danger" icon="pi pi-times" (click)="hideDialog()">
+                    <p-button [label]="'common.cancel' | translate" severity="danger" icon="pi pi-times" (click)="hideDialog()">
                     </p-button>
-                    <p-button label="Save" type="submit" severity="success" icon="pi pi-check" [disabled]="heroForm.invalid"
+                    <p-button [label]="'common.save' | translate" type="submit" severity="success" icon="pi pi-check" [disabled]="heroForm.invalid"
                         (click)="saveHero()">
                     </p-button>
                 </div>

@@ -43,8 +43,10 @@ import { Skeleton } from "primeng/skeleton";
 import { ToggleSwitchModule } from "primeng/toggleswitch";
 import { EditorModule } from 'primeng/editor';
 import { MultiLanguagePipe } from '../../../core/pipes/multi-language.pipe';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { SupportedLanguage } from '../../../interfaces/banner.interface';
 import { environment } from '../../../../environments/environment';
+import { TooltipModule } from 'primeng/tooltip';
 
 export enum EnumProductVariant {
     SIZE = 'size',
@@ -98,7 +100,9 @@ interface ExportColumn {
         Paginator,
         ToggleSwitchModule,
         EditorModule,
-        MultiLanguagePipe
+        MultiLanguagePipe,
+        TranslateModule,
+        TooltipModule
     ],
     providers: [MessageService, ConfirmationService, ProductsService]
 })
@@ -119,24 +123,9 @@ export class ProductListComponent extends ComponentBase implements OnInit {
     brandOptions: any[] = [];
     loadingExport: boolean = false;
 
-    statusOptions = [
-        { label: 'Active', value: ProductStatus.ACTIVE },
-        { label: 'Inactive', value: ProductStatus.INACTIVE },
-        { label: 'Out of Stock', value: ProductStatus.OUT_OF_STOCK }
-    ];
-
-    genderOptions = [
-        { label: 'Men', value: 'men' },
-        { label: 'Women', value: 'women' },
-        { label: 'Kids', value: 'kids' }
-    ];
-
-    seasonOptions = [
-        { label: 'Spring', value: 'spring' },
-        { label: 'Summer', value: 'summer' },
-        { label: 'Fall', value: 'fall' },
-        { label: 'Winter', value: 'winter' }
-    ];
+    statusOptions: any[] = [];
+    genderOptions: any[] = [];
+    seasonOptions: any[] = [];
 
     // Dynamic variant options - can be extended
     variantOptions = [
@@ -171,7 +160,8 @@ export class ProductListComponent extends ComponentBase implements OnInit {
         private messageService: MessageService,
         private confirmationService: ConfirmationService,
         private categoryService: CategoryService,
-        private brandService: BrandService
+        private brandService: BrandService,
+        private translate: TranslateService
     ) {
         super();
     }
@@ -209,17 +199,42 @@ export class ProductListComponent extends ComponentBase implements OnInit {
         this.loadCategories();
         this.loadBrands();
         this.checkUseVariantPrice();
+        this.updateOptions();
+        this.translate.onLangChange.subscribe(() => {
+            this.updateOptions();
+        });
         this.cols = [
-            { field: 'code', header: 'Code' },
-            { field: 'name', header: 'Name' },
-            { field: 'image', header: 'Image' },
-            { field: 'price', header: 'Price' },
-            { field: 'category', header: 'Category' }
+            { field: 'code', header: this.translate.instant('common.code') || 'Code' },
+            { field: 'name', header: this.translate.instant('common.name') },
+            { field: 'image', header: this.translate.instant('product.image') || 'Image' },
+            { field: 'price', header: this.translate.instant('common.price') },
+            { field: 'category', header: this.translate.instant('product.category') || 'Category' }
         ];
         this.exportColumns = this.cols.map(col => ({ title: col.header, dataKey: col.field }));
         this.productForm.valueChanges.subscribe((value: any) => {
             console.log('Frontend - Images value:', value);
         });
+    }
+
+    updateOptions() {
+        this.statusOptions = [
+            { label: this.translate.instant('product.statusActive'), value: ProductStatus.ACTIVE },
+            { label: this.translate.instant('product.statusInactive'), value: ProductStatus.INACTIVE },
+            { label: this.translate.instant('product.statusOutOfStock'), value: ProductStatus.OUT_OF_STOCK }
+        ];
+
+        this.genderOptions = [
+            { label: this.translate.instant('product.genderMen'), value: 'men' },
+            { label: this.translate.instant('product.genderWomen'), value: 'women' },
+            { label: this.translate.instant('product.genderKids'), value: 'kids' }
+        ];
+
+        this.seasonOptions = [
+            { label: this.translate.instant('product.seasonSpring'), value: 'spring' },
+            { label: this.translate.instant('product.seasonSummer'), value: 'summer' },
+            { label: this.translate.instant('product.seasonFall'), value: 'fall' },
+            { label: this.translate.instant('product.seasonWinter'), value: 'winter' }
+        ];
     }
 
     checkUseVariantPrice(): void {
@@ -391,7 +406,10 @@ export class ProductListComponent extends ComponentBase implements OnInit {
                     this.pagination.set(res.data.pagination);
                 },
                 error: () => this.messageService.add({
-                    severity: 'error', summary: 'Error', detail: 'Failed to load products', life: 1000
+                    severity: 'error', 
+                    summary: this.translate.instant('common.error'), 
+                    detail: this.translate.instant('product.failedToLoad'), 
+                    life: 1000
                 })
             });
     }
@@ -402,7 +420,10 @@ export class ProductListComponent extends ComponentBase implements OnInit {
                 this.categoryOptions = res.data.map((cat: any) => ({ label: cat.name.en + ' - ' + cat.name.ar, value: cat._id }));
             },
             error: () => this.messageService.add({
-                severity: 'error', summary: 'Error', detail: 'Failed to load categories', life: 1000
+                severity: 'error', 
+                summary: this.translate.instant('common.error'), 
+                detail: this.translate.instant('category.failedToLoad'), 
+                life: 1000
             })
         });
     }
@@ -413,7 +434,10 @@ export class ProductListComponent extends ComponentBase implements OnInit {
                 this.brandOptions = res.data.map((brand: any) => ({ label: brand.name.en + ' - ' + brand.name.ar, value: brand._id }));
             },
             error: () => this.messageService.add({
-                severity: 'error', summary: 'Error', detail: 'Failed to load brands', life: 1000
+                severity: 'error', 
+                summary: this.translate.instant('common.error'), 
+                detail: this.translate.instant('brand.failedToLoad'), 
+                life: 1000
             })
         });
     }
@@ -532,17 +556,26 @@ export class ProductListComponent extends ComponentBase implements OnInit {
     }
 
     deleteProduct(product: IProduct) {
+        const productName = product.name?.en || product.name?.ar || '';
         this.confirmationService.confirm({
-            message: `Are you sure you want to delete ${product.name}?`,
-            header: 'Confirm',
+            message: this.translate.instant('product.confirmDelete', { name: productName }),
+            header: this.translate.instant('common.confirm'),
             icon: 'pi pi-exclamation-triangle',
             accept: () => {
                 this.productsService.deleteProduct(product._id!).pipe(takeUntil(this.destroy$)).subscribe({
                     next: () => {
                         this.loadProducts();
-                        this.messageService.add({ severity: 'success', summary: 'Deleted', detail: 'Product deleted' });
+                        this.messageService.add({ 
+                            severity: 'success', 
+                            summary: this.translate.instant('common.deleted'), 
+                            detail: this.translate.instant('product.deletedSuccessfully') 
+                        });
                     },
-                    error: () => this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Delete failed' })
+                    error: () => this.messageService.add({ 
+                        severity: 'error', 
+                        summary: this.translate.instant('common.error'), 
+                        detail: this.translate.instant('product.failedToDelete') 
+                    })
                 });
             }
         });
@@ -557,7 +590,10 @@ export class ProductListComponent extends ComponentBase implements OnInit {
         if (this.productForm.invalid) {
             console.log('Frontend - Form is invalid');
             this.messageService.add({
-                severity: 'error', summary: 'Error', detail: 'Please fix form errors', life: 1000
+                severity: 'error', 
+                summary: this.translate.instant('common.error'), 
+                detail: this.translate.instant('product.fixFormErrors'), 
+                life: 1000
             });
             return;
         }
@@ -594,15 +630,22 @@ export class ProductListComponent extends ComponentBase implements OnInit {
                 this.loadProducts();
                 this.messageService.add({
                     severity: 'success',
-                    summary: formValue._id ? 'Updated' : 'Created',
-                    detail: `Product ${formValue._id ? 'updated' : 'created'} successfully`
+                    summary: formValue._id 
+                        ? this.translate.instant('common.updated') 
+                        : this.translate.instant('common.created'),
+                    detail: formValue._id 
+                        ? this.translate.instant('product.updatedSuccessfully')
+                        : this.translate.instant('product.createdSuccessfully')
                 });
                 this.hideDialog();
             },
             error: (error) => {
                 console.log('Frontend - Backend error:', error);
                 this.messageService.add({
-                    severity: 'error', summary: 'Error', detail: 'Save failed', life: 1000
+                    severity: 'error', 
+                    summary: this.translate.instant('common.error'), 
+                    detail: this.translate.instant('product.failedToSave'), 
+                    life: 1000
                 });
             }
         });
@@ -676,14 +719,14 @@ export class ProductListComponent extends ComponentBase implements OnInit {
                 this.variantOptions.push(newVariant);
                 this.messageService.add({
                     severity: 'success',
-                    summary: 'Success',
-                    detail: `Custom variant "${newVariant.label}" added successfully`
+                    summary: this.translate.instant('common.success'),
+                    detail: this.translate.instant('product.customVariantAdded', { label: newVariant.label })
                 });
             } else {
                 this.messageService.add({
                     severity: 'warn',
-                    summary: 'Warning',
-                    detail: 'This variant type already exists'
+                    summary: this.translate.instant('common.warning'),
+                    detail: this.translate.instant('product.variantTypeExists')
                 });
             }
             
@@ -697,8 +740,8 @@ export class ProductListComponent extends ComponentBase implements OnInit {
         if (['size', 'color'].includes(variantValue)) {
             this.messageService.add({
                 severity: 'warn',
-                summary: 'Warning',
-                detail: 'Cannot remove default variant types'
+                summary: this.translate.instant('common.warning'),
+                detail: this.translate.instant('product.cannotRemoveDefaultVariants')
             });
             return;
         }
@@ -709,8 +752,8 @@ export class ProductListComponent extends ComponentBase implements OnInit {
         
         this.messageService.add({
             severity: 'success',
-            summary: 'Success',
-            detail: 'Custom variant removed successfully'
+            summary: this.translate.instant('common.success'),
+            detail: this.translate.instant('product.customVariantRemoved')
         });
     }
 }

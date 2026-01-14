@@ -5,19 +5,21 @@ import { CommonModule } from '@angular/common';
 import { StyleClassModule } from 'primeng/styleclass';
 import { LayoutService } from '../service/layout.service';
 import { LoginService } from '../../auth/services/login.service';
+import { LanguageSwitcherComponent } from '../../shared/components/language-switcher/language-switcher.component';
+import { TranslateModule } from '@ngx-translate/core';
 
 @Component({
     selector: 'app-topbar',
     standalone: true,
-    imports: [RouterModule, CommonModule, StyleClassModule],
+    imports: [RouterModule, CommonModule, StyleClassModule, LanguageSwitcherComponent, TranslateModule],
     template: ` <div class="layout-topbar">
         <div class="layout-topbar-logo-container">
             <button class="layout-menu-button layout-topbar-action" (click)="layoutService.onMenuToggle()">
                 <i class="pi pi-bars"></i>
             </button>
             <a class="layout-topbar-logo" routerLink="/">
-                <img src="images/logo.png" alt="Pledge Logo" class="w-16 shrink-0 mx-auto">
-                <span>Pledge</span>
+                <img src="/assets/images/logo.png" alt="Pledge Logo" class="w-16 shrink-0 mx-auto">
+                <span>{{ 'app.appName' | translate }}</span>
             </a>
         </div>
 
@@ -48,22 +50,12 @@ import { LoginService } from '../../auth/services/login.service';
 
             <div class="layout-topbar-menu hidden lg:block">
                 <div class="layout-topbar-menu-content">
-                    <!-- <button type="button" class="layout-topbar-action">
-                        <i class="pi pi-calendar"></i>
-                        <span>Calendar</span>
-                    </button>
-                    <button type="button" class="layout-topbar-action">
-                        <i class="pi pi-inbox"></i>
-                        <span>Messages</span>
-                    </button> -->
-                    <!-- <button type="button" class="layout-topbar-action">
-                        <i class="pi pi-user"></i>
-                        <span>Profile</span>
-                    </button> -->
+                    <!-- Language Switcher -->
+                    <app-language-switcher></app-language-switcher>
                     <!-- logout -->
                     <button type="button" (click)="logout()" class="layout-topbar-action">
                         <i class="pi pi-sign-out"></i>
-                        <span>Logout</span>
+                        <span>{{ 'auth.logout' | translate }}</span>
                     </button>
                 </div>
             </div>

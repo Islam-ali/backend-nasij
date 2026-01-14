@@ -8,13 +8,13 @@
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div class="flex-1">
                     <div class="flex items-center gap-3">
-                        <h1 class="text-3xl font-bold text-gray-900">Business Profile</h1>
+                        <h1 class="text-3xl font-bold text-gray-900">{{ 'businessProfile.title' | translate }}</h1>
                         @if (hasUnsavedChanges()) {
-                        <p-chip label="Unsaved Changes" icon="pi pi-exclamation-circle"
+                        <p-chip [label]="'businessProfile.unsavedChanges' | translate" icon="pi pi-exclamation-circle"
                             styleClass="bg-orange-100 text-orange-800"></p-chip>
                         }
                     </div>
-                    <p class="mt-2 text-gray-600">Manage your business information and settings</p>
+                    <p class="mt-2 text-gray-600">{{ 'businessProfile.description' | translate }}</p>
 
                     <!-- Progress Bar (only in edit mode) -->
                     @if (isEditMode()) {
@@ -27,24 +27,24 @@
                             </div>
                             <span class="text-sm font-semibold text-gray-700 min-w-[45px]">{{ formProgress() }}%</span>
                         </div>
-                        <p class="text-xs text-gray-500 mt-1">Form completion progress</p>
+                        <p class="text-xs text-gray-500 mt-1">{{ 'businessProfile.formProgress' | translate }}</p>
                     </div>
                     }
                 </div>
 
                 <div class="flex gap-3 flex-wrap">
-                    <p-button *ngIf="!isEditMode()" label="Edit Profile" icon="pi pi-pencil"
+                    <p-button *ngIf="!isEditMode()" [label]="'businessProfile.editProfile' | translate" icon="pi pi-pencil"
                         (onClick)="toggleEditMode()" styleClass="p-button-outlined">
                     </p-button>
 
                     @if (isEditMode()) {
-                    <p-button label="Cancel" icon="pi pi-times" (onClick)="toggleEditMode()"
+                    <p-button [label]="'common.cancel' | translate" icon="pi pi-times" (onClick)="toggleEditMode()"
                         styleClass="p-button-outlined p-button-secondary">
                     </p-button>
-                    <p-button label="Save Changes" icon="pi pi-check" (onClick)="saveBusinessProfile()"
+                    <p-button [label]="'businessProfile.saveChanges' | translate" icon="pi pi-check" (onClick)="saveBusinessProfile()"
                         [loading]="saving()" [disabled]="saving()" severity="success"
                         [styleClass]="businessProfileForm.invalid ? 'p-button-warning' : ''"
-                        [pTooltip]="businessProfileForm.invalid ? 'Some fields are incomplete, but you can still save' : 'Save all changes to your business profile'"
+                        [pTooltip]="businessProfileForm.invalid ? ('businessProfile.saveWarning' | translate) : ('businessProfile.saveSuccess' | translate)"
                         tooltipPosition="bottom">
                     </p-button>
                     }
@@ -89,7 +89,7 @@
             <form [formGroup]="businessProfileForm">
                 <p-tabView>
                     <!-- Basic Information Tab -->
-                    <p-tabPanel header="Basic Information" leftIcon="pi pi-building">
+                    <p-tabPanel [header]="'businessProfile.tabs.basicInfo' | translate" leftIcon="pi pi-building">
                         <!-- Basic Information Card -->
                         <p-card styleClass="shadow-lg border-0 mb-4">
                             <ng-template pTemplate="header">
@@ -97,7 +97,7 @@
                                     class="flex items-center justify-between p-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-t-lg">
                                     <div class="flex items-center gap-3">
                                         <i class="pi pi-building text-2xl"></i>
-                                        <h2 class="text-xl font-semibold m-0">Basic Information</h2>
+                                        <h2 class="text-xl font-semibold m-0">{{ 'businessProfile.basicInfo.title' | translate }}</h2>
                                     </div>
                                     @if (isEditMode()) {
                                     <p-chip [label]="getSectionProgress('basic') + '%'" icon="pi pi-check-circle"
@@ -118,14 +118,13 @@
                                                     <h3
                                                         class="text-lg font-semibold text-gray-800 mb-4 flex items-center justify-center gap-2">
                                                         <i class="pi pi-image text-blue-600"></i>
-                                                        Company Logos
+                                                        {{ 'businessProfile.basicInfo.companyLogos' | translate }}
                                                     </h3>
                                                     <div class="grid grid-cols-1 gap-4">
                                                         <!-- Dark Logo -->
                                                         <div class="text-center">
                                                             <label
-                                                                class="block text-sm font-medium text-gray-600 mb-2">Dark
-                                                                Logo</label>
+                                                                class="block text-sm font-medium text-gray-600 mb-2">{{ 'businessProfile.basicInfo.darkLogo' | translate }}</label>
                                                             <div class="bg-gray-800 rounded-lg p-4">
                                                                 <img *ngIf="logoDarkPreview || businessProfile?.logo_dark"
                                                                     [src]="getImageUrl(logoDarkPreview || businessProfile?.logo_dark?.filePath || '')"
@@ -141,8 +140,7 @@
                                                         <!-- Light Logo -->
                                                         <div class="text-center">
                                                             <label
-                                                                class="block text-sm font-medium text-gray-600 mb-2">Light
-                                                                Logo</label>
+                                                                class="block text-sm font-medium text-gray-600 mb-2">{{ 'businessProfile.basicInfo.lightLogo' | translate }}</label>
                                                             <div class="bg-gray-100 rounded-lg p-4">
                                                                 <img *ngIf="logoLightPreview || businessProfile?.logo_light"
                                                                     [src]="getImageUrl(logoLightPreview || businessProfile?.logo_light?.filePath || '')"
@@ -164,8 +162,7 @@
                                                 <div class="flex gap-2 flex-wrap mb-4">
                                                     <div>
                                                         <label for="logoDark"
-                                                            class="block text-sm font-medium text-gray-700 mb-2">Logo
-                                                            Dark</label>
+                                                            class="block text-sm font-medium text-gray-700 mb-2">{{ 'businessProfile.basicInfo.logoDark' | translate }}</label>
                                                         <app-upload-files [index]="0" [control]="logoDarkControl"
                                                             [filesServer]="businessProfileForm.get('logo_dark')?.value"
                                                             [attr.id]="'logoDark'" [multiple]="false"
@@ -173,8 +170,7 @@
                                                     </div>
                                                     <div>
                                                         <label for="logoLight"
-                                                            class="block text-sm font-medium text-gray-700 mb-2">Logo
-                                                            Light</label>
+                                                            class="block text-sm font-medium text-gray-700 mb-2">{{ 'businessProfile.basicInfo.logoLight' | translate }}</label>
                                                         <app-upload-files [index]="1" [control]="logoLightControl"
                                                             [filesServer]="businessProfileForm.get('logo_light')?.value"
                                                             [attr.id]="'logoLight'" [multiple]="false"
@@ -197,27 +193,27 @@
                                                 <h3
                                                     class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
                                                     <i class="pi pi-building text-blue-600"></i>
-                                                    Business Name
+                                                    {{ 'businessProfile.basicInfo.businessName' | translate }}
                                                 </h3>
                                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                     <div class="bg-white rounded-lg p-4 border border-gray-200">
                                                         <div class="flex items-center gap-2 mb-2">
                                                             <span
-                                                                class="text-sm font-medium text-gray-600">English</span>
+                                                                class="text-sm font-medium text-gray-600">{{ 'common.english' | translate }}</span>
                                                             <i class="pi pi-flag text-blue-500"></i>
                                                         </div>
                                                         <p class="text-lg font-semibold text-gray-900" dir="ltr">
-                                                            {{ businessProfile?.name?.en || 'Not provided' }}
+                                                            {{ businessProfile?.name?.en || ('common.notProvided' | translate) }}
                                                         </p>
                                                     </div>
                                                     <div class="bg-white rounded-lg p-4 border border-gray-200">
                                                         <div class="flex items-center gap-2 mb-2">
                                                             <span
-                                                                class="text-sm font-medium text-gray-600">العربية</span>
+                                                                class="text-sm font-medium text-gray-600">{{ 'common.arabic' | translate }}</span>
                                                             <i class="pi pi-flag text-green-500"></i>
                                                         </div>
                                                         <p class="text-lg font-semibold text-gray-900" dir="rtl">
-                                                            {{ businessProfile?.name?.ar || 'غير متوفر' }}
+                                                            {{ businessProfile?.name?.ar || ('common.notAvailable' | translate) }}
                                                         </p>
                                                     </div>
                                                 </div>
@@ -229,29 +225,27 @@
                                                 <h3
                                                     class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
                                                     <i class="pi pi-file-edit text-green-600"></i>
-                                                    Business Description
+                                                    {{ 'businessProfile.basicInfo.businessDescription' | translate }}
                                                 </h3>
                                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                     <div class="bg-white rounded-lg p-4 border border-gray-200">
                                                         <div class="flex items-center gap-2 mb-3">
                                                             <span
-                                                                class="text-sm font-medium text-gray-600">English</span>
+                                                                class="text-sm font-medium text-gray-600">{{ 'common.english' | translate }}</span>
                                                             <i class="pi pi-flag text-blue-500"></i>
                                                         </div>
                                                         <p class="text-gray-700 leading-relaxed" dir="ltr">
-                                                            {{ businessProfile?.description?.en || 'No description
-                                                            provided' }}
+                                                            {{ businessProfile?.description?.en || ('common.noDescription' | translate) }}
                                                         </p>
                                                     </div>
                                                     <div class="bg-white rounded-lg p-4 border border-gray-200">
                                                         <div class="flex items-center gap-2 mb-3">
                                                             <span
-                                                                class="text-sm font-medium text-gray-600">العربية</span>
+                                                                class="text-sm font-medium text-gray-600">{{ 'common.arabic' | translate }}</span>
                                                             <i class="pi pi-flag text-green-500"></i>
                                                         </div>
                                                         <p class="text-gray-700 leading-relaxed" dir="rtl">
-                                                            {{ businessProfile?.description?.ar || 'لا يوجد وصف متوفر'
-                                                            }}
+                                                            {{ businessProfile?.description?.ar || ('common.noDescriptionAvailable' | translate) }}
                                                         </p>
                                                     </div>
                                                 </div>
@@ -261,13 +255,12 @@
                                         <!-- Edit Mode - Form Fields -->
                                         <!-- Business Name -->
                                         <div>
-                                            <label class="block text-sm font-medium text-gray-700 mb-2">Business Name
-                                                *</label>
+                                            <label class="block text-sm font-medium text-gray-700 mb-2">{{ 'businessProfile.basicInfo.nameLabel' | translate }} *</label>
                                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4" formGroupName="name">
                                                 <div>
                                                     <label for="nameEn"
                                                         class="text-xs text-gray-600 mb-1 flex items-center gap-2">
-                                                        English
+                                                        {{ 'common.english' | translate }}
                                                         @if (isFieldValid('name', 'en')) {
                                                         <i class="pi pi-check-circle text-green-500 text-sm"></i>
                                                         }
@@ -277,7 +270,7 @@
                                                         [class.p-invalid]="isFieldInvalid('name', 'en')"
                                                         [class.border-green-500]="isFieldValid('name', 'en')"
                                                         [readonly]="!isEditMode()"
-                                                        placeholder="Enter business name in English" />
+                                                        [placeholder]="'businessProfile.basicInfo.nameEnPlaceholder' | translate" />
                                                     @if (isFieldInvalid('name', 'en')) {
                                                     <small class="text-red-500 flex items-center gap-1 mt-1">
                                                         <i class="pi pi-exclamation-circle text-xs"></i>
@@ -287,12 +280,12 @@
                                                 </div>
                                                 <div>
                                                     <label for="nameAr"
-                                                        class="block text-xs text-gray-600 mb-1">العربية</label>
+                                                        class="block text-xs text-gray-600 mb-1">{{ 'common.arabic' | translate }}</label>
                                                     <input id="nameAr" type="text" pInputText formControlName="ar"
                                                         class="w-full"
                                                         [class.ng-invalid]="businessProfileForm.get('name.ar')?.invalid && businessProfileForm.get('name.ar')?.touched"
                                                         [readonly]="!isEditMode()"
-                                                        placeholder="أدخل اسم الشركة بالعربية" dir="rtl" />
+                                                        [placeholder]="'businessProfile.basicInfo.nameArPlaceholder' | translate" dir="rtl" />
                                                     <small *ngIf="getFieldError('name', 'ar')" class="text-red-500">{{
                                                         getFieldError('name', 'ar') }}</small>
                                                 </div>
@@ -301,30 +294,29 @@
 
                                         <!-- Description -->
                                         <div>
-                                            <label class="block text-sm font-medium text-gray-700 mb-2">Description
-                                                *</label>
+                                            <label class="block text-sm font-medium text-gray-700 mb-2">{{ 'businessProfile.basicInfo.descriptionLabel' | translate }} *</label>
                                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4"
                                                 formGroupName="description">
                                                 <div>
                                                     <label for="descriptionEn"
-                                                        class="block text-xs text-gray-600 mb-1">English</label>
+                                                        class="block text-xs text-gray-600 mb-1">{{ 'common.english' | translate }}</label>
                                                     <textarea id="descriptionEn" pInputTextarea formControlName="en"
                                                         rows="4" class="w-full"
                                                         [class.ng-invalid]="businessProfileForm.get('description.en')?.invalid && businessProfileForm.get('description.en')?.touched"
                                                         [readonly]="!isEditMode()"
-                                                        placeholder="Enter business description in English"></textarea>
+                                                        [placeholder]="'businessProfile.basicInfo.descriptionEnPlaceholder' | translate"></textarea>
                                                     <small *ngIf="getFieldError('description', 'en')"
                                                         class="text-red-500">{{ getFieldError('description', 'en')
                                                         }}</small>
                                                 </div>
                                                 <div>
                                                     <label for="descriptionAr"
-                                                        class="block text-xs text-gray-600 mb-1">العربية</label>
+                                                        class="block text-xs text-gray-600 mb-1">{{ 'common.arabic' | translate }}</label>
                                                     <textarea id="descriptionAr" pInputTextarea formControlName="ar"
                                                         rows="4" class="w-full"
                                                         [class.ng-invalid]="businessProfileForm.get('description.ar')?.invalid && businessProfileForm.get('description.ar')?.touched"
                                                         [readonly]="!isEditMode()"
-                                                        placeholder="أدخل وصف الشركة بالعربية" dir="rtl"></textarea>
+                                                        [placeholder]="'businessProfile.basicInfo.descriptionArPlaceholder' | translate" dir="rtl"></textarea>
                                                     <small *ngIf="getFieldError('description', 'ar')"
                                                         class="text-red-500">{{ getFieldError('description', 'ar')
                                                         }}</small>
@@ -339,7 +331,7 @@
                     </p-tabPanel>
 
                     <!-- Contact & Social Tab -->
-                    <p-tabPanel header="Contact & Social" leftIcon="pi pi-phone">
+                    <p-tabPanel [header]="'businessProfile.tabs.contactSocial' | translate" leftIcon="pi pi-phone">
                         <div class="p-6 space-y-6">
                             <!-- Contact Information Card -->
                             <p-card styleClass="shadow-lg border-0 mb-4">
@@ -347,7 +339,7 @@
                                     <div
                                         class="flex items-center gap-3 p-4 bg-gradient-to-r from-green-600 to-teal-600 text-white rounded-t-lg">
                                         <i class="pi pi-phone text-2xl"></i>
-                                        <h2 class="text-xl font-semibold m-0">Contact Information</h2>
+                                        <h2 class="text-xl font-semibold m-0">{{ 'businessProfile.contactSocial.title' | translate }}</h2>
                                     </div>
                                 </ng-template>
                                 <ng-template pTemplate="content">
@@ -361,7 +353,7 @@
                                                 <i class="pi pi-palette text-purple-600"></i>
                                             </div>
                                             <div class="flex-1">
-                                                <h3 class="text-lg font-semibold text-gray-800 mb-3">Primary Brand Color
+                                                <h3 class="text-lg font-semibold text-gray-800 mb-3">{{ 'businessProfile.branding.primaryBrandColor' | translate }}
                                                 </h3>
                                                 <div class="flex items-center gap-4">
                                                     <div class="w-24 h-24 rounded-xl shadow-md border-4 border-white"
@@ -369,20 +361,19 @@
                                                     </div>
                                                     <div class="flex-1">
                                                         <div class="bg-white rounded-lg p-4 border border-gray-200">
-                                                            <p class="text-sm text-gray-600 mb-1">HEX Color Code</p>
+                                                            <p class="text-sm text-gray-600 mb-1">{{ 'businessProfile.branding.hexColorCode' | translate }}</p>
                                                             <p class="text-2xl font-bold text-gray-900 font-mono">
                                                                 {{ businessProfile?.primaryColor || '#3B82F6' }}
                                                             </p>
                                                         </div>
                                                         <div class="mt-3 bg-gradient-to-r rounded-lg p-4 text-white"
                                                             [style.backgroundImage]="'linear-gradient(135deg, ' + (businessProfile?.primaryColor || '#3B82F6') + ' 0%, ' + adjustColorBrightness(businessProfile?.primaryColor || '#3B82F6', -30) + ' 100%)'">
-                                                            <p class="text-sm font-medium">Gradient Preview</p>
+                                                            <p class="text-sm font-medium">{{ 'businessProfile.branding.gradientPreview' | translate }}</p>
                                                         </div>
                                                         <!-- Color Shades Preview -->
                                                         <div
                                                             class="mt-4 bg-white rounded-lg p-4 border border-gray-200">
-                                                            <p class="text-sm font-medium text-gray-700 mb-3">Color
-                                                                Shades (50-900)</p>
+                                                            <p class="text-sm font-medium text-gray-700 mb-3">{{ 'businessProfile.branding.colorShades' | translate }}</p>
                                                             <div class="grid grid-cols-5 gap-2">
                                                                 <div *ngFor="let shade of [50, 100, 200, 300, 400, 500, 600, 700, 800, 900]"
                                                                     class="text-center">
@@ -410,7 +401,7 @@
                                             </div>
                                             <div class="flex-1">
                                                 <label class="block text-lg font-semibold text-gray-800 mb-4">
-                                                    Primary Brand Color
+                                                    {{ 'businessProfile.branding.primaryBrandColor' | translate }}
                                                 </label>
                                                 <div class="flex items-center gap-6">
                                                     <div class="flex flex-col items-center gap-2">
@@ -423,13 +414,11 @@
                                                             <i
                                                                 class="pi pi-palette text-white text-2xl drop-shadow-lg"></i>
                                                         </div>
-                                                        <small class="text-gray-600 text-center font-medium">Click to
-                                                            change</small>
+                                                        <small class="text-gray-600 text-center font-medium">{{ 'businessProfile.branding.clickToChange' | translate }}</small>
                                                     </div>
                                                     <div class="flex-1 space-y-4">
                                                         <div class="bg-white rounded-lg p-4 border border-gray-200">
-                                                            <p class="text-sm text-gray-600 mb-2 font-medium">Selected
-                                                                Color</p>
+                                                            <p class="text-sm text-gray-600 mb-2 font-medium">{{ 'businessProfile.branding.selectedColor' | translate }}</p>
                                                             <div class="flex items-center gap-3">
                                                                 <div class="w-12 h-12 rounded-lg shadow-md border-2 border-gray-200"
                                                                     [style.backgroundColor]="businessProfileForm.get('primaryColor')?.value || '#3B82F6'">
@@ -444,18 +433,15 @@
                                                         <div class="bg-gradient-to-r rounded-lg p-4 text-white min-h-[80px] flex items-center justify-center"
                                                             [style.backgroundImage]="'linear-gradient(135deg, ' + (businessProfileForm.get('primaryColor')?.value || '#3B82F6') + ' 0%, ' + adjustColorBrightness(businessProfileForm.get('primaryColor')?.value || '#3B82F6', -30) + ' 100%)'">
                                                             <div class="text-center">
-                                                                <p class="text-sm font-medium opacity-90 mb-1">Gradient
-                                                                    Preview</p>
-                                                                <p class="text-xs opacity-75">This gradient will be used
-                                                                    across your website</p>
+                                                                <p class="text-sm font-medium opacity-90 mb-1">{{ 'businessProfile.branding.gradientPreview' | translate }}</p>
+                                                                <p class="text-xs opacity-75">{{ 'businessProfile.branding.thisGradientWillBeUsed' | translate }}</p>
                                                             </div>
                                                         </div>
                                                     </div>
                                                 </div>
                                                 <!-- Color Shades Preview -->
                                                 <div class="mt-4 bg-white rounded-lg p-4 border border-gray-200">
-                                                    <p class="text-sm font-medium text-gray-700 mb-3">Color Shades
-                                                        (50-900)</p>
+                                                    <p class="text-sm font-medium text-gray-700 mb-3">{{ 'businessProfile.branding.colorShades' | translate }}</p>
                                                     <div class="grid grid-cols-5 gap-2">
                                                         <div *ngFor="let shade of [50, 100, 200, 300, 400, 500, 600, 700, 800, 900]"
                                                             class="text-center">
@@ -471,11 +457,8 @@
                                                     <div class="flex items-start gap-3">
                                                         <i class="pi pi-info-circle text-blue-600 text-lg"></i>
                                                         <div class="flex-1 text-sm text-blue-800">
-                                                            <p class="font-medium mb-1">About Primary Color</p>
-                                                            <p>This color will be used as the main brand color across
-                                                                your website. The system will automatically generate 10
-                                                                shades (50-900) from light to dark for consistent
-                                                                theming.</p>
+                                                            <p class="font-medium mb-1">{{ 'businessProfile.branding.aboutPrimaryColor' | translate }}</p>
+                                                            <p>{{ 'businessProfile.branding.aboutPrimaryColorDescription' | translate }}</p>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -494,11 +477,11 @@
                                                 <i class="pi pi-align-center text-indigo-600"></i>
                                             </div>
                                             <div class="flex-1">
-                                                <h3 class="text-lg font-semibold text-gray-800 mb-3">Header Alignment
+                                                <h3 class="text-lg font-semibold text-gray-800 mb-3">{{ 'businessProfile.branding.headerAlignment' | translate }}
                                                 </h3>
                                                 <div class="bg-white rounded-lg p-4 border border-gray-200">
                                                     <div class="flex items-center gap-3">
-                                                        <span class="text-sm text-gray-600 font-medium">Alignment:</span>
+                                                        <span class="text-sm text-gray-600 font-medium">{{ 'businessProfile.branding.headerAlignment' | translate }}:</span>
                                                         <p-chip
                                                             [label]="getHeaderAlignmentLabel(businessProfile?.headerAlignment)"
                                                             [styleClass]="'bg-indigo-100 text-indigo-800 font-semibold'">
@@ -519,23 +502,21 @@
                                             </div>
                                             <div class="flex-1">
                                                 <label class="block text-lg font-semibold text-gray-800 mb-4">
-                                                    Header Alignment
+                                                    {{ 'businessProfile.branding.headerAlignment' | translate }}
                                                 </label>
                                                 <div class="bg-white rounded-lg p-4 border border-gray-200">
                                                     <label for="headerAlignment"
-                                                        class="block text-sm font-medium text-gray-700 mb-2">Select
-                                                        Header Alignment</label>
+                                                        class="block text-sm font-medium text-gray-700 mb-2">{{ 'businessProfile.branding.headerAlignment' | translate }}</label>
                                                     <p-dropdown
                                                         id="headerAlignment"
                                                         formControlName="headerAlignment"
                                                         [options]="headerAlignmentOptions"
                                                         optionLabel="label"
                                                         optionValue="value"
-                                                        placeholder="Select alignment"
+                                                        [placeholder]="'businessProfile.branding.headerAlignment' | translate"
                                                         styleClass="w-full">
                                                     </p-dropdown>
-                                                    <small class="text-gray-500 text-xs mt-2 block">Controls how header
-                                                        text is aligned: Start (left), Center, or End (right)</small>
+                                                    <small class="text-gray-500 text-xs mt-2 block">{{ 'businessProfile.branding.headerAlignmentDescription' | translate }}</small>
                                                 </div>
                                             </div>
                                         </div>
@@ -550,7 +531,7 @@
                     </p-tabPanel>
 
                     <!-- Branding Tab -->
-                    <p-tabPanel header="Branding" leftIcon="pi pi-palette">
+                    <p-tabPanel [header]="'businessProfile.tabs.branding' | translate" leftIcon="pi pi-palette">
                         <div class="p-6">
                             <!-- Branding Settings Card -->
                             <p-card styleClass="shadow-lg border-0 mb-4">
@@ -575,10 +556,10 @@
                                                         class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
                                                         <i class="pi pi-envelope text-blue-600"></i>
                                                     </div>
-                                                    <h3 class="text-lg font-semibold text-gray-800">Email Address</h3>
+                                                    <h3 class="text-lg font-semibold text-gray-800">{{ 'businessProfile.contactSocial.emailAddress' | translate }}</h3>
                                                 </div>
                                                 <p class="text-gray-700 font-medium">{{
-                                                    businessProfile?.contactInfo?.email || 'Not provided' }}</p>
+                                                    businessProfile?.contactInfo?.email || ('common.notProvided' | translate) }}</p>
                                             </div>
 
                                             <!-- Phone -->
@@ -589,10 +570,10 @@
                                                         class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
                                                         <i class="pi pi-phone text-green-600"></i>
                                                     </div>
-                                                    <h3 class="text-lg font-semibold text-gray-800">Phone Number</h3>
+                                                    <h3 class="text-lg font-semibold text-gray-800">{{ 'businessProfile.contactSocial.phoneNumber' | translate }}</h3>
                                                 </div>
                                                 <p class="text-gray-700 font-medium">{{
-                                                    businessProfile?.contactInfo?.phone || 'Not provided' }}</p>
+                                                    businessProfile?.contactInfo?.phone || ('common.notProvided' | translate) }}</p>
                                             </div>
                                         </div>
 
@@ -604,27 +585,25 @@
                                                     class="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
                                                     <i class="pi pi-map-marker text-purple-600"></i>
                                                 </div>
-                                                <h3 class="text-lg font-semibold text-gray-800">Business Address</h3>
+                                                <h3 class="text-lg font-semibold text-gray-800">{{ 'businessProfile.contactSocial.businessAddress' | translate }}</h3>
                                             </div>
                                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                 <div class="bg-white rounded-lg p-4 border border-gray-200">
                                                     <div class="flex items-center gap-2 mb-3">
-                                                        <span class="text-sm font-medium text-gray-600">English</span>
+                                                        <span class="text-sm font-medium text-gray-600">{{ 'common.english' | translate }}</span>
                                                         <i class="pi pi-flag text-blue-500"></i>
                                                     </div>
                                                     <p class="text-gray-700 leading-relaxed" dir="ltr">
-                                                        {{ businessProfile?.contactInfo?.address?.en || 'No address
-                                                        provided' }}
+                                                        {{ businessProfile?.contactInfo?.address?.en || ('common.notProvided' | translate) }}
                                                     </p>
                                                 </div>
                                                 <div class="bg-white rounded-lg p-4 border border-gray-200">
                                                     <div class="flex items-center gap-2 mb-3">
-                                                        <span class="text-sm font-medium text-gray-600">العربية</span>
+                                                        <span class="text-sm font-medium text-gray-600">{{ 'common.arabic' | translate }}</span>
                                                         <i class="pi pi-flag text-green-500"></i>
                                                     </div>
                                                     <p class="text-gray-700 leading-relaxed" dir="rtl">
-                                                        {{ businessProfile?.contactInfo?.address?.ar || 'لا يوجد عنوان
-                                                        متوفر' }}
+                                                        {{ businessProfile?.contactInfo?.address?.ar || ('common.notAvailable' | translate) }}
                                                     </p>
                                                 </div>
                                             </div>
@@ -638,12 +617,12 @@
                                                     class="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">
                                                     <i class="pi pi-map text-orange-600"></i>
                                                 </div>
-                                                <h3 class="text-lg font-semibold text-gray-800">Map Location</h3>
+                                                <h3 class="text-lg font-semibold text-gray-800">{{ 'businessProfile.contactSocial.mapLocation' | translate }}</h3>
                                             </div>
                                             <a [href]="businessProfile?.contactInfo?.mapLocation" target="_blank"
                                                 class="inline-flex items-center gap-2 text-blue-600 hover:text-blue-800 font-medium">
                                                 <i class="pi pi-external-link"></i>
-                                                View on Map
+                                                {{ 'businessProfile.contactSocial.viewOnMap' | translate }}
                                             </a>
                                         </div>
                                     </div>
@@ -653,7 +632,7 @@
                                         <div>
                                             <label for="email"
                                                 class="text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
-                                                Email *
+                                                {{ 'businessProfile.contactSocial.email' | translate }} *
                                                 @if (isFieldValid('contactInfo.email')) {
                                                 <i class="pi pi-check-circle text-green-500 text-sm"></i>
                                                 }
@@ -666,7 +645,7 @@
                                                     class="w-full"
                                                     [class.p-invalid]="isFieldInvalid('contactInfo.email')"
                                                     [class.border-green-500]="isFieldValid('contactInfo.email')"
-                                                    [readonly]="!isEditMode()" placeholder="your@email.com" />
+                                                    [readonly]="!isEditMode()" [placeholder]="'businessProfile.contactSocial.emailPlaceholder' | translate" />
                                             </div>
                                             @if (isFieldInvalid('contactInfo.email')) {
                                             <small class="text-red-500 flex items-center gap-1 mt-1">
@@ -679,7 +658,7 @@
                                         <div>
                                             <label for="phone"
                                                 class="text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
-                                                Phone *
+                                                {{ 'businessProfile.contactSocial.phone' | translate }} *
                                                 @if (isFieldValid('contactInfo.phone')) {
                                                 <i class="pi pi-check-circle text-green-500 text-sm"></i>
                                                 }
@@ -692,7 +671,7 @@
                                                     class="w-full"
                                                     [class.p-invalid]="isFieldInvalid('contactInfo.phone')"
                                                     [class.border-green-500]="isFieldValid('contactInfo.phone')"
-                                                    [readonly]="!isEditMode()" placeholder="+1 (555) 000-0000" />
+                                                    [readonly]="!isEditMode()" [placeholder]="'businessProfile.contactSocial.phonePlaceholder' | translate" />
                                             </div>
                                             @if (isFieldInvalid('contactInfo.phone')) {
                                             <small class="text-red-500 flex items-center gap-1 mt-1">
@@ -703,28 +682,27 @@
                                         </div>
 
                                         <div class="md:col-span-2">
-                                            <label class="block text-sm font-medium text-gray-700 mb-2">Address
-                                                *</label>
+                                            <label class="block text-sm font-medium text-gray-700 mb-2">{{ 'businessProfile.contactSocial.address' | translate }} *</label>
                                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4" formGroupName="address">
                                                 <div>
                                                     <label for="addressEn"
-                                                        class="block text-xs text-gray-600 mb-1">English</label>
+                                                        class="block text-xs text-gray-600 mb-1">{{ 'common.english' | translate }}</label>
                                                     <textarea id="addressEn" pInputTextarea formControlName="en"
                                                         rows="3" class="w-full"
                                                         [class.ng-invalid]="businessProfileForm.get('contactInfo.address.en')?.invalid && businessProfileForm.get('contactInfo.address.en')?.touched"
                                                         [readonly]="!isEditMode()"
-                                                        placeholder="Enter address in English"></textarea>
+                                                        [placeholder]="'businessProfile.contactSocial.addressEnPlaceholder' | translate"></textarea>
                                                     <small *ngIf="getFieldError('contactInfo.address', 'en')"
                                                         class="text-red-500">{{ getFieldError('contactInfo.address',
                                                         'en') }}</small>
                                                 </div>
                                                 <div>
                                                     <label for="addressAr"
-                                                        class="block text-xs text-gray-600 mb-1">العربية</label>
+                                                        class="block text-xs text-gray-600 mb-1">{{ 'common.arabic' | translate }}</label>
                                                     <textarea id="addressAr" pInputTextarea formControlName="ar"
                                                         rows="3" class="w-full"
                                                         [class.ng-invalid]="businessProfileForm.get('contactInfo.address.ar')?.invalid && businessProfileForm.get('contactInfo.address.ar')?.touched"
-                                                        [readonly]="!isEditMode()" placeholder="أدخل العنوان بالعربية"
+                                                        [readonly]="!isEditMode()" [placeholder]="'businessProfile.contactSocial.addressArPlaceholder' | translate"
                                                         dir="rtl"></textarea>
                                                     <small *ngIf="getFieldError('contactInfo.address', 'ar')"
                                                         class="text-red-500">{{ getFieldError('contactInfo.address',
@@ -735,10 +713,9 @@
 
                                         <div class="md:col-span-2">
                                             <label for="mapLocation"
-                                                class="block text-sm font-medium text-gray-700 mb-2">Map
-                                                Location URL</label>
+                                                class="block text-sm font-medium text-gray-700 mb-2">{{ 'businessProfile.contactSocial.mapLocationUrl' | translate }}</label>
                                             <input id="mapLocation" type="url" pInputText formControlName="mapLocation"
-                                                class="w-full" placeholder="https://maps.google.com/..."
+                                                class="w-full" [placeholder]="'businessProfile.contactSocial.mapLocationPlaceholder' | translate"
                                                 [readonly]="!isEditMode()" />
                                         </div>
                                     </div>
@@ -749,7 +726,7 @@
                     </p-tabPanel>
 
                     <!-- Legal & FAQ Tab -->
-                    <p-tabPanel header="Legal & FAQ" leftIcon="pi pi-file">
+                    <p-tabPanel [header]="'businessProfile.tabs.legalFaq' | translate" leftIcon="pi pi-file">
                         <div class="p-6 space-y-6">
                             <!-- FAQ and Legal Documents will go here -->
                             <!-- They are already in the file, just need proper structure -->
@@ -795,7 +772,7 @@
                     </p-tabPanel>
 
                     <!-- Payment Settings Tab -->
-                    <p-tabPanel header="Payment Settings" leftIcon="pi pi-credit-card">
+                    <p-tabPanel [header]="'businessProfile.tabs.paymentSettings' | translate" leftIcon="pi pi-credit-card">
                         <div class="p-6">
                             <!-- Paymob Payment Settings Card -->
                             <p-card styleClass="shadow-lg border-0 mb-4">
@@ -803,7 +780,7 @@
                                     <div
                                         class="flex items-center gap-3 p-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-t-lg">
                                         <i class="pi pi-credit-card text-2xl"></i>
-                                        <h2 class="text-xl font-semibold m-0">Paymob Payment Settings</h2>
+                                        <h2 class="text-xl font-semibold m-0">{{ 'businessProfile.paymentSettings.title' | translate }}</h2>
                                     </div>
                                 </ng-template>
                                 <ng-template pTemplate="content">
@@ -817,14 +794,12 @@
                                                     <i class="pi pi-power-off text-indigo-600"></i>
                                                 </div>
                                                 <div>
-                                                    <h3 class="text-lg font-semibold text-gray-800">Enable Paymob
-                                                        Payments</h3>
-                                                    <p class="text-sm text-gray-600">Use dashboard settings instead of
-                                                        environment variables</p>
+                                                    <h3 class="text-lg font-semibold text-gray-800">{{ 'businessProfile.paymentSettings.enablePaymobPayments' | translate }}</h3>
+                                                    <p class="text-sm text-gray-600">{{ 'businessProfile.paymentSettings.useDashboardSettings' | translate }}</p>
                                                 </div>
                                             </div>
-                                            <p-toggleButton formControlName="enabled" [onLabel]="'Enabled'"
-                                                [offLabel]="'Disabled'" [onIcon]="'pi pi-check'"
+                                            <p-toggleButton formControlName="enabled" [onLabel]="'businessProfile.paymentSettings.enabled' | translate"
+                                                [offLabel]="'businessProfile.paymentSettings.disabled' | translate" [onIcon]="'pi pi-check'"
                                                 [offIcon]="'pi pi-times'" styleClass="p-button-sm">
                                             </p-toggleButton>
                                         </div>
@@ -836,103 +811,98 @@
                                             <div class="md:col-span-2">
                                                 <label for="paymobApiKey"
                                                     class="block text-sm font-semibold text-gray-700 mb-2">
-                                                    API Key <span class="text-red-500">*</span>
+                                                    {{ 'businessProfile.paymentSettings.apiKey' | translate }} <span class="text-red-500">*</span>
                                                 </label>
                                                 <input id="paymobApiKey" type="password" pInputText
                                                     formControlName="apiKey" class="w-full"
-                                                    placeholder="Enter your Paymob API Key"
+                                                    [placeholder]="'businessProfile.paymentSettings.apiKeyPlaceholder' | translate"
                                                     [readonly]="!isEditMode()" />
-                                                <small class="text-gray-500">Your Paymob API key from the
-                                                    dashboard</small>
+                                                <small class="text-gray-500">{{ 'businessProfile.paymentSettings.apiKeyDescription' | translate }}</small>
                                             </div>
 
                                             <!-- Card Integration ID -->
                                             <div>
                                                 <label for="paymobIntegrationId"
                                                     class="block text-sm font-semibold text-gray-700 mb-2">
-                                                    Card Integration ID <span class="text-red-500">*</span>
+                                                    {{ 'businessProfile.paymentSettings.cardIntegrationId' | translate }} <span class="text-red-500">*</span>
                                                 </label>
                                                 <input id="paymobIntegrationId" type="text" pInputText
                                                     formControlName="integrationId" class="w-full"
-                                                    placeholder="e.g., 1234567" [readonly]="!isEditMode()" />
-                                                <small class="text-gray-500">Integration ID for card payments</small>
+                                                    [placeholder]="'businessProfile.paymentSettings.cardIntegrationIdPlaceholder' | translate" [readonly]="!isEditMode()" />
+                                                <small class="text-gray-500">{{ 'businessProfile.paymentSettings.cardIntegrationIdDescription' | translate }}</small>
                                             </div>
 
                                             <!-- Wallet Integration ID -->
                                             <div>
                                                 <label for="paymobWalletIntegrationId"
                                                     class="block text-sm font-semibold text-gray-700 mb-2">
-                                                    Wallet Integration ID
+                                                    {{ 'businessProfile.paymentSettings.walletIntegrationId' | translate }}
                                                 </label>
                                                 <input id="paymobWalletIntegrationId" type="text" pInputText
                                                     formControlName="walletIntegrationId" class="w-full"
-                                                    placeholder="e.g., 7654321" [readonly]="!isEditMode()" />
-                                                <small class="text-gray-500">Integration ID for wallet payments
-                                                    (optional, will use Card ID if not provided)</small>
+                                                    [placeholder]="'businessProfile.paymentSettings.walletIntegrationIdPlaceholder' | translate" [readonly]="!isEditMode()" />
+                                                <small class="text-gray-500">{{ 'businessProfile.paymentSettings.walletIntegrationIdDescription' | translate }}</small>
                                             </div>
 
                                             <!-- Iframe ID -->
                                             <div>
                                                 <label for="paymobIframeId"
                                                     class="block text-sm font-semibold text-gray-700 mb-2">
-                                                    Iframe ID <span class="text-red-500">*</span>
+                                                    {{ 'businessProfile.paymentSettings.iframeId' | translate }} <span class="text-red-500">*</span>
                                                 </label>
                                                 <input id="paymobIframeId" type="text" pInputText
-                                                    formControlName="iframeId" class="w-full" placeholder="e.g., 12345"
+                                                    formControlName="iframeId" class="w-full" [placeholder]="'businessProfile.paymentSettings.iframeIdPlaceholder' | translate"
                                                     [readonly]="!isEditMode()" />
-                                                <small class="text-gray-500">Iframe ID for card payment page</small>
+                                                <small class="text-gray-500">{{ 'businessProfile.paymentSettings.iframeIdDescription' | translate }}</small>
                                             </div>
 
                                             <!-- HMAC Secret -->
                                             <div>
                                                 <label for="paymobHmacSecret"
                                                     class="block text-sm font-semibold text-gray-700 mb-2">
-                                                    HMAC Secret
+                                                    {{ 'businessProfile.paymentSettings.hmacSecret' | translate }}
                                                 </label>
                                                 <input id="paymobHmacSecret" type="password" pInputText
                                                     formControlName="hmacSecret" class="w-full"
-                                                    placeholder="Enter HMAC secret for webhook security"
+                                                    [placeholder]="'businessProfile.paymentSettings.hmacSecretPlaceholder' | translate"
                                                     [readonly]="!isEditMode()" />
-                                                <small class="text-gray-500">Secret key for webhook verification</small>
+                                                <small class="text-gray-500">{{ 'businessProfile.paymentSettings.hmacSecretDescription' | translate }}</small>
                                             </div>
 
                                             <!-- Callback URL -->
                                             <div>
                                                 <label for="paymobCallbackUrl"
                                                     class="block text-sm font-semibold text-gray-700 mb-2">
-                                                    Callback URL
+                                                    {{ 'businessProfile.paymentSettings.callbackUrl' | translate }}
                                                 </label>
                                                 <input id="paymobCallbackUrl" type="url" pInputText
                                                     formControlName="callbackUrl" class="w-full"
-                                                    placeholder="https://your-domain.com" [readonly]="!isEditMode()" />
-                                                <small class="text-gray-500">Base URL for callbacks (optional,
-                                                    auto-generated if not provided)</small>
+                                                    [placeholder]="'businessProfile.paymentSettings.callbackUrlPlaceholder' | translate" [readonly]="!isEditMode()" />
+                                                <small class="text-gray-500">{{ 'businessProfile.paymentSettings.callbackUrlDescription' | translate }}</small>
                                             </div>
 
                                             <!-- Webhook URL -->
                                             <div>
                                                 <label for="paymobWebhookUrl"
                                                     class="block text-sm font-semibold text-gray-700 mb-2">
-                                                    Webhook URL
+                                                    {{ 'businessProfile.paymentSettings.webhookUrl' | translate }}
                                                 </label>
                                                 <input id="paymobWebhookUrl" type="url" pInputText
                                                     formControlName="webhookUrl" class="w-full"
-                                                    placeholder="https://your-domain.com" [readonly]="!isEditMode()" />
-                                                <small class="text-gray-500">Webhook URL for payment notifications
-                                                    (optional)</small>
+                                                    [placeholder]="'businessProfile.paymentSettings.webhookUrlPlaceholder' | translate" [readonly]="!isEditMode()" />
+                                                <small class="text-gray-500">{{ 'businessProfile.paymentSettings.webhookUrlDescription' | translate }}</small>
                                             </div>
 
                                             <!-- Response Callback URL -->
                                             <div>
                                                 <label for="paymobResponseCallbackUrl"
                                                     class="block text-sm font-semibold text-gray-700 mb-2">
-                                                    Response Callback URL
+                                                    {{ 'businessProfile.paymentSettings.responseCallbackUrl' | translate }}
                                                 </label>
                                                 <input id="paymobResponseCallbackUrl" type="url" pInputText
                                                     formControlName="responseCallbackUrl" class="w-full"
-                                                    placeholder="https://your-domain.com" [readonly]="!isEditMode()" />
-                                                <small class="text-gray-500">URL for user redirect after payment
-                                                    (optional)</small>
+                                                    [placeholder]="'businessProfile.paymentSettings.responseCallbackUrlPlaceholder' | translate" [readonly]="!isEditMode()" />
+                                                <small class="text-gray-500">{{ 'businessProfile.paymentSettings.responseCallbackUrlDescription' | translate }}</small>
                                             </div>
                                         </div>
 
@@ -944,18 +914,10 @@
                                                     class="pi pi-info-circle text-blue-600 dark:text-blue-400 text-xl"></i>
                                                 <div class="flex-1">
                                                     <h4 class="font-semibold text-blue-900 dark:text-blue-100 mb-2">
-                                                        Important Notes</h4>
-                                                    <ul
-                                                        class="text-sm text-blue-800 dark:text-blue-200 space-y-1 list-disc list-inside">
-                                                        <li>When enabled, these settings will override environment
-                                                            variables</li>
-                                                        <li>Make sure all required fields are filled before enabling
-                                                        </li>
-                                                        <li>Wallet Integration ID is optional - Card ID will be used as
-                                                            fallback</li>
-                                                        <li>Settings are saved automatically when you save the business
-                                                            profile</li>
-                                                    </ul>
+                                                        {{ 'businessProfile.paymentSettings.importantNotes' | translate }}</h4>
+                                                    <p class="text-sm text-blue-800 dark:text-blue-200">
+                                                        {{ 'businessProfile.paymentSettings.importantNotesDescription' | translate }}
+                                                    </p>
                                                 </div>
                                             </div>
                                         </div>
@@ -963,8 +925,7 @@
                                         <div
                                             class="text-center py-8 bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
                                             <i class="pi pi-lock text-4xl text-gray-400 mb-4"></i>
-                                            <p class="text-gray-600 dark:text-gray-400">Enable Paymob settings to
-                                                configure payment gateway</p>
+                                            <p class="text-gray-600 dark:text-gray-400">{{ 'businessProfile.paymentSettings.enablePaymobPayments' | translate }}</p>
                                         </div>
                                         }
                                     </div>
@@ -977,7 +938,7 @@
                                     <div
                                         class="flex items-center gap-3 p-4 bg-gradient-to-r from-green-600 to-teal-600 text-white rounded-t-lg">
                                         <i class="pi pi-money-bill text-2xl"></i>
-                                        <h2 class="text-xl font-semibold m-0">Payment Method Settings</h2>
+                                        <h2 class="text-xl font-semibold m-0">{{ 'businessProfile.paymentMethodSettings.title' | translate }}</h2>
                                     </div>
                                 </ng-template>
                                 <ng-template pTemplate="content">
@@ -991,14 +952,14 @@
                                                     <i class="pi pi-money-bill text-green-600"></i>
                                                 </div>
                                                 <div>
-                                                    <h3 class="text-lg font-semibold text-gray-800">Cash on Delivery
+                                                    <h3 class="text-lg font-semibold text-gray-800">{{ 'businessProfile.paymentMethodSettings.cashOnDelivery' | translate }}
                                                     </h3>
-                                                    <p class="text-sm text-gray-600">Enable/disable cash payment method
+                                                    <p class="text-sm text-gray-600">{{ 'businessProfile.paymentMethodSettings.cashOnDeliveryDescription' | translate }}
                                                     </p>
                                                 </div>
                                             </div>
-                                            <p-toggleButton formControlName="cashEnabled" [onLabel]="'Enabled'"
-                                                [offLabel]="'Disabled'" [onIcon]="'pi pi-check'"
+                                            <p-toggleButton formControlName="cashEnabled" [onLabel]="'businessProfile.paymentSettings.enabled' | translate"
+                                                [offLabel]="'businessProfile.paymentSettings.disabled' | translate" [onIcon]="'pi pi-check'"
                                                 [offIcon]="'pi pi-times'" styleClass="p-button-sm">
                                             </p-toggleButton>
                                         </div>
@@ -1012,14 +973,12 @@
                                                     <i class="pi pi-wallet text-purple-600"></i>
                                                 </div>
                                                 <div class="flex-1">
-                                                    <h3 class="text-lg font-semibold text-gray-800">Wallet Payment
-                                                        (Vodafone Cash)</h3>
-                                                    <p class="text-sm text-gray-600">Enable/disable wallet payment
-                                                        method</p>
+                                                    <h3 class="text-lg font-semibold text-gray-800">{{ 'businessProfile.paymentMethodSettings.walletPayment' | translate }}</h3>
+                                                    <p class="text-sm text-gray-600">{{ 'businessProfile.paymentMethodSettings.walletPaymentDescription' | translate }}</p>
                                                 </div>
                                             </div>
-                                            <p-toggleButton formControlName="walletEnabled" [onLabel]="'Enabled'"
-                                                [offLabel]="'Disabled'" [onIcon]="'pi pi-check'"
+                                            <p-toggleButton formControlName="walletEnabled" [onLabel]="'businessProfile.paymentSettings.enabled' | translate"
+                                                [offLabel]="'businessProfile.paymentSettings.disabled' | translate" [onIcon]="'pi pi-check'"
                                                 [offIcon]="'pi pi-times'" styleClass="p-button-sm">
                                             </p-toggleButton>
                                         </div>
@@ -1028,14 +987,13 @@
                                         <div class="pt-4 border-t border-gray-200">
                                             <label for="walletAccountNumber"
                                                 class="block text-sm font-semibold text-gray-700 mb-2">
-                                                Wallet Account Number
+                                                {{ 'businessProfile.paymentMethodSettings.walletAccountNumber' | translate }}
                                             </label>
                                             <input id="walletAccountNumber" type="text" pInputText
                                                 formControlName="walletAccountNumber" class="w-full"
-                                                placeholder="e.g., 010602123312"
+                                                [placeholder]="'businessProfile.paymentMethodSettings.walletAccountNumberPlaceholder' | translate"
                                                 [readonly]="!isEditMode()" />
-                                            <small class="text-gray-500">Wallet account number to display on checkout
-                                                page</small>
+                                            <small class="text-gray-500">{{ 'businessProfile.paymentMethodSettings.walletAccountNumberDescription' | translate }}</small>
                                         </div>
                                         }
 
@@ -1048,14 +1006,13 @@
                                                     <i class="pi pi-credit-card text-indigo-600"></i>
                                                 </div>
                                                 <div>
-                                                    <h3 class="text-lg font-semibold text-gray-800">Paymob Payment
+                                                    <h3 class="text-lg font-semibold text-gray-800">{{ 'businessProfile.paymentMethodSettings.paymobPayment' | translate }}
                                                     </h3>
-                                                    <p class="text-sm text-gray-600">Enable/disable Paymob payment
-                                                        method</p>
+                                                    <p class="text-sm text-gray-600">{{ 'businessProfile.paymentMethodSettings.paymobPaymentDescription' | translate }}</p>
                                                 </div>
                                             </div>
-                                            <p-toggleButton formControlName="paymobEnabled" [onLabel]="'Enabled'"
-                                                [offLabel]="'Disabled'" [onIcon]="'pi pi-check'"
+                                            <p-toggleButton formControlName="paymobEnabled" [onLabel]="'businessProfile.paymentSettings.enabled' | translate"
+                                                [offLabel]="'businessProfile.paymentSettings.disabled' | translate" [onIcon]="'pi pi-check'"
                                                 [offIcon]="'pi pi-times'" styleClass="p-button-sm">
                                             </p-toggleButton>
                                         </div>
@@ -1068,16 +1025,13 @@
                                                     class="pi pi-info-circle text-blue-600 dark:text-blue-400 text-xl"></i>
                                                 <div class="flex-1">
                                                     <h4 class="font-semibold text-blue-900 dark:text-blue-100 mb-2">
-                                                        Payment Method Configuration</h4>
+                                                        {{ 'businessProfile.paymentMethodSettings.paymentMethodConfiguration' | translate }}</h4>
                                                     <ul
                                                         class="text-sm text-blue-800 dark:text-blue-200 space-y-1 list-disc list-inside">
-                                                        <li>Only enabled payment methods will be displayed on the
-                                                            website checkout page</li>
-                                                        <li>Wallet payment requires account number to be displayed to
-                                                            customers</li>
-                                                        <li>Paymob payment also requires Paymob settings to be
-                                                            configured</li>
-                                                        <li>Changes are saved when you save the business profile</li>
+                                                        <li>{{ 'businessProfile.paymentMethodSettings.onlyEnabledMethods' | translate }}</li>
+                                                        <li>{{ 'businessProfile.paymentMethodSettings.walletRequiresAccount' | translate }}</li>
+                                                        <li>{{ 'businessProfile.paymentMethodSettings.paymobRequiresSettings' | translate }}</li>
+                                                        <li>{{ 'businessProfile.paymentMethodSettings.changesSavedOnProfile' | translate }}</li>
                                                     </ul>
                                                 </div>
                                             </div>
@@ -1710,7 +1664,7 @@
                     </p-tabPanel>
 
                     <!-- SEO & Meta Tags Tab -->
-                    <p-tabPanel header="SEO & Meta Tags" leftIcon="pi pi-search">
+                    <p-tabPanel [header]="'businessProfile.tabs.seoMeta' | translate" leftIcon="pi pi-search">
                         <div class="p-6 space-y-6">
                             <!-- SEO Basic Fields -->
                             <p-card styleClass="shadow-lg border-0">
@@ -1847,7 +1801,7 @@
                                     <div
                                         class="flex items-center gap-3 p-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-t-lg">
                                         <i class="pi pi-tags text-2xl"></i>
-                                        <h2 class="text-xl font-semibold m-0">Custom Meta Tags</h2>
+                                        <h2 class="text-xl font-semibold m-0">{{ 'businessProfile.seoMeta.customMetaTags' | translate }}</h2>
                                     </div>
                                 </ng-template>
                                 <ng-template pTemplate="content">
@@ -1856,13 +1810,13 @@
                                         <!-- View Mode -->
                                         @if (businessProfile && businessProfile.metaTags && typeof businessProfile.metaTags === 'string' && businessProfile.metaTags.trim()) {
                                         <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
-                                            <label class="block text-sm font-medium text-gray-700 mb-2">Meta Tags HTML</label>
+                                            <label class="block text-sm font-medium text-gray-700 mb-2">{{ 'businessProfile.seoMeta.metaTagsHtml' | translate }}</label>
                                             <pre class="bg-white p-4 rounded border border-gray-300 text-sm overflow-x-auto font-mono whitespace-pre-wrap">{{ businessProfile.metaTags }}</pre>
                                         </div>
                                         } @else {
                                         <div class="text-center py-12 border-2 border-dashed border-gray-300 rounded-lg">
                                             <i class="pi pi-tags text-4xl text-gray-400 mb-4"></i>
-                                            <p class="text-gray-600">No custom meta tags added yet</p>
+                                            <p class="text-gray-600">{{ 'businessProfile.seoMeta.noCustomMetaTags' | translate }}</p>
                                         </div>
                                         }
                                         } @else {
@@ -1896,10 +1850,10 @@
                                         class="flex items-center justify-between p-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-t-lg">
                                         <div class="flex items-center gap-3">
                                             <i class="pi pi-code text-2xl"></i>
-                                            <h2 class="text-xl font-semibold m-0">Custom Scripts</h2>
+                                            <h2 class="text-xl font-semibold m-0">{{ 'businessProfile.seoMeta.customScripts' | translate }}</h2>
                                         </div>
                                         @if (isEditMode()) {
-                                        <p-button label="Add Script" icon="pi pi-plus" (onClick)="addScript()"
+                                        <p-button [label]="'businessProfile.seoMeta.addScript' | translate" icon="pi pi-plus" (onClick)="addScript()"
                                             styleClass="p-button-outlined p-button-sm"></p-button>
                                         }
                                     </div>
@@ -1911,8 +1865,7 @@
                                             [formGroup]="$any(scriptGroup)">
                                             <div class="space-y-4">
                                                 <div class="flex items-center justify-between">
-                                                    <label class="block text-sm font-medium text-gray-700">Script
-                                                        Position</label>
+                                                    <label class="block text-sm font-medium text-gray-700">{{ 'businessProfile.seoMeta.scriptPosition' | translate }}</label>
                                                     @if (isEditMode()) {
                                                     <p-selectButton formControlName="position"
                                                         [options]="scriptPositionOptions" optionLabel="label"
@@ -1923,22 +1876,22 @@
                                                     }
                                                 </div>
                                                 <div>
-                                                    <label class="block text-sm font-medium text-gray-700 mb-2">Script
-                                                        Content</label>
+                                                    <label class="block text-sm font-medium text-gray-700 mb-2">{{ 'businessProfile.seoMeta.scriptContent' | translate }}</label>
                                                     <textarea pInputTextarea formControlName="script" rows="6"
                                                         class="w-full font-mono text-sm" [readonly]="!isEditMode()"
-                                                        placeholder='<script>console.log("Hello");</script> or <!-- Google Analytics -->'></textarea>
+                                                        [placeholder]="'businessProfile.seoMeta.scriptPlaceholder' | translate"></textarea>
                                                     @if (scriptGroup.get('script')?.invalid &&
                                                     scriptGroup.get('script')?.touched) {
-                                                    <small class="text-red-500">Script content is required</small>
+                                                    <small class="text-red-500">{{ 'businessProfile.seoMeta.scriptContent' | translate }} {{ 'common.required' | translate }}</small>
                                                     }
                                                     <small class="text-gray-500 mt-1 block">
-                                                        Enter HTML script tags or any custom code to inject in the page
+                                                        {{ 'businessProfile.seoMeta.scriptPlaceholder' | translate }}
                                                     </small>
                                                 </div>
                                                 @if (isEditMode()) {
                                                 <div class="flex justify-end">
                                                     <p-button icon="pi pi-trash" (onClick)="removeScript($index)"
+                                                        [label]="'businessProfile.seoMeta.removeScript' | translate"
                                                         styleClass="p-button-danger p-button-text"></p-button>
                                                 </div>
                                                 }
@@ -1949,9 +1902,9 @@
                                         <div
                                             class="text-center py-12 border-2 border-dashed border-gray-300 rounded-lg">
                                             <i class="pi pi-code text-4xl text-gray-400 mb-4"></i>
-                                            <p class="text-gray-600">No custom scripts added yet</p>
+                                            <p class="text-gray-600">{{ 'businessProfile.seoMeta.noScriptsAdded' | translate }}</p>
                                             @if (isEditMode()) {
-                                            <p-button label="Add Script" icon="pi pi-plus" (onClick)="addScript()"
+                                            <p-button [label]="'businessProfile.seoMeta.addScript' | translate" icon="pi pi-plus" (onClick)="addScript()"
                                                 styleClass="p-button-outlined mt-4"></p-button>
                                             }
                                         </div>

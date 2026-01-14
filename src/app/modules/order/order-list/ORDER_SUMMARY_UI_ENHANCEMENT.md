@@ -19,7 +19,7 @@
 ```html
 <div class="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-xl p-6 shadow-lg border border-gray-200 dark:border-gray-700">
     <h3 class="text-2xl font-bold text-gray-800 dark:text-white mb-6 flex items-center">
-        <i class="pi pi-calculator mr-3 text-blue-600 dark:text-blue-400"></i>
+        <i class="pi pi-calculator me-3  text-blue-600 dark:text-blue-400"></i>
         Order Summary
     </h3>
 </div>
@@ -30,7 +30,7 @@
 <!-- Subtotal -->
 <div class="flex justify-between items-center p-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md transition-shadow duration-200">
     <div class="flex items-center">
-        <i class="pi pi-shopping-cart mr-3 text-gray-600 dark:text-gray-400"></i>
+        <i class="pi pi-shopping-cart me-3  text-gray-600 dark:text-gray-400"></i>
         <span class="text-lg font-semibold text-gray-700 dark:text-gray-300">Subtotal</span>
     </div>
     <span class="text-xl font-bold text-gray-900 dark:text-white">
@@ -44,7 +44,7 @@
 <!-- Total -->
 <div class="flex justify-between items-center p-6 bg-gradient-to-r from-blue-500 to-blue-600 dark:from-blue-600 dark:to-blue-700 rounded-lg shadow-lg border-2 border-blue-400 dark:border-blue-500">
     <div class="flex items-center">
-        <i class="pi pi-dollar mr-3 text-white"></i>
+        <i class="pi pi-dollar me-3  text-white"></i>
         <span class="text-2xl font-bold text-white">Total</span>
     </div>
     <span class="text-3xl font-bold text-white">
@@ -58,7 +58,7 @@
 <!-- Cash Payment Input -->
 <div class="flex justify-between items-center p-4 bg-gradient-to-r from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 rounded-lg border-2 border-green-200 dark:border-green-700 shadow-sm hover:shadow-md transition-shadow duration-200">
     <div class="flex items-center">
-        <i class="pi pi-money-bill mr-3 text-green-600 dark:text-green-400"></i>
+        <i class="pi pi-money-bill me-3  text-green-600 dark:text-green-400"></i>
         <span class="text-lg font-semibold text-green-800 dark:text-green-300">Amount Paid</span>
     </div>
     <div class="w-48">
@@ -81,7 +81,7 @@
 <!-- Change Due Display -->
 <div class="flex justify-between items-center p-4 bg-gradient-to-r from-yellow-50 to-yellow-100 dark:from-yellow-900/20 dark:to-yellow-800/20 rounded-lg border-2 border-yellow-200 dark:border-yellow-700 shadow-sm hover:shadow-md transition-shadow duration-200 mt-3">
     <div class="flex items-center">
-        <i class="pi pi-refresh mr-3 text-yellow-600 dark:text-yellow-400"></i>
+        <i class="pi pi-refresh me-3  text-yellow-600 dark:text-yellow-400"></i>
         <span class="text-lg font-semibold text-yellow-800 dark:text-yellow-300">Change Due</span>
     </div>
     <div class="w-48">
@@ -110,7 +110,7 @@
      [class.dark:bg-green-900/30]="cashPayment.get('changeDue')?.value >= 0"
      [class.dark:bg-red-900/30]="cashPayment.get('changeDue')?.value < 0">
     <div class="flex items-center justify-center">
-        <i class="pi mr-2" 
+        <i class="pi me-2" 
            [class.pi-check-circle]="cashPayment.get('changeDue')?.value >= 0"
            [class.pi-exclamation-triangle]="cashPayment.get('changeDue')?.value < 0"
            [class.text-green-600]="cashPayment.get('changeDue')?.value >= 0"

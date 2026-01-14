@@ -2,14 +2,14 @@
 <p-toolbar styleClass="mb-4 gap-2">
     <ng-template pTemplate="left">
         <div class="my-2">
-            <p-button severity="success" label="New Product" icon="pi pi-plus" class="mr-2" (click)="openNew()"
+            <p-button severity="success" [label]="'product.new' | translate" icon="pi pi-plus" class="mr-2" (click)="openNew()"
                 [style]="{'margin-right': '.5em'}">
             </p-button>
         </div>
     </ng-template>
     <ng-template pTemplate="right">
         <div class="flex items-center gap-2">
-            <label class="font-semibold">Language:</label>
+            <label class="font-semibold">{{ 'common.language' | translate }}:</label>
             <p-dropdown [options]="languages()" [ngModel]="currentLanguage()" 
                 (onChange)="onLanguageChange($event)" optionLabel="label" optionValue="value" 
                 styleClass="w-32">
@@ -23,12 +23,12 @@
     [(selection)]="selectedProducts" selectionMode="multiple" [rowHover]="true" dataKey="_id">
     <ng-template pTemplate="caption">
         <div class="flex flex-column md:flex-row md:justify-between md:align-items-center">
-            <h5 class="m-0">Manage Products</h5>
-            <p-iconField iconPosition="left" class="ml-auto">
+            <h5 class="m-0">{{ 'product.manage' | translate }}</h5>
+            <p-iconField iconPosition="left" class="ms-auto">
                 <p-inputIcon>
                     <i class="pi pi-search"></i>
                 </p-inputIcon>
-                <input pInputText type="text" (input)="onGlobalFilter(dt, $event)" placeholder="Search..."
+                <input pInputText type="text" (input)="onGlobalFilter(dt, $event)" [placeholder]="'common.search' | translate"
                     class="w-full sm:w-auto" />
             </p-iconField>
         </div>
@@ -36,12 +36,12 @@
 
     <ng-template pTemplate="header">
         <tr>
-            <th pSortableColumn="name">Name <p-sortIcon field="name"></p-sortIcon></th>
-            <th>Image</th>
-            <th pSortableColumn="price">Price <p-sortIcon field="price"></p-sortIcon></th>
-            <th pSortableColumn="category">Category <p-sortIcon field="category"></p-sortIcon></th>
+            <th pSortableColumn="name">{{ 'common.name' | translate }} <p-sortIcon field="name"></p-sortIcon></th>
+            <th>{{ 'product.image' | translate }}</th>
+            <th pSortableColumn="price">{{ 'common.price' | translate }} <p-sortIcon field="price"></p-sortIcon></th>
+            <th pSortableColumn="category">{{ 'product.category' | translate }} <p-sortIcon field="category"></p-sortIcon></th>
             <!-- <th>Reviews</th> -->
-            <th pSortableColumn="status">Status <p-sortIcon field="status"></p-sortIcon></th>
+            <th pSortableColumn="status">{{ 'common.status' | translate }} <p-sortIcon field="status"></p-sortIcon></th>
             <th></th>
         </tr>
     </ng-template>
@@ -83,7 +83,7 @@
             <td colspan="7" class="text-center py-6">
                 <div class="flex flex-column gap-2 items-center justify-center">
                     <i class="pi pi-inbox text-5xl text-400"></i>
-                    <span class="text-xl text-600">No products found.</span>
+                    <span class="text-xl text-600">{{ 'product.noData' | translate }}</span>
                 </div>
             </td>
         </tr>
@@ -104,7 +104,7 @@
                     [totalRecords]="pagination().total" (onPageChange)="loadProducts($event.page, $event.rows)"
                     [rowsPerPageOptions]="[5,10,20,30]" [pageLinkSize]="5" [showPageLinks]="true"
                     [showCurrentPageReport]="true"
-                    currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries">
+                    currentPageReportTemplate="{{ 'product.paging' | translate }}">
                 </p-paginator>
             </td>
         </tr>
@@ -112,7 +112,7 @@
 </p-table>
 
 <!-- Enhanced Product Dialog with Accordion -->
-<p-dialog [(visible)]="productDialog" [style]="{width: '70vw'}" header="Product Details" [modal]="true" class="p-fluid"
+<p-dialog [(visible)]="productDialog" [style]="{width: '70vw'}" [header]="'product.dialogTitle' | translate" [modal]="true" class="p-fluid"
     [maximizable]="true" [closable]="true">
 
     <ng-template pTemplate="content">
@@ -122,32 +122,32 @@
             <p-accordion [multiple]="true" [activeIndex]="[0, 1]" class="w-full">
 
                 <!-- Basic Information Panel -->
-                <p-accordionTab header="Basic Information" [selected]="true">
+                <p-accordionTab [header]="'product.basicInfo' | translate" [selected]="true">
                     <ng-template pTemplate="content">
 
                         <!-- Product Name -->
                         <div class="field w-full mb-4">
-                            <label class="font-semibold">Product Name *</label>
+                            <label class="font-semibold">{{ 'product.productName' | translate }} *</label>
                             <ng-container formGroupName="name">
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-2">Name (English) *</label>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">{{ 'common.nameEn' | translate }} *</label>
                                         <input pInputText formControlName="en" class="w-full"
-                                            placeholder="Enter product name in English"
+                                            [placeholder]="'product.nameEnPlaceholder' | translate"
                                             [class.ng-invalid]="submitted && productForm.get('name.en')?.invalid" />
                                         <small class="text-red-500"
                                             *ngIf="submitted && productForm.get('name.en')?.invalid">
-                                            English name is required
+                                            {{ 'product.nameEnRequired' | translate }}
                                         </small>
                                     </div>
                                     <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-2">Name (Arabic) *</label>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">{{ 'common.nameAr' | translate }} *</label>
                                         <input pInputText formControlName="ar" class="w-full"
-                                            placeholder="أدخل اسم المنتج بالعربية"
+                                            [placeholder]="'product.nameArPlaceholder' | translate"
                                             [class.ng-invalid]="submitted && productForm.get('name.ar')?.invalid" />
                                         <small class="text-red-500"
                                             *ngIf="submitted && productForm.get('name.ar')?.invalid">
-                                            Arabic name is required
+                                            {{ 'product.nameArRequired' | translate }}
                                         </small>
                                     </div>
                                 </div>
@@ -156,29 +156,29 @@
 
                         <!-- Product Description -->
                         <div class="field w-full mb-4">
-                            <label class="font-semibold">Description *</label>
+                            <label class="font-semibold">{{ 'common.description' | translate }} *</label>
                             <ng-container formGroupName="description">
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-2">Description (English) *</label>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">{{ 'common.descriptionEn' | translate }} *</label>
                                         <textarea pTextarea formControlName="en" rows="4" class="w-full"
-                                            placeholder="Enter product description in English"
+                                            [placeholder]="'product.descriptionEnPlaceholder' | translate"
                                             [class.ng-invalid]="submitted && productForm.get('description.en')?.invalid">
                                         </textarea>
                                         <small class="text-red-500"
                                             *ngIf="submitted && productForm.get('description.en')?.invalid">
-                                            English description is required
+                                            {{ 'product.descriptionEnRequired' | translate }}
                                         </small>
                                     </div>
                                     <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-2">Description (Arabic) *</label>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">{{ 'common.descriptionAr' | translate }} *</label>
                                         <textarea pTextarea formControlName="ar" rows="4" class="w-full"
-                                            placeholder="أدخل وصف المنتج بالعربية"
+                                            [placeholder]="'product.descriptionArPlaceholder' | translate"
                                             [class.ng-invalid]="submitted && productForm.get('description.ar')?.invalid">
                                         </textarea>
                                         <small class="text-red-500"
                                             *ngIf="submitted && productForm.get('description.ar')?.invalid">
-                                            Arabic description is required
+                                            {{ 'product.descriptionArRequired' | translate }}
                                         </small>
                                     </div>
                                 </div>
@@ -188,59 +188,59 @@
                 </p-accordionTab>
 
                 <!-- Pricing & Inventory Panel -->
-                <p-accordionTab header="Pricing & Inventory" [selected]="true">
+                <p-accordionTab [header]="'product.pricingInventory' | translate" [selected]="true">
                     <ng-template pTemplate="content">
                         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             <div class="field w-full ">
-                                <label for="factoryPrice" class="font-semibold">Factory Price *</label>
+                                <label for="factoryPrice" class="font-semibold">{{ 'product.factoryPrice' | translate }} *</label>
                                 <p-inputNumber id="factoryPrice" class="w-full" formControlName="factoryPrice"
                                     mode="currency" currency="USD" locale="en-US"
                                     [class.ng-invalid]="submitted && productForm.get('factoryPrice')?.invalid">
                                 </p-inputNumber>
                                 <small class="ng-dirty ng-invalid text-red-500"
                                     *ngIf="submitted && productForm.get('factoryPrice')?.invalid">
-                                    Factory Price is required
+                                    {{ 'product.factoryPriceRequired' | translate }}
                                 </small>
                             </div>
 
                             <div class="field w-full ">
-                                <label for="price" class="font-semibold">Price *</label>
+                                <label for="price" class="font-semibold">{{ 'common.price' | translate }} *</label>
                                 <p-inputNumber id="price" class="w-full" formControlName="price" mode="currency"
                                     currency="USD" locale="en-US"
                                     [class.ng-invalid]="submitted && productForm.get('price')?.invalid">
                                 </p-inputNumber>
                                 <small class="ng-dirty ng-invalid text-red-500"
                                     *ngIf="submitted && productForm.get('price')?.invalid">
-                                    Price is required
+                                    {{ 'product.priceRequired' | translate }}
                                 </small>
                             </div>
                             <div class="field w-full">
-                                <label for="useVariantPrice" class="font-semibold">Use Variant Price</label>
+                                <label for="useVariantPrice" class="font-semibold">{{ 'product.useVariantPrice' | translate }}</label>
                                 <p-toggleswitch id="useVariantPrice" formControlName="useVariantPrice" />
                             </div>
 
                             <div class="field w-full ">
-                                <label for="discountPrice" class="font-semibold">Discount Price</label>
+                                <label for="discountPrice" class="font-semibold">{{ 'product.discountPrice' | translate }}</label>
                                 <p-inputNumber id="discountPrice" class="w-full" formControlName="discountPrice"
                                     mode="currency" currency="USD" locale="en-US">
                                 </p-inputNumber>
                             </div>
 
                             <div class="field w-full ">
-                                <label for="stock" class="font-semibold">Stock *</label>
+                                <label for="stock" class="font-semibold">{{ 'product.stock' | translate }} *</label>
                                 <p-inputNumber id="stock" styleClass="w-full" formControlName="stock"
                                     [class.ng-invalid]="submitted && productForm.get('stock')?.invalid">
                                 </p-inputNumber>
                                 <small class="ng-dirty ng-invalid text-red-500"
                                     *ngIf="submitted && productForm.get('stock')?.invalid">
-                                    Stock is required
+                                    {{ 'product.stockRequired' | translate }}
                                 </small>
                             </div>
 
                             <div class="field w-full md:col-6">
-                                <label for="status" class="font-semibold">Status</label>
+                                <label for="status" class="font-semibold">{{ 'common.status' | translate }}</label>
                                 <p-dropdown appendTo="body" id="status" styleClass="w-full" formControlName="status"
-                                    [options]="statusOptions" placeholder="Select Status">
+                                    [options]="statusOptions" [placeholder]="'product.selectStatus' | translate">
                                 </p-dropdown>
                             </div>
                         </div>
@@ -248,32 +248,32 @@
                 </p-accordionTab>
 
                 <!-- Category & Brand Panel -->
-                <p-accordionTab header="Category & Brand">
+                <p-accordionTab [header]="'product.categoryBrand' | translate">
                     <ng-template pTemplate="content">
                         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             <div class="field w-full md:col-6">
-                                <label for="category" class="font-semibold">Category </label>
+                                <label for="category" class="font-semibold">{{ 'product.category' | translate }} </label>
                                 <p-dropdown appendTo="body" id="category" styleClass="w-full" formControlName="category"
-                                    [options]="categoryOptions" placeholder="Select Category"
+                                    [options]="categoryOptions" [placeholder]="'product.selectCategory' | translate"
                                     optionLabel="label" optionValue="value"
                                     [class.ng-invalid]="submitted && productForm.get('category')?.invalid">
                                 </p-dropdown>
                                 <small class="ng-dirty ng-invalid text-red-500"
                                     *ngIf="submitted && productForm.get('category')?.invalid">
-                                    Category is required
+                                    {{ 'product.categoryRequired' | translate }}
                                 </small>
                             </div>
 
                             <div class="field w-full md:col-6">
-                                <label for="brand" class="font-semibold">Brand </label>
+                                <label for="brand" class="font-semibold">{{ 'product.brand' | translate }} </label>
                                 <p-dropdown appendTo="body" id="brand" styleClass="w-full" formControlName="brand"
                                     optionLabel="label" optionValue="value"
-                                    [options]="brandOptions" placeholder="Select Brand"
+                                    [options]="brandOptions" [placeholder]="'product.selectBrand' | translate"
                                     [class.ng-invalid]="submitted && productForm.get('brand')?.invalid">
                                 </p-dropdown>
                                 <small class="ng-dirty ng-invalid text-red-500"
                                     *ngIf="submitted && productForm.get('brand')?.invalid">
-                                    Brand is required
+                                    {{ 'product.brandRequired' | translate }}
                                 </small>
                             </div>
                         </div>
@@ -281,42 +281,42 @@
                 </p-accordionTab>
 
                 <!-- Product Images Panel -->
-                <p-accordionTab header="Product Images">
+                <p-accordionTab [header]="'product.productImages' | translate">
                     <ng-template pTemplate="content">
                         <div class="field w-full">
-                            <label class="font-semibold">Product Images *</label>
+                            <label class="font-semibold">{{ 'product.productImages' | translate }} *</label>
                             <app-upload-files [control]="formControlImage"
                                 [filesServer]="productForm.get('images')?.value" [multiple]="true" [accept]="'image/*'">
                             </app-upload-files>
                             <small class="ng-dirty ng-invalid text-red-500"
                                 *ngIf="submitted && productForm.get('images')?.invalid">
-                                At least one image is required
+                                {{ 'product.imagesRequired' | translate }}
                             </small>
                         </div>
                     </ng-template>
                 </p-accordionTab>
 
                 <!-- Product Attributes Panel -->
-                <p-accordionTab header="Product Attributes">
+                <p-accordionTab [header]="'product.productAttributes' | translate">
                     <ng-template pTemplate="content">
                         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             <div class="field w-full md:col-6">
-                                <label for="tags" class="font-semibold">Tags</label>
-                                <p-chips id="tags" styleClass="w-full" formControlName="tags" placeholder="Add tags">
+                                <label for="tags" class="font-semibold">{{ 'product.tags' | translate }}</label>
+                                <p-chips id="tags" styleClass="w-full" formControlName="tags" [placeholder]="'product.addTags' | translate">
                                 </p-chips>
                             </div>
 
                             <div class="field w-full ">
-                                <label for="gender" class="font-semibold">Gender</label>
+                                <label for="gender" class="font-semibold">{{ 'product.gender' | translate }}</label>
                                 <p-dropdown appendTo="body" id="gender" styleClass="w-full" formControlName="gender"
-                                    [options]="genderOptions" placeholder="Select Gender">
+                                    [options]="genderOptions" [placeholder]="'product.selectGender' | translate">
                                 </p-dropdown>
                             </div>
 
                             <div class="field w-full ">
-                                <label for="season" class="font-semibold">Season</label>
+                                <label for="season" class="font-semibold">{{ 'product.season' | translate }}</label>
                                 <p-dropdown appendTo="body" id="season" styleClass="w-full" formControlName="season"
-                                    [options]="seasonOptions" placeholder="Select Season">
+                                    [options]="seasonOptions" [placeholder]="'product.selectSeason' | translate">
                                 </p-dropdown>
                             </div>
                         </div>
@@ -324,11 +324,11 @@
                 </p-accordionTab>
 
                 <!-- Product Variants Panel -->
-                <p-accordionTab header="Product Variants">
+                <p-accordionTab [header]="'product.productVariants' | translate">
                     <ng-template pTemplate="content">
                         <div class="flex justify-between align-items-center mb-3">
-                            <h6 class="m-0">Variants</h6>
-                            <p-button *ngIf="variants.length == 0" label="Add Variant" icon="pi pi-plus" size="small"
+                            <h6 class="m-0">{{ 'product.variants' | translate }}</h6>
+                            <p-button *ngIf="variants.length == 0" [label]="'product.addVariant' | translate" icon="pi pi-plus" size="small"
                                 (click)="addVariant()">
                             </p-button>
                         </div>
@@ -338,7 +338,7 @@
                                 styleClass="mb-3">
                                 <ng-template pTemplate="header">
                                     <div class="flex justify-between align-items-center w-full px-3 py-2">
-                                        <span class="font-semibold">Variant {{ i + 1 }}</span>
+                                        <span class="font-semibold">{{ 'product.variant' | translate }} {{ i + 1 }}</span>
                                         <p-button icon="pi pi-trash" severity="danger" size="small" [text]="true"
                                             (click)="removeVariant(i)">
                                         </p-button>
@@ -351,7 +351,7 @@
                                         <div class="flex items-center justify-between mb-4">
                                             <label class="text-lg font-semibold text-gray-800 flex items-center gap-2">
                                                 <i class="pi pi-tag text-primary"></i>
-                                                Variant Attributes *
+                                                {{ 'product.variantAttributes' | translate }} *
                                             </label>
                                         </div>
                                         
@@ -361,7 +361,7 @@
                                                 class="bg-gray-50 rounded-lg p-4 border border-gray-200 hover:border-gray-300 transition-all duration-200">
                                                 
                                                 <div class="flex items-center justify-between mb-3">
-                                                    <span class="text-sm font-medium text-gray-700">Attribute {{ j + 1 }}</span>
+                                                    <span class="text-sm font-medium text-gray-700">{{ 'product.attribute' | translate }} {{ j + 1 }}</span>
                                                     <p-button 
                                                         icon="pi pi-trash" 
                                                         severity="danger" 
@@ -377,14 +377,14 @@
                                                     <!-- Variant Type -->
                                                     <div class="field">
                                                         <label class="block text-sm font-medium text-gray-700 mb-2">
-                                                            <i class="pi pi-list text-primary mr-1"></i>
-                                                            Type
+                                                            <i class="pi pi-list text-primary me-1"></i>
+                                                            {{ 'product.type' | translate }}
                                                         </label>
                                                         <div class="flex gap-2">
                                                             <p-dropdown 
                                                                 formControlName="variant" 
                                                                 [options]="variantOptions"
-                                                                placeholder="Select variant type" 
+                                                                [placeholder]="'product.selectVariantType' | translate" 
                                                                 class="flex-1"
                                                                 [class.ng-invalid]="submitted && attribute.get('variant')?.invalid">
                                                                 <ng-template pTemplate="selectedItem" let-option>
@@ -407,8 +407,7 @@
                                                                 size="small" 
                                                                 class="p-button-outlined"
                                                                 (click)="toggleCustomVariantInput()"
-                                                                pTooltip="Add custom variant type"
-                                                                tooltipPosition="top">
+                                                                [title]="'product.addCustomVariantType' | translate">
                                                             </button>
                                                         </div>
                                                         
@@ -418,7 +417,7 @@
                                                                 <input 
                                                                     pInputText 
                                                                     [(ngModel)]="customVariantInput"
-                                                                    placeholder="Enter custom variant type"
+                                                                    [placeholder]="'product.enterCustomVariantType' | translate"
                                                                     class="flex-1"
                                                                     (keyup.enter)="addCustomVariant()"
                                                                 />
@@ -443,36 +442,36 @@
                                                         </div>
                                                         <small class="text-red-500 text-xs" 
                                                             *ngIf="submitted && attribute.get('variant')?.invalid">
-                                                            Variant type is required.
+                                                            {{ 'product.variantTypeRequired' | translate }}
                                                         </small>
                                                     </div>
                                                     
                                                     <!-- Value -->
                                                     <div class="field">
                                                         <label class="block text-sm font-medium text-gray-700 mb-2">
-                                                            <i class="pi pi-pencil text-primary mr-1"></i>
-                                                            Value
+                                                            <i class="pi pi-pencil text-primary me-1"></i>
+                                                            {{ 'product.value' | translate }}
                                                         </label>
                                                         <ng-container formGroupName="value">
                                                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                                 <div>
-                                                                    <label class="block text-sm font-medium text-gray-700 mb-2">Value (English) *</label>
+                                                                    <label class="block text-sm font-medium text-gray-700 mb-2">{{ 'product.valueEn' | translate }} *</label>
                                                                     <input pInputText formControlName="en" class="w-full"
-                                                                        placeholder="Enter value in English"
+                                                                        [placeholder]="'product.enterValueEn' | translate"
                                                                         [class.ng-invalid]="submitted && attribute.get('value.en')?.invalid" />
                                                                     <small class="text-red-500"
                                                                         *ngIf="submitted && attribute.get('value.en')?.invalid">
-                                                                        English value is required
+                                                                        {{ 'product.valueEnRequired' | translate }}
                                                                     </small>
                                                                 </div>
                                                                 <div>
-                                                                    <label class="block text-sm font-medium text-gray-700 mb-2">Value (Arabic) *</label>
+                                                                    <label class="block text-sm font-medium text-gray-700 mb-2">{{ 'product.valueAr' | translate }} *</label>
                                                                     <input pInputText formControlName="ar" class="w-full"
-                                                                        placeholder="أدخل القيمة بالعربية"
+                                                                        [placeholder]="'product.enterValueAr' | translate"
                                                                         [class.ng-invalid]="submitted && attribute.get('value.ar')?.invalid" />
                                                                     <small class="text-red-500"
                                                                         *ngIf="submitted && attribute.get('value.ar')?.invalid">
-                                                                        Arabic value is required
+                                                                        {{ 'product.valueArRequired' | translate }}
                                                                     </small>
                                                                 </div>
                                                             </div>
@@ -482,15 +481,15 @@
                                                     <!-- Image Selection -->
                                                     <div class="field">
                                                         <label class="block text-sm font-medium text-gray-700 mb-2">
-                                                            <i class="pi pi-image text-primary mr-1"></i>
-                                                            Image (Optional)
+                                                            <i class="pi pi-image text-primary me-1"></i>
+                                                            {{ 'product.imageOptional' | translate }}
                                                         </label>
                                                         <p-dropdown 
                                                             formControlName="image" 
                                                             class="w-full"
                                                             [options]="availableImages" 
                                                             optionLabel="fileName"
-                                                            placeholder="Select an image" 
+                                                            [placeholder]="'product.selectImage' | translate" 
                                                             [showClear]="true">
                                                             <ng-template pTemplate="selectedItem" let-image>
                                                                 <div class="flex items-center gap-2">
@@ -519,25 +518,25 @@
                                             <div *ngIf="getAttributes(i).length === 0" 
                                                 class="text-center py-8 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
                                                 <i class="pi pi-tag text-4xl text-gray-400 mb-3"></i>
-                                                <p class="text-gray-500 mb-2">No attributes added yet</p>
-                                                <p class="text-sm text-gray-400">Click "Add Attribute" to get started</p>
+                                                <p class="text-gray-500 mb-2">{{ 'product.noAttributesAdded' | translate }}</p>
+                                                <p class="text-sm text-gray-400">{{ 'product.clickAddAttribute' | translate }}</p>
                                             </div>
                                         </div>
                                         <div class="col-span-2 mt-2">
                                             <p-button 
-                                            label="Add Attribute" 
-                                            icon="pi pi-plus" 
-                                            size="small"
-                                            (click)="addAttribute(i)" 
-                                            [outlined]="true"
-                                            class="">
+                                                [label]="'product.addAttribute' | translate" 
+                                                icon="pi pi-plus" 
+                                                size="small"
+                                                (click)="addAttribute(i)" 
+                                                [outlined]="true"
+                                                class="">
                                         </p-button>
                                     </div>
                                         
                                         <small class="text-red-500 text-sm mt-2 block"
                                             *ngIf="submitted && variant.get('attributes')?.invalid">
-                                            <i class="pi pi-exclamation-triangle mr-1"></i>
-                                            At least one attribute is required.
+                                            <i class="pi pi-exclamation-triangle me-1"></i>
+                                            {{ 'product.atLeastOneAttributeRequired' | translate }}
                                         </small>
                                     </div>
 
@@ -546,8 +545,8 @@
                                         <!-- Price -->
                                         <div class="field" *ngIf="productForm.get('useVariantPrice')?.value">
                                             <label class="block text-sm font-medium text-gray-700 mb-2">
-                                                <i class="pi pi-dollar text-primary mr-1"></i>
-                                                Price *
+                                                <i class="pi pi-dollar text-primary me-1"></i>
+                                                {{ 'common.price' | translate }} *
                                             </label>
                                             <p-inputNumber 
                                                 formControlName="price" 
@@ -559,16 +558,16 @@
                                             </p-inputNumber>
                                             <small class="text-red-500 text-xs" 
                                                 *ngIf="variant.get('price')?.dirty && variant.get('price')?.invalid">
-                                                <i class="pi pi-exclamation-triangle mr-1"></i>
-                                                Price is required and must be non-negative.
+                                                <i class="pi pi-exclamation-triangle me-1"></i>
+                                                {{ 'product.priceRequiredNonNegative' | translate }}
                                             </small>
                                         </div>
 
                                         <!-- Stock -->
                                         <div class="field">
                                             <label class="block text-sm font-medium text-gray-700 mb-2">
-                                                <i class="pi pi-box text-primary mr-1"></i>
-                                                Stock *
+                                                <i class="pi pi-box text-primary me-1"></i>
+                                                {{ 'product.stock' | translate }} *
                                             </label>
                                             <p-inputNumber 
                                                 (onInput)="onStockInput($event)" 
@@ -578,51 +577,51 @@
                                             </p-inputNumber>
                                             <small class="text-red-500 text-xs" 
                                                 *ngIf="variant.get('stock')?.dirty && variant.get('stock')?.invalid">
-                                                <i class="pi pi-exclamation-triangle mr-1"></i>
-                                                Stock is required and must be non-negative.
+                                                <i class="pi pi-exclamation-triangle me-1"></i>
+                                                {{ 'product.stockRequiredNonNegative' | translate }}
                                             </small>
                                         </div>
 
                                         <!-- SKU -->
                                         <div class="field">
                                             <label class="block text-sm font-medium text-gray-700 mb-2">
-                                                <i class="pi pi-barcode text-primary mr-1"></i>
-                                                SKU <span class="text-xs text-gray-500">(Auto-generated if empty)</span>
+                                                <i class="pi pi-barcode text-primary me-1"></i>
+                                                {{ 'product.sku' | translate }} <span class="text-xs text-gray-500">({{ 'product.autoGeneratedIfEmpty' | translate }})</span>
                                             </label>
                                             <input 
                                                 pInputText 
                                                 formControlName="sku" 
-                                                placeholder="Variant SKU" 
+                                                [placeholder]="'product.variantSku' | translate" 
                                                 class="w-full"
                                                 [class.ng-invalid]="submitted && variant.get('sku')?.invalid" />
                                             <small class="text-red-500 text-xs" 
                                                 *ngIf="submitted && variant.get('sku')?.invalid">
-                                                <i class="pi pi-exclamation-triangle mr-1"></i>
-                                                SKU must contain only letters, numbers, or hyphens.
+                                                <i class="pi pi-exclamation-triangle me-1"></i>
+                                                {{ 'product.skuFormat' | translate }}
                                             </small>
                                         </div>
                                     </div>
                                 </div>
                             </p-card>
                             <div class="my-2" *ngIf="variants.length > 0">
-                                <p-button label="Add Variant" icon="pi pi-plus" size="small" (click)="addVariant()">
+                                <p-button [label]="'product.addVariant' | translate" icon="pi pi-plus" size="small" (click)="addVariant()">
                                 </p-button>
                             </div>
                         </div>
 
                         <div *ngIf="variants.length === 0" class="text-center py-4 text-500">
-                            <i class="pi pi-info-circle mr-2"></i>
-                            No variants added yet. Click "Add Variant" to create one.
+                            <i class="pi pi-info-circle me-2"></i>
+                            {{ 'product.noVariantsAdded' | translate }}
                         </div>
                     </ng-template>
                 </p-accordionTab>
 
                 <!-- Product Details Panel -->
-                <p-accordionTab header="Product Details">
+                <p-accordionTab [header]="'product.productDetails' | translate">
                     <ng-template pTemplate="content">
                         <div class="flex justify-between align-items-center mb-3">
-                            <h6 class="m-0">Details</h6>
-                            <p-button label="Add Detail" icon="pi pi-plus" size="small" (click)="addDetail()">
+                            <h6 class="m-0">{{ 'product.details' | translate }}</h6>
+                            <p-button [label]="'product.addDetail' | translate" icon="pi pi-plus" size="small" (click)="addDetail()">
                             </p-button>
                         </div>
                         <!-- <p-card> -->
@@ -631,7 +630,7 @@
                                 styleClass="mb-3">
                                 <ng-template pTemplate="header">
                                     <div class="flex justify-between align-items-center w-full px-3 py-2">
-                                        <span class="font-semibold">Detail {{ i + 1 }}</span>
+                                        <span class="font-semibold">{{ 'product.detail' | translate }} {{ i + 1 }}</span>
                                         <p-button icon="pi pi-trash" severity="danger" size="small" [text]="true"
                                             (click)="removeDetail(i)">
                                         </p-button>
@@ -639,27 +638,27 @@
                                 </ng-template>
                                 <!-- Detail Name -->
                                 <div class="field w-full mb-4">
-                                    <label class="font-semibold">Detail Name *</label>
+                                    <label class="font-semibold">{{ 'product.detailName' | translate }} *</label>
                                     <ng-container formGroupName="name">
                                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                             <div>
-                                                <label class="block text-sm font-medium text-gray-700 mb-2">Name (English) *</label>
+                                                <label class="block text-sm font-medium text-gray-700 mb-2">{{ 'common.nameEn' | translate }} *</label>
                                                 <input pInputText formControlName="en" class="w-full"
-                                                    placeholder="Enter detail name in English"
+                                                    [placeholder]="'product.enterDetailNameEn' | translate"
                                                     [class.ng-invalid]="submitted && detail.get('name.en')?.invalid" />
                                                 <small class="text-red-500"
                                                     *ngIf="submitted && detail.get('name.en')?.invalid">
-                                                    English name is required
+                                                    {{ 'product.nameEnRequired' | translate }}
                                                 </small>
                                             </div>
                                             <div>
-                                                <label class="block text-sm font-medium text-gray-700 mb-2">Name (Arabic) *</label>
+                                                <label class="block text-sm font-medium text-gray-700 mb-2">{{ 'common.nameAr' | translate }} *</label>
                                                 <input pInputText formControlName="ar" class="w-full"
-                                                    placeholder="أدخل اسم التفصيل بالعربية"
+                                                    [placeholder]="'product.enterDetailNameAr' | translate"
                                                     [class.ng-invalid]="submitted && detail.get('name.ar')?.invalid" />
                                                 <small class="text-red-500"
                                                     *ngIf="submitted && detail.get('name.ar')?.invalid">
-                                                    Arabic name is required
+                                                    {{ 'product.nameArRequired' | translate }}
                                                 </small>
                                             </div>
                                         </div>
@@ -668,23 +667,23 @@
 
                                 <!-- Detail Value -->
                                 <div class="field w-full mb-4">
-                                    <label class="font-semibold">Detail Value *</label>
+                                    <label class="font-semibold">{{ 'product.detailValue' | translate }} *</label>
                                     <ng-container formGroupName="value">
                                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                             <div>
-                                                <label class="block text-sm font-medium text-gray-700 mb-2">Value (English) *</label>
+                                                <label class="block text-sm font-medium text-gray-700 mb-2">{{ 'product.valueEn' | translate }} *</label>
                                                 <p-editor formControlName="en" [style]="{ height: '200px' }" />
                                                 <small class="text-red-500"
                                                     *ngIf="submitted && detail.get('value.en')?.invalid">
-                                                    English value is required
+                                                    {{ 'product.valueEnRequired' | translate }}
                                                 </small>
                                             </div>
                                             <div>
-                                                <label class="block text-sm font-medium text-gray-700 mb-2">Value (Arabic) *</label>
+                                                <label class="block text-sm font-medium text-gray-700 mb-2">{{ 'product.valueAr' | translate }} *</label>
                                                 <p-editor formControlName="ar" [style]="{ height: '200px' }" />
                                                 <small class="text-red-500"
                                                     *ngIf="submitted && detail.get('value.ar')?.invalid">
-                                                    Arabic value is required
+                                                    {{ 'product.valueArRequired' | translate }}
                                                 </small>
                                             </div>
                                         </div>
@@ -704,38 +703,38 @@
                         </div>
 
                         <div *ngIf="details.length === 0" class="text-center py-4 text-500">
-                            <i class="pi pi-info-circle mr-2"></i>
-                            No details added yet. Click "Add Detail" to create one.
+                            <i class="pi pi-info-circle me-2"></i>
+                            {{ 'product.noDetailsAdded' | translate }}
                         </div>
                     </ng-template>
                 </p-accordionTab>
 
                 <!-- SEO Panel -->
-                <p-accordionTab header="SEO Settings">
+                <p-accordionTab [header]="'product.seoSettings' | translate">
                     <ng-template pTemplate="content">
                         <!-- SEO Title -->
                         <div class="field w-full mb-4">
-                            <label class="font-semibold">SEO Title *</label>
+                            <label class="font-semibold">{{ 'product.seoTitle' | translate }} *</label>
                             <ng-container formGroupName="seoTitle">
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-2">SEO Title (English) *</label>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">{{ 'product.seoTitleEn' | translate }} *</label>
                                         <input pInputText formControlName="en" class="w-full"
-                                            placeholder="Enter SEO title in English"
+                                            [placeholder]="'product.enterSeoTitleEn' | translate"
                                             [class.ng-invalid]="submitted && productForm.get('seoTitle.en')?.invalid" />
                                         <small class="text-red-500"
                                             *ngIf="submitted && productForm.get('seoTitle.en')?.invalid">
-                                            English SEO title is required
+                                            {{ 'product.seoTitleEnRequired' | translate }}
                                         </small>
                                     </div>
                                     <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-2">SEO Title (Arabic) *</label>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">{{ 'product.seoTitleAr' | translate }} *</label>
                                         <input pInputText formControlName="ar" class="w-full"
-                                            placeholder="أدخل عنوان SEO بالعربية"
+                                            [placeholder]="'product.enterSeoTitleAr' | translate"
                                             [class.ng-invalid]="submitted && productForm.get('seoTitle.ar')?.invalid" />
                                         <small class="text-red-500"
                                             *ngIf="submitted && productForm.get('seoTitle.ar')?.invalid">
-                                            Arabic SEO title is required
+                                            {{ 'product.seoTitleArRequired' | translate }}
                                         </small>
                                     </div>
                                 </div>
@@ -744,29 +743,29 @@
 
                         <!-- SEO Description -->
                         <div class="field w-full mb-4">
-                            <label class="font-semibold">SEO Description *</label>
+                            <label class="font-semibold">{{ 'product.seoDescription' | translate }} *</label>
                             <ng-container formGroupName="seoDescription">
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-2">SEO Description (English) *</label>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">{{ 'product.seoDescriptionEn' | translate }} *</label>
                                         <textarea pTextarea formControlName="en" rows="3" class="w-full"
-                                            placeholder="Enter SEO description in English"
+                                            [placeholder]="'product.enterSeoDescriptionEn' | translate"
                                             [class.ng-invalid]="submitted && productForm.get('seoDescription.en')?.invalid">
                                         </textarea>
                                         <small class="text-red-500"
                                             *ngIf="submitted && productForm.get('seoDescription.en')?.invalid">
-                                            English SEO description is required
+                                            {{ 'product.seoDescriptionEnRequired' | translate }}
                                         </small>
                                     </div>
                                     <div>
-                                        <label class="block text-sm font-medium text-gray-700 mb-2">SEO Description (Arabic) *</label>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">{{ 'product.seoDescriptionAr' | translate }} *</label>
                                         <textarea pTextarea formControlName="ar" rows="3" class="w-full"
-                                            placeholder="أدخل وصف SEO بالعربية"
+                                            [placeholder]="'product.enterSeoDescriptionAr' | translate"
                                             [class.ng-invalid]="submitted && productForm.get('seoDescription.ar')?.invalid">
                                         </textarea>
                                         <small class="text-red-500"
                                             *ngIf="submitted && productForm.get('seoDescription.ar')?.invalid">
-                                            Arabic SEO description is required
+                                            {{ 'product.seoDescriptionArRequired' | translate }}
                                         </small>
                                     </div>
                                 </div>
@@ -774,16 +773,16 @@
                         </div>
 
                         <div class="field w-full mb-4">
-                            <label for="seoKeywords" class="font-semibold">SEO Keywords</label>
+                            <label for="seoKeywords" class="font-semibold">{{ 'product.seoKeywords' | translate }}</label>
                             <p-chips id="seoKeywords" styleClass="w-full" formControlName="seoKeywords"
-                                placeholder="Add keywords">
+                                [placeholder]="'product.addKeywords' | translate">
                             </p-chips>
                         </div>
 
                         <!-- SEO Image -->
                         <div class="field w-full">
-                            <label class="font-semibold">SEO Image</label>
-                            <p class="text-sm text-gray-600 mb-2">Upload an image for social media sharing (Open Graph, Twitter Card, etc.)</p>
+                            <label class="font-semibold">{{ 'product.seoImage' | translate }}</label>
+                            <p class="text-sm text-gray-600 mb-2">{{ 'product.seoImageHint' | translate }}</p>
                             <app-upload-files [index]="2" [control]="formControlSeoImage"
                                 [filesServer]="productForm.get('seoImage')?.value" [multiple]="false" [accept]="'image/*'">
                             </app-upload-files>
@@ -798,12 +797,12 @@
 
     <ng-template pTemplate="footer">
         <div class="flex justify-end gap-2">
-            <p-button label="Cancel" severity="danger" icon="pi pi-times" (click)="hideDialog()">
+            <p-button [label]="'common.cancel' | translate" severity="danger" icon="pi pi-times" (click)="hideDialog()">
             </p-button>
-            <p-button label="Save" severity="success" icon="pi pi-check" [disabled]="productForm.invalid"
+            <p-button [label]="'common.save' | translate" severity="success" icon="pi pi-check" [disabled]="productForm.invalid"
                 (click)="saveProduct()">
             </p-button>
-            <p-button label="Save & Add New" severity="success" icon="pi pi-check" [disabled]="productForm.invalid"
+            <p-button [label]="'product.saveAndAddNew' | translate" severity="success" icon="pi pi-check" [disabled]="productForm.invalid"
             (click)="saveProduct(true)">
         </p-button>
         </div>

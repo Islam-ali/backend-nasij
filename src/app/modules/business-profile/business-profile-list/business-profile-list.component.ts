@@ -1,4 +1,4 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, inject } from '@angular/core';
 import { CommonModule, NgFor } from '@angular/common';
 import { FormBuilder, FormGroup, FormArray, Validators, ReactiveFormsModule, FormsModule, FormControl } from '@angular/forms';
 
@@ -42,6 +42,7 @@ import { UploadFilesComponent } from '../../../shared/components/fields/upload-f
 import { SafePipe } from '../../../core/pipes/safe.pipe';
 import { environment } from '../../../../environments/environment';
 import { HeaderAlignment } from '../../../interfaces/product-feature.interface';
+import { TranslateService, TranslateModule } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-business-profile-list',
@@ -75,7 +76,8 @@ import { HeaderAlignment } from '../../../interfaces/product-feature.interface';
       SelectButtonModule,
       DropdownModule,
       UploadFilesComponent,
-      SafePipe
+      SafePipe,
+      TranslateModule
     ],
   templateUrl: './business-profile-list.component.html',
   styleUrls: ['./business-profile-list.component.scss'],
@@ -93,16 +95,15 @@ export class BusinessProfileListComponent extends ComponentBase implements OnIni
   hasUnsavedChanges = signal(false);
   formProgress = signal(0);
   
-  scriptPositionOptions = [
-    { label: 'Head', value: 'head', icon: 'pi pi-angle-up' },
-    { label: 'Body', value: 'body', icon: 'pi pi-angle-down' }
-  ];
+  scriptPositionOptions: any[] = [];
 
   headerAlignmentOptions = [
     { label: 'Start', value: HeaderAlignment.START },
     { label: 'Center', value: HeaderAlignment.CENTER },
     { label: 'End', value: HeaderAlignment.END },
   ];
+
+  translate = inject(TranslateService);
 
   constructor(
     private fb: FormBuilder,
@@ -116,6 +117,7 @@ export class BusinessProfileListComponent extends ComponentBase implements OnIni
   ngOnInit() {
     this.initForm();
     this.loadBusinessProfile();
+    this.initializeOptions();
     
     // Subscribe to logo changes to update preview
     this.logoDarkControl.valueChanges.subscribe(value => {
@@ -141,6 +143,24 @@ export class BusinessProfileListComponent extends ComponentBase implements OnIni
         this.calculateFormProgress();
       }
     });
+
+    // Update options when language changes
+    this.translate.onLangChange.subscribe(() => {
+      this.initializeOptions();
+    });
+  }
+
+  initializeOptions() {
+    this.headerAlignmentOptions = [
+      { label: this.translate.instant('businessProfile.branding.start'), value: HeaderAlignment.START },
+      { label: this.translate.instant('businessProfile.branding.center'), value: HeaderAlignment.CENTER },
+      { label: this.translate.instant('businessProfile.branding.end'), value: HeaderAlignment.END },
+    ];
+
+    this.scriptPositionOptions = [
+      { label: this.translate.instant('businessProfile.seoMeta.head'), value: 'head', icon: 'pi pi-angle-up' },
+      { label: this.translate.instant('businessProfile.seoMeta.body'), value: 'body', icon: 'pi pi-angle-down' }
+    ];
   }
 
   getImageUrl(filePath: string): string {
@@ -874,8 +894,8 @@ export class BusinessProfileListComponent extends ComponentBase implements OnIni
   }
 
   getHeaderAlignmentLabel(alignment?: HeaderAlignment): string {
-    if (!alignment) return 'Center';
+    if (!alignment) return this.translate.instant('businessProfile.branding.center');
     const option = this.headerAlignmentOptions.find(opt => opt.value === alignment);
-    return option?.label || 'Center';
+    return option?.label || this.translate.instant('businessProfile.branding.center');
   }
 } 

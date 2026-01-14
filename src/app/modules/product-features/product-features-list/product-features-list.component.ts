@@ -2,6 +2,8 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, FormArray, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Subject, takeUntil } from 'rxjs';
+import { TranslateService, TranslateModule } from '@ngx-translate/core';
+import { inject } from '@angular/core';
 import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { DialogModule } from 'primeng/dialog';
@@ -22,6 +24,7 @@ import { BrandService } from '../../../services/brand.service';
 import { ICategory } from '../../../interfaces/category.interface';
 import { IBrand } from '../../../interfaces/brand.interface';
 import { TextareaModule } from 'primeng/textarea';
+import { TooltipModule } from 'primeng/tooltip';
 
 @Component({
   selector: 'app-product-features-list',
@@ -39,6 +42,8 @@ import { TextareaModule } from 'primeng/textarea';
     ToastModule,
     ConfirmDialogModule,
     TextareaModule,
+    TranslateModule,
+    TooltipModule,
   ],
   providers: [MessageService, ConfirmationService],
   templateUrl: './product-features-list.component.html',
@@ -57,47 +62,13 @@ export class ProductFeaturesListComponent implements OnInit, OnDestroy {
   
   private destroy$ = new Subject<void>();
 
+  translate = inject(TranslateService);
+
   // Available filter operators
-  operatorOptions = [
-    { label: 'Equals (=)', value: 'equals' },
-    { label: 'In Array (∈)', value: 'in' },
-    { label: 'Not In (∉)', value: 'nin' },
-    { label: 'Greater Than (≥)', value: 'gte' },
-    { label: 'Less Than (≤)', value: 'lte' },
-    { label: 'Not Equals (≠)', value: 'ne' },
-    { label: 'Contains', value: 'contains' },
-    { label: 'Exists', value: 'exists' },
-    { label: 'Regex', value: 'regex' },
-  ];
-
-  // Available sort fields (can be extended)
-  sortFieldOptions = [
-    { label: 'Created Date', value: 'createdAt' },
-    { label: 'Updated Date', value: 'updatedAt' },
-    { label: 'Price', value: 'price' },
-    { label: 'Name (English)', value: 'name.en' },
-    { label: 'Name (Arabic)', value: 'name.ar' },
-    { label: 'Stock', value: 'stock' },
-  ];
-
-  sortOrderOptions = [
-    { label: 'Ascending', value: 'asc' },
-    { label: 'Descending', value: 'desc' },
-  ];
-
-
-  // Available filter fields (completely dynamic)
-  filterFieldOptions = [
-    { label: 'Category ID', value: 'category' },
-    { label: 'Brand ID', value: 'brand' },
-    { label: 'Price', value: 'price' },
-    { label: 'Stock', value: 'stock' },
-    { label: 'Is Active', value: 'isActive' },
-    { label: 'Is Featured', value: 'isFeatured' },
-    { label: 'Tags', value: 'tags' },
-    { label: 'Name (English)', value: 'name.en' },
-    { label: 'Name (Arabic)', value: 'name.ar' },
-  ];
+  operatorOptions: any[] = [];
+  sortFieldOptions: any[] = [];
+  sortOrderOptions: any[] = [];
+  filterFieldOptions: any[] = [];
 
   constructor(
     private fb: FormBuilder,
@@ -111,9 +82,54 @@ export class ProductFeaturesListComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    this.initializeOptions();
     this.loadFeatures();
     this.loadCategories();
     this.loadBrands();
+    
+    this.translate.onLangChange.subscribe(() => {
+      this.initializeOptions();
+    });
+  }
+
+  initializeOptions(): void {
+    this.operatorOptions = [
+      { label: this.translate.instant('productFeature.operators.equals'), value: 'equals' },
+      { label: this.translate.instant('productFeature.operators.in'), value: 'in' },
+      { label: this.translate.instant('productFeature.operators.nin'), value: 'nin' },
+      { label: this.translate.instant('productFeature.operators.gte'), value: 'gte' },
+      { label: this.translate.instant('productFeature.operators.lte'), value: 'lte' },
+      { label: this.translate.instant('productFeature.operators.ne'), value: 'ne' },
+      { label: this.translate.instant('productFeature.operators.contains'), value: 'contains' },
+      { label: this.translate.instant('productFeature.operators.exists'), value: 'exists' },
+      { label: this.translate.instant('productFeature.operators.regex'), value: 'regex' },
+    ];
+
+    this.sortFieldOptions = [
+      { label: this.translate.instant('productFeature.sortField.createdAt'), value: 'createdAt' },
+      { label: this.translate.instant('productFeature.sortField.updatedAt'), value: 'updatedAt' },
+      { label: this.translate.instant('productFeature.sortField.price'), value: 'price' },
+      { label: this.translate.instant('productFeature.sortField.nameEn'), value: 'name.en' },
+      { label: this.translate.instant('productFeature.sortField.nameAr'), value: 'name.ar' },
+      { label: this.translate.instant('productFeature.sortField.stock'), value: 'stock' },
+    ];
+
+    this.sortOrderOptions = [
+      { label: this.translate.instant('productFeature.sortOrder.asc'), value: 'asc' },
+      { label: this.translate.instant('productFeature.sortOrder.desc'), value: 'desc' },
+    ];
+
+    this.filterFieldOptions = [
+      { label: this.translate.instant('productFeature.filterField.category'), value: 'category' },
+      { label: this.translate.instant('productFeature.filterField.brand'), value: 'brand' },
+      { label: this.translate.instant('productFeature.filterField.price'), value: 'price' },
+      { label: this.translate.instant('productFeature.filterField.stock'), value: 'stock' },
+      { label: this.translate.instant('productFeature.filterField.isActive'), value: 'isActive' },
+      { label: this.translate.instant('productFeature.filterField.isFeatured'), value: 'isFeatured' },
+      { label: this.translate.instant('productFeature.filterField.tags'), value: 'tags' },
+      { label: this.translate.instant('productFeature.filterField.nameEn'), value: 'name.en' },
+      { label: this.translate.instant('productFeature.filterField.nameAr'), value: 'name.ar' },
+    ];
   }
 
   ngOnDestroy(): void {
@@ -154,8 +170,8 @@ export class ProductFeaturesListComponent implements OnInit, OnDestroy {
       error: (error) => {
         this.messageService.add({
           severity: 'error',
-          summary: 'Error',
-          detail: 'Failed to load features',
+          summary: this.translate.instant('common.error'),
+          detail: this.translate.instant('productFeature.failedToLoad'),
         });
       },
     });
@@ -250,8 +266,8 @@ export class ProductFeaturesListComponent implements OnInit, OnDestroy {
         error: (error) => {
           this.messageService.add({
             severity: 'error',
-            summary: 'Error',
-            detail: 'Failed to preview products',
+            summary: this.translate.instant('common.error'),
+            detail: this.translate.instant('productFeature.failedToPreview'),
           });
         },
       });
@@ -274,8 +290,8 @@ export class ProductFeaturesListComponent implements OnInit, OnDestroy {
           next: () => {
             this.messageService.add({
               severity: 'success',
-              summary: 'Success',
-              detail: 'Feature updated successfully',
+              summary: this.translate.instant('common.success'),
+              detail: this.translate.instant('productFeature.updatedSuccessfully'),
             });
             this.hideDialog();
             this.loadFeatures();
@@ -283,8 +299,8 @@ export class ProductFeaturesListComponent implements OnInit, OnDestroy {
           error: (error) => {
             this.messageService.add({
               severity: 'error',
-              summary: 'Error',
-              detail: 'Failed to update feature',
+              summary: this.translate.instant('common.error'),
+              detail: this.translate.instant('productFeature.failedToUpdate'),
             });
           },
         });
@@ -296,8 +312,8 @@ export class ProductFeaturesListComponent implements OnInit, OnDestroy {
           next: () => {
             this.messageService.add({
               severity: 'success',
-              summary: 'Success',
-              detail: 'Feature created successfully',
+              summary: this.translate.instant('common.success'),
+              detail: this.translate.instant('productFeature.createdSuccessfully'),
             });
             this.hideDialog();
             this.loadFeatures();
@@ -305,8 +321,8 @@ export class ProductFeaturesListComponent implements OnInit, OnDestroy {
           error: (error) => {
             this.messageService.add({
               severity: 'error',
-              summary: 'Error',
-              detail: 'Failed to create feature',
+              summary: this.translate.instant('common.error'),
+              detail: this.translate.instant('productFeature.failedToCreate'),
             });
           },
         });
@@ -319,8 +335,8 @@ export class ProductFeaturesListComponent implements OnInit, OnDestroy {
 
   deleteFeature(feature: IProductFeature): void {
     this.confirmationService.confirm({
-      message: `Are you sure you want to delete "${feature.title.en}"?`,
-      header: 'Confirm',
+      message: this.translate.instant('productFeature.confirmDelete', { title: feature.title.en }),
+      header: this.translate.instant('common.confirm'),
       icon: 'pi pi-exclamation-triangle',
       accept: () => {
         if (feature._id) {
@@ -331,16 +347,16 @@ export class ProductFeaturesListComponent implements OnInit, OnDestroy {
               next: () => {
                 this.messageService.add({
                   severity: 'success',
-                  summary: 'Success',
-                  detail: 'Feature deleted successfully',
+                  summary: this.translate.instant('common.success'),
+                  detail: this.translate.instant('productFeature.deletedSuccessfully'),
                 });
                 this.loadFeatures();
               },
               error: (error) => {
                 this.messageService.add({
                   severity: 'error',
-                  summary: 'Error',
-                  detail: 'Failed to delete feature',
+                  summary: this.translate.instant('common.error'),
+                  detail: this.translate.instant('productFeature.failedToDelete'),
                 });
               },
             });
@@ -384,9 +400,15 @@ export class ProductFeaturesListComponent implements OnInit, OnDestroy {
 
   getBooleanOptions(): { label: string; value: boolean }[] {
     return [
-      { label: 'True', value: true },
-      { label: 'False', value: false }
+      { label: this.translate.instant('common.yes'), value: true },
+      { label: this.translate.instant('common.no'), value: false }
     ];
+  }
+
+  getStatusLabel(isActive: boolean): string {
+    return isActive 
+      ? this.translate.instant('common.active') 
+      : this.translate.instant('common.inactive');
   }
 }
 

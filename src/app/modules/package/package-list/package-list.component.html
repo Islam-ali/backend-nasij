@@ -4,7 +4,7 @@
 
     <p-toolbar styleClass="mb-4 gap-2">
         <ng-template pTemplate="left">
-            <button pButton pRipple label="New" icon="pi pi-plus" class="p-button-success" (click)="openNew()"></button>
+            <button pButton pRipple [label]="'package.new' | translate" icon="pi pi-plus" class="p-button-success" (click)="openNew()"></button>
             <!-- <button pButton pRipple label="Delete" icon="pi pi-trash" class="p-button-danger"
                 (click)="confirmDeleteSelected()"
                 [disabled]="!selectedPackages() || selectedPackages().length === 0"></button> -->
@@ -19,12 +19,12 @@
         styleClass="p-datatable-gridlines">
         <ng-template pTemplate="caption">
             <div class="flex flex-column md:flex-row md:justify-between md:align-items-center">
-                <h5 class="m-0">Manage Packages</h5>
-                <p-iconField iconPosition="left" class="ml-auto">
+                <h5 class="m-0">{{ 'package.manage' | translate }}</h5>
+                <p-iconField iconPosition="left" class="ms-auto">
                     <p-inputIcon>
                         <i class="pi pi-search"></i>
                     </p-inputIcon>
-                    <input pInputText type="text" (input)="onGlobalFilter(dt, $event)" placeholder="Search..."
+                    <input pInputText type="text" (input)="onGlobalFilter(dt, $event)" [placeholder]="'common.search' | translate"
                         class="w-full sm:w-auto" />
                 </p-iconField>
             </div>
@@ -34,16 +34,16 @@
                 <!-- <th style="width: 4rem">
                     <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
                 </th> -->
-                <th pSortableColumn="name" style="min-width:200px">Name <p-sortIcon field="name"></p-sortIcon></th>
-                <th pSortableColumn="price" style="min-width:100px">Price <p-sortIcon field="price"></p-sortIcon></th>
-                <th pSortableColumn="stock" style="min-width:100px">Stock <p-sortIcon field="stock"></p-sortIcon></th>
-                <th style="min-width:100px">Items Count</th>
-                <th style="min-width:200px">Tags</th>
-                <th pSortableColumn="isActive" style="min-width:100px">Status <p-sortIcon field="isActive"></p-sortIcon>
+                <th pSortableColumn="name" style="min-width:200px">{{ 'common.name' | translate }} <p-sortIcon field="name"></p-sortIcon></th>
+                <th pSortableColumn="price" style="min-width:100px">{{ 'common.price' | translate }} <p-sortIcon field="price"></p-sortIcon></th>
+                <th pSortableColumn="stock" style="min-width:100px">{{ 'package.stock' | translate }} <p-sortIcon field="stock"></p-sortIcon></th>
+                <th style="min-width:100px">{{ 'package.itemsCount' | translate }}</th>
+                <th style="min-width:200px">{{ 'package.tags' | translate }}</th>
+                <th pSortableColumn="isActive" style="min-width:100px">{{ 'common.status' | translate }} <p-sortIcon field="isActive"></p-sortIcon>
                 </th>
-                <th pSortableColumn="createdAt" style="min-width:200px">Created Date <p-sortIcon
+                <th pSortableColumn="createdAt" style="min-width:200px">{{ 'package.createdDate' | translate }} <p-sortIcon
                         field="createdAt"></p-sortIcon></th>
-                <th style="min-width:10rem">Actions</th>
+                <th style="min-width:10rem">{{ 'common.actions' | translate }}</th>
             </tr>
         </ng-template>
         <ng-template pTemplate="body" let-package>
@@ -62,7 +62,7 @@
                 </td>
                 <td>
                     <span class="font-bold">{{package.price | currency}}</span>
-                    <span *ngIf="package.discountPrice" class="text-red-500 line-through ml-2">{{package.discountPrice |
+                    <span *ngIf="package.discountPrice" class="text-red-500 line-through ms-2">{{package.discountPrice |
                         currency}}</span>
                 </td>
                 <td>
@@ -102,8 +102,8 @@
                         </div>
                         <ng-template #noData>
                             <i class="pi pi-inbox" style="font-size: 5rem"></i>
-                            <h3>No packages found</h3>
-                            <p>Start by creating your first package.</p>
+                            <h3>{{ 'package.noPackagesFound' | translate }}</h3>
+                            <p>{{ 'package.noPackagesFoundDescription' | translate }}</p>
                         </ng-template>
                     </div>
                 </td>
@@ -114,82 +114,80 @@
 
 <!-- Package Dialog -->
 <p-dialog [(visible)]="packageDialog" [style]="{width: '90vw'}" [maximizable]="true"
-    header="{{isEdit() ? 'Edit Package' : 'New Package'}}" [modal]="true" styleClass="p-fluid">
+    [header]="isEdit() ? ('package.dialogEdit' | translate) : ('package.dialogNew' | translate)" [modal]="true" styleClass="p-fluid">
     <form [formGroup]="packageForm" (ngSubmit)="savePackage()">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
             <!-- Name Section -->
             <div class="w-full">
-                <label class="font-bold mb-3 block">Name *</label>
+                <label class="font-bold mb-3 block">{{ 'package.name' | translate }}</label>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4" formGroupName="name">
                     <div>
-                        <label for="nameEn" class="block text-sm text-gray-600 mb-1">English</label>
+                        <label for="nameEn" class="block text-sm text-gray-600 mb-1">{{ 'common.english' | translate }}</label>
                         <input id="nameEn" pInputText type="text" formControlName="en" required
                             placeholder="e.g., Summer Package" class="w-full" dir="ltr" />
-                        <small *ngIf="submitted() && packageForm.get('name.en')?.invalid" class="p-error">English name is required</small>
+                        <small *ngIf="submitted() && packageForm.get('name.en')?.invalid" class="p-error">{{ 'package.englishNameRequired' | translate }}</small>
                     </div>
                     <div>
-                        <label for="nameAr" class="block text-sm text-gray-600 mb-1">العربية</label>
+                        <label for="nameAr" class="block text-sm text-gray-600 mb-1">{{ 'common.arabic' | translate }}</label>
                         <input id="nameAr" pInputText type="text" formControlName="ar" required
                             placeholder="مثل: حزمة الصيف" class="w-full" dir="rtl" />
-                        <small *ngIf="submitted() && packageForm.get('name.ar')?.invalid" class="p-error">الاسم العربي مطلوب</small>
+                        <small *ngIf="submitted() && packageForm.get('name.ar')?.invalid" class="p-error">{{ 'package.arabicNameRequired' | translate }}</small>
                     </div>
                 </div>
             </div>
             
             <!-- Description Section -->
             <div class="w-full">
-                <label class="font-bold mb-3 block">Description *</label>
+                <label class="font-bold mb-3 block">{{ 'package.description' | translate }}</label>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4" formGroupName="description">
                     <div>
-                        <label for="descEn" class="block text-sm text-gray-600 mb-1">English</label>
+                        <label for="descEn" class="block text-sm text-gray-600 mb-1">{{ 'common.english' | translate }}</label>
                         <textarea id="descEn" pInputTextarea formControlName="en" [rows]="3" class="w-full" dir="ltr"
                             placeholder="Enter package description in English..."></textarea>
-                        <small *ngIf="submitted() && packageForm.get('description.en')?.invalid" class="p-error">English description is required</small>
+                        <small *ngIf="submitted() && packageForm.get('description.en')?.invalid" class="p-error">{{ 'package.englishDescriptionRequired' | translate }}</small>
                     </div>
                     <div>
-                        <label for="descAr" class="block text-sm text-gray-600 mb-1">العربية</label>
+                        <label for="descAr" class="block text-sm text-gray-600 mb-1">{{ 'common.arabic' | translate }}</label>
                         <textarea id="descAr" pInputTextarea formControlName="ar" [rows]="3" class="w-full" dir="rtl"
                             placeholder="أدخل وصف الحزمة بالعربية..."></textarea>
-                        <small *ngIf="submitted() && packageForm.get('description.ar')?.invalid" class="p-error">الوصف العربي مطلوب</small>
+                        <small *ngIf="submitted() && packageForm.get('description.ar')?.invalid" class="p-error">{{ 'package.arabicDescriptionRequired' | translate }}</small>
                     </div>
                 </div>
             </div>
             <div class="w-full">
-                <label for="price" class="font-bold">Price</label>
+                <label for="price" class="font-bold">{{ 'common.price' | translate }}</label>
                 <p-inputNumber id="price" class="w-full" formControlName="price" mode="currency" currency="USD"
                     locale="en-US" />
-                <small *ngIf="submitted() && packageForm.get('price')?.invalid" class="p-error">Price is
-                    required.</small>
+                <small *ngIf="submitted() && packageForm.get('price')?.invalid" class="p-error">{{ 'package.priceRequired' | translate }}</small>
             </div>
             <div class="w-full">
-                <label for="discountPrice" class="font-bold">Discount Price</label>
+                <label for="discountPrice" class="font-bold">{{ 'package.discountPrice' | translate }}</label>
                 <p-inputNumber id="discountPrice" class="w-full" formControlName="discountPrice" mode="currency"
                     currency="USD" locale="en-US" />
             </div>
             <div class="w-full">
-                <label for="stock" class="font-bold">Stock</label>
+                <label for="stock" class="font-bold">{{ 'package.stock' | translate }}</label>
                 <p-inputNumber id="stock" class="w-full" formControlName="stock" />
-                <small *ngIf="submitted() && packageForm.get('stock')?.invalid" class="p-error">Stock is
-                    required.</small>
+                <small *ngIf="submitted() && packageForm.get('stock')?.invalid" class="p-error">{{ 'package.stockRequired' | translate }}</small>
             </div>
             <div class="w-full">
-                <label for="category" class="font-bold">Category</label>
+                <label for="category" class="font-bold">{{ 'package.category' | translate }}</label>
                 <p-dropdown [filter]="true" filterBy="name" styleClass="w-full" [options]="categories()"
                     formControlName="category" optionLabel="name.en" optionValue="_id"
-                    placeholder="Select a category"></p-dropdown>
+                    [placeholder]="'package.selectCategory' | translate"></p-dropdown>
             </div>
             <div class="w-full">
-                <label for="isActive" class="font-bold">Active Status</label>
+                <label for="isActive" class="font-bold">{{ 'user.activeStatus' | translate }}</label>
                 <div class="flex align-items-center">
                     <p-toggleSwitch formControlName="isActive" class="w-full"></p-toggleSwitch>
                 </div>
             </div>
             <div class="w-full flex flex-col gap-2">
-                <label for="tags" class="font-bold w-full">Tags</label>
-                <p-chips formControlName="tags" placeholder="Enter tags" class="w-full"></p-chips>
+                <label for="tags" class="font-bold w-full">{{ 'package.tags' | translate }}</label>
+                <p-chips formControlName="tags" [placeholder]="'package.enterTags' | translate" class="w-full"></p-chips>
             </div>
             <div class="col-span-2">
-                <label class="font-bold">Images</label>
+                <label class="font-bold">{{ 'package.images' | translate }}</label>
                 <app-upload-files [control]="packageForm.get('images')!"
                     [filesServer]="packageForm.get('images')?.value" [accept]="'image/*'" [multiple]="true"
                     class="w-full">
@@ -199,8 +197,8 @@
             <!-- Package Items -->
             <div class="col-span-2">
                 <div class="flex items-center justify-between mb-3">
-                    <label class="font-bold">Package Items</label>
-                    <button type="button" pButton pRipple label="Add Item" icon="pi pi-plus" class="p-button-sm"
+                    <label class="font-bold">{{ 'package.packageItems' | translate }}</label>
+                    <button type="button" pButton pRipple [label]="'package.addItem' | translate" icon="pi pi-plus" class="p-button-sm"
                         (click)="addItem()"></button>
                 </div>
 
@@ -209,24 +207,24 @@
                         class="p-3 border-round border-1 border-gray-300">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
                             <div class="w-full">
-                                <label class="font-bold">Product</label>
+                                <label class="font-bold">{{ 'package.product' | translate }}</label>
                                 <p-dropdown [filter]="true" appendTo="body" filterBy="name" styleClass="w-full"
                                     [options]="products()" formControlName="productId" optionLabel="name.en"
-                                    optionValue="_id" placeholder="Select a product"
+                                    optionValue="_id" [placeholder]="'package.selectProduct' | translate"
                                     [loading]="loadingProducts()"></p-dropdown>
                             </div>
                             <div class="w-full">
-                                <label class="font-bold">Quantity</label>
+                                <label class="font-bold">{{ 'order.quantity' | translate }}</label>
                                 <p-inputNumber styleClass="w-full" formControlName="quantity" [min]="1"
                                     class="w-full" />
                             </div>
                             <div class="w-full">
-                                <label class="font-bold">SKU</label>
-                                <input pInputText styleClass="w-full" formControlName="sku" placeholder="Optional"
+                                <label class="font-bold">{{ 'package.sku' | translate }}</label>
+                                <input pInputText styleClass="w-full" formControlName="sku" [placeholder]="'package.optional' | translate"
                                     class="w-full" />
                             </div>
                             <div class="w-full flex">
-                                <button type="button" pButton pRipple label="Remove" icon="pi pi-trash"
+                                <button type="button" pButton pRipple [label]="'package.remove' | translate" icon="pi pi-trash"
                                     class="p-button-danger p-button-sm mt-auto" (click)="removeItem(i)"></button>
                             </div>
                         </div>
@@ -234,8 +232,8 @@
                         <!-- Required Variant Attributes -->
                         <div class="col-span-2 mt-3">
                             <div class="flex items-center justify-between mb-2">
-                                <label class="font-bold text-sm">Required Variant Attributes</label>
-                                <button type="button" pButton pRipple label="Add Variant" icon="pi pi-plus" 
+                                <label class="font-bold text-sm">{{ 'package.requiredVariantAttributes' | translate }}</label>
+                                <button type="button" pButton pRipple [label]="'package.addVariant' | translate" icon="pi pi-plus" 
                                     class="p-button-sm p-button-outlined" (click)="addVariantAttribute(i)"></button>
                             </div>
                             
@@ -243,19 +241,19 @@
                                 <div *ngFor="let variant of getVariantAttributes(i).controls; let j = index" 
                                      [formGroupName]="j" class="flex gap-2 items-center p-2 bg-gray-50 rounded">
                                     <div class="flex-1">
-                                        <label class="block text-sm font-medium mb-1">Variant Type</label>
+                                        <label class="block text-sm font-medium mb-1">{{ 'package.variantType' | translate }}</label>
                                         <p-dropdown styleClass="w-full" [options]="variantTypes" 
-                                                   formControlName="variant" placeholder="Select variant type"></p-dropdown>
+                                                   formControlName="variant" [placeholder]="'package.selectVariantType' | translate"></p-dropdown>
                                     </div>
                                     <div class="flex-2">
-                                        <label class="block text-sm font-medium mb-1">Value (English)</label>
+                                        <label class="block text-sm font-medium mb-1">{{ 'package.valueEnglish' | translate }}</label>
                                         <input pInputText styleClass="w-full" formControlName="valueEn" 
-                                               placeholder="English value" class="w-full" />
+                                               [placeholder]="'package.englishValue' | translate" class="w-full" />
                                     </div>
                                     <div class="flex-2">
-                                        <label class="block text-sm font-medium mb-1">Value (Arabic)</label>
+                                        <label class="block text-sm font-medium mb-1">{{ 'package.valueArabic' | translate }}</label>
                                         <input pInputText styleClass="w-full" formControlName="valueAr" 
-                                               placeholder="Arabic value" class="w-full" />
+                                               [placeholder]="'package.arabicValue' | translate" class="w-full" />
                                     </div>
                                     <div class="flex-none">
                                         <button type="button" pButton pRipple icon="pi pi-trash" 
@@ -264,22 +262,21 @@
                                     </div>
                                 </div>
                                 <div *ngIf="getVariantAttributes(i).length === 0" class="text-sm text-gray-500 text-center py-2">
-                                    No variant attributes added
+                                    {{ 'package.noVariantAttributes' | translate }}
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <small *ngIf="submitted() && packageForm.get('items')?.invalid" class="p-error">At least one item is
-                    required.</small>
+                <small *ngIf="submitted() && packageForm.get('items')?.invalid" class="p-error">{{ 'package.atLeastOneItem' | translate }}</small>
             </div>
         </div>
     </form>
 
     <ng-template pTemplate="footer">
-        <button pButton pRipple label="Cancel" icon="pi pi-times" class="p-button-text" (click)="hideDialog()"></button>
-        <button pButton pRipple label="Save" icon="pi pi-check" class="p-button-text" (click)="savePackage()"
+        <button pButton pRipple [label]="'common.cancel' | translate" icon="pi pi-times" class="p-button-text" (click)="hideDialog()"></button>
+        <button pButton pRipple [label]="'common.save' | translate" icon="pi pi-check" class="p-button-text" (click)="savePackage()"
             [loading]="loading()"></button>
     </ng-template>
 </p-dialog>
@@ -287,13 +284,13 @@
 <!-- Delete Package Dialog -->
 <p-dialog [(visible)]="deletePackageDialog" [style]="{width: '450px'}" header="Confirm" [modal]="true">
     <div class="confirmation-content">
-        <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem"></i>
-        <span *ngIf="package()">Are you sure you want to delete <b>{{package().name | multiLanguage}}</b>?</span>
+        <i class="pi pi-exclamation-triangle me-3" style="font-size: 2rem"></i>
+        <span *ngIf="package()">{{ 'common.confirmDeleteMessage' | translate:{item: (package().name | multiLanguage)} }}</span>
     </div>
     <ng-template pTemplate="footer">
-        <button pButton pRipple label="No" icon="pi pi-times" class="p-button-text"
+        <button pButton pRipple [label]="'common.no' | translate" icon="pi pi-times" class="p-button-text"
             (click)="deletePackageDialog = false"></button>
-        <button pButton pRipple label="Yes" icon="pi pi-check" class="p-button-text" (click)="confirmDelete()"
+        <button pButton pRipple [label]="'common.yes' | translate" icon="pi pi-check" class="p-button-text" (click)="confirmDelete()"
             [loading]="loading()"></button>
     </ng-template>
 </p-dialog>
@@ -301,13 +298,13 @@
 <!-- Delete Selected Packages Dialog -->
 <p-dialog [(visible)]="deletePackagesDialog" [style]="{width: '450px'}" header="Confirm" [modal]="true">
     <div class="confirmation-content">
-        <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem"></i>
-        <span>Are you sure you want to delete the selected packages?</span>
+        <i class="pi pi-exclamation-triangle me-3" style="font-size: 2rem"></i>
+        <span>{{ 'package.confirmDeleteSelected' | translate }}</span>
     </div>
     <ng-template pTemplate="footer">
-        <button pButton pRipple label="No" icon="pi pi-times" class="p-button-text"
+        <button pButton pRipple [label]="'common.no' | translate" icon="pi pi-times" class="p-button-text"
             (click)="deletePackagesDialog = false"></button>
-        <button pButton pRipple label="Yes" icon="pi pi-check" class="p-button-text" (click)="deleteSelectedPackages()"
+        <button pButton pRipple [label]="'common.yes' | translate" icon="pi pi-check" class="p-button-text" (click)="deleteSelectedPackages()"
             [loading]="loading()"></button>
     </ng-template>
 </p-dialog>

@@ -1,6 +1,8 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
+import { TranslateService, TranslateModule } from '@ngx-translate/core';
+import { inject } from '@angular/core';
 
 // PrimeNG
 import { TableModule } from 'primeng/table';
@@ -19,6 +21,7 @@ import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { MessageService, ConfirmationService } from 'primeng/api';
 import { HeroLayoutsService } from '../../../services/hero-layouts.service';
 import { IHeroLayout } from '../../../interfaces/hero-layout.interface';
+import { TooltipModule } from 'primeng/tooltip';
 
 @Component({
   selector: 'app-hero-layouts-list',
@@ -37,6 +40,8 @@ import { IHeroLayout } from '../../../interfaces/hero-layout.interface';
     IconFieldModule,
     InputIconModule,
     ProgressSpinnerModule,
+    TranslateModule,
+    TooltipModule
   ],
   templateUrl: './hero-layouts-list.component.html',
   styleUrls: ['./hero-layouts-list.component.scss'],
@@ -45,6 +50,7 @@ import { IHeroLayout } from '../../../interfaces/hero-layout.interface';
 export class HeroLayoutsListComponent implements OnInit {
   heroLayouts = signal<IHeroLayout[]>([]);
   loading = signal<boolean>(true);
+  translate = inject(TranslateService);
 
   constructor(
     private heroLayoutsService: HeroLayoutsService,
@@ -67,8 +73,8 @@ export class HeroLayoutsListComponent implements OnInit {
       error: (error) => {
         this.messageService.add({
           severity: 'error',
-          summary: 'Error',
-          detail: 'Failed to load hero layouts'
+          summary: this.translate.instant('common.error'),
+          detail: this.translate.instant('heroLayout.failedToLoad')
         });
         this.loading.set(false);
       }
@@ -87,8 +93,8 @@ export class HeroLayoutsListComponent implements OnInit {
 
   deleteHeroLayout(heroLayout: IHeroLayout): void {
     this.confirmationService.confirm({
-      message: `Are you sure you want to delete "${heroLayout.name}"?`,
-      header: 'Confirm',
+      message: this.translate.instant('heroLayout.confirmDelete', { name: heroLayout.name }),
+      header: this.translate.instant('common.confirm'),
       icon: 'pi pi-exclamation-triangle',
       accept: () => {
         if (heroLayout._id) {
@@ -96,16 +102,16 @@ export class HeroLayoutsListComponent implements OnInit {
             next: () => {
               this.messageService.add({
                 severity: 'success',
-                summary: 'Success',
-                detail: 'Hero layout deleted successfully'
+                summary: this.translate.instant('common.success'),
+                detail: this.translate.instant('heroLayout.deletedSuccessfully')
               });
               this.loadHeroLayouts();
             },
             error: (error) => {
               this.messageService.add({
                 severity: 'error',
-                summary: 'Error',
-                detail: 'Failed to delete hero layout'
+                summary: this.translate.instant('common.error'),
+                detail: this.translate.instant('heroLayout.failedToDelete')
               });
             }
           });
@@ -120,20 +126,26 @@ export class HeroLayoutsListComponent implements OnInit {
         next: () => {
           this.messageService.add({
             severity: 'success',
-            summary: 'Success',
-            detail: 'Status updated successfully'
+            summary: this.translate.instant('common.success'),
+            detail: this.translate.instant('heroLayout.statusUpdatedSuccessfully')
           });
           this.loadHeroLayouts();
         },
         error: (error) => {
           this.messageService.add({
             severity: 'error',
-            summary: 'Error',
-            detail: 'Failed to update status'
+            summary: this.translate.instant('common.error'),
+            detail: this.translate.instant('heroLayout.failedToUpdateStatus')
           });
         }
       });
     }
+  }
+
+  getStatusLabel(isActive: boolean): string {
+    return isActive 
+      ? this.translate.instant('common.active') 
+      : this.translate.instant('common.inactive');
   }
 
   onGlobalFilter(table: any, event: Event): void {

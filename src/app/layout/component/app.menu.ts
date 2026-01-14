@@ -1,13 +1,14 @@
-import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, Inject, PLATFORM_ID } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { MenuItem } from 'primeng/api';
 import { AppMenuitem } from './app.menuitem';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 @Component({
     selector: 'app-menu',
     standalone: true,
-    imports: [CommonModule, AppMenuitem, RouterModule],
+    imports: [CommonModule, AppMenuitem, RouterModule, TranslateModule],
     template: `<ul class="layout-menu">
         <ng-container *ngFor="let item of model; let i = index">
             <li app-menuitem *ngIf="!item.separator" [item]="item" [index]="i" [root]="true"></li>
@@ -15,61 +16,73 @@ import { AppMenuitem } from './app.menuitem';
         </ng-container>
     </ul> `
 })
-export class AppMenu {
+export class AppMenu implements OnInit {
     model: MenuItem[] = [];
 
+    constructor(
+        private translate: TranslateService,
+        @Inject(PLATFORM_ID) private platformId: Object
+    ) {}
+
     ngOnInit() {
+        this.updateMenu();
+        this.translate.onLangChange.subscribe(() => {
+            this.updateMenu();
+        });
+    }
+
+    private updateMenu() {
         this.model = [
             {
-                label: 'Home',
-                items: [{ label: 'Dashboard', icon: 'pi pi-fw pi-home', routerLink: ['/'] }]
+                label: this.translate.instant('navigation.home'),
+                items: [{ label: this.translate.instant('navigation.dashboard'), icon: 'pi pi-fw pi-home', routerLink: ['/'] }]
             },
             { separator: true },
             {
-                label: 'Store Setup',
+                label: this.translate.instant('navigation.storeSetup'),
                 items: [
-                    { label: 'Business Profile', icon: 'pi pi-fw pi-briefcase', routerLink: ['/business-profile'] },
-                    { label: 'Menu Links', icon: 'pi pi-fw pi-link', routerLink: ['/menu-links'] },
-                    { label: 'Hero Sections', icon: 'pi pi-fw pi-image', routerLink: ['/hero'] },
-                    { label: 'Featured Collections', icon: 'pi pi-fw pi-star', routerLink: ['/featured-collections'] },
-                    { label: 'Hero Layouts', icon: 'pi pi-fw pi-th-large', routerLink: ['/hero-layouts'] },
-                    { label: 'Product Features', icon: 'pi pi-fw pi-sliders-h', routerLink: ['/product-features'] },
-                    { label: 'Banners', icon: 'pi pi-fw pi-megaphone', routerLink: ['/banners'] },
-                    { label: 'Features', icon: 'pi pi-fw pi-sliders-h', routerLink: ['/features'] },
-                    { label: 'Reviews', icon: 'pi pi-fw pi-star', routerLink: ['/reviews'] }
+                    { label: this.translate.instant('navigation.businessProfile'), icon: 'pi pi-fw pi-briefcase', routerLink: ['/business-profile'] },
+                    { label: this.translate.instant('navigation.menuLinks'), icon: 'pi pi-fw pi-link', routerLink: ['/menu-links'] },
+                    { label: this.translate.instant('navigation.heroSections'), icon: 'pi pi-fw pi-image', routerLink: ['/hero'] },
+                    { label: this.translate.instant('navigation.featuredCollections'), icon: 'pi pi-fw pi-star', routerLink: ['/featured-collections'] },
+                    { label: this.translate.instant('navigation.heroLayouts'), icon: 'pi pi-fw pi-th-large', routerLink: ['/hero-layouts'] },
+                    { label: this.translate.instant('navigation.productFeatures'), icon: 'pi pi-fw pi-sliders-h', routerLink: ['/product-features'] },
+                    { label: this.translate.instant('navigation.banners'), icon: 'pi pi-fw pi-megaphone', routerLink: ['/banners'] },
+                    { label: this.translate.instant('navigation.features'), icon: 'pi pi-fw pi-sliders-h', routerLink: ['/features'] },
+                    { label: this.translate.instant('navigation.reviews'), icon: 'pi pi-fw pi-star', routerLink: ['/reviews'] }
                 ]
             },
             {
-                label: 'Catalog',
+                label: this.translate.instant('navigation.catalog'),
                 items: [
-                    { label: 'Brands', icon: 'pi pi-fw pi-tags', routerLink: ['/brands'] },
-                    { label: 'Categories', icon: 'pi pi-fw pi-th-large', routerLink: ['/categories'] },
-                    { label: 'Products', icon: 'pi pi-fw pi-box', routerLink: ['/products'] },
-                    { label: 'Packages', icon: 'pi pi-fw pi-shopping-bag', routerLink: ['/packages'] }
+                    { label: this.translate.instant('navigation.brands'), icon: 'pi pi-fw pi-tags', routerLink: ['/brands'] },
+                    { label: this.translate.instant('navigation.categories'), icon: 'pi pi-fw pi-th-large', routerLink: ['/categories'] },
+                    { label: this.translate.instant('navigation.products'), icon: 'pi pi-fw pi-box', routerLink: ['/products'] },
+                    { label: this.translate.instant('navigation.packages'), icon: 'pi pi-fw pi-shopping-bag', routerLink: ['/packages'] }
                 ]
             },
             {
-                label: 'Sales',
+                label: this.translate.instant('navigation.sales'),
                 items: [
-                    { label: 'Orders', icon: 'pi pi-fw pi-shopping-cart', routerLink: ['/orders'] }
+                    { label: this.translate.instant('navigation.orders'), icon: 'pi pi-fw pi-shopping-cart', routerLink: ['/orders'] }
                     // Future: inventory, revenue, etc.
                 ]
             },
             {
-                label: 'Customers',
+                label: this.translate.instant('navigation.customers'),
                 items: [
-                    { label: 'Users', icon: 'pi pi-fw pi-users', routerLink: ['/users'] }
+                    { label: this.translate.instant('navigation.users'), icon: 'pi pi-fw pi-users', routerLink: ['/users'] }
                 ]
             },
             {
-                label: 'Locations',
+                label: this.translate.instant('navigation.locations'),
                 items: [
                     {
-                        label: 'Manage Locations',
+                        label: this.translate.instant('navigation.manageLocations'),
                         icon: 'pi pi-fw pi-globe',
                         items: [
-                            { label: 'Countries', icon: 'pi pi-fw pi-globe', routerLink: ['/locations/countries'] },
-                            { label: 'States', icon: 'pi pi-fw pi-map', routerLink: ['/locations/states'] }
+                            { label: this.translate.instant('navigation.countries'), icon: 'pi pi-fw pi-globe', routerLink: ['/locations/countries'] },
+                            { label: this.translate.instant('navigation.states'), icon: 'pi pi-fw pi-map', routerLink: ['/locations/states'] }
                         ]
                     }
                 ]

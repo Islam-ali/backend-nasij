@@ -15,6 +15,7 @@ import { MessageService } from 'primeng/api';
 import { ToolbarModule } from 'primeng/toolbar';
 import { DropdownModule } from 'primeng/dropdown';
 import { CalendarModule } from 'primeng/calendar';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 import { StatisticsService } from '../../../services/statistics.service';
 import { EcommerceStatistics } from '../../../interfaces/statistics.interface';
@@ -42,6 +43,7 @@ import { CurrencyFormatPipe } from '../../../core/pipes/currency-format.pipe';
     ToolbarModule,
     DropdownModule,
     CalendarModule,
+    TranslateModule,
     MultiLanguagePipe,
     CurrencyFormatPipe,
   ],
@@ -52,12 +54,7 @@ export class StatisticsDashboardComponent extends ComponentBase implements OnIni
   loading = signal<boolean>(true);
 
   // Date Filter
-  periodOptions = [
-    { label: 'اليوم', value: 'day' },
-    { label: 'الشهر الحالي', value: 'month' },
-    { label: 'السنة الحالية', value: 'year' },
-    { label: 'نطاق مخصص', value: 'custom' }
-  ];
+  periodOptions: { label: string; value: string }[] = [];
   selectedPeriod: 'day' | 'month' | 'year' | 'custom' = 'month';
   startDate: Date | null = null;
   endDate: Date | null = null;
@@ -76,14 +73,28 @@ export class StatisticsDashboardComponent extends ComponentBase implements OnIni
 
   constructor(
     private statisticsService: StatisticsService,
-    private messageService: MessageService
+    private messageService: MessageService,
+    private translate: TranslateService
   ) {
     super();
     this.initChartOptions();
+    this.updatePeriodOptions();
+    this.translate.onLangChange.subscribe(() => {
+      this.updatePeriodOptions();
+    });
   }
 
   ngOnInit() {
     this.loadStatistics();
+  }
+
+  private updatePeriodOptions() {
+    this.periodOptions = [
+      { label: this.translate.instant('statistics.today'), value: 'day' },
+      { label: this.translate.instant('statistics.month'), value: 'month' },
+      { label: this.translate.instant('statistics.year'), value: 'year' },
+      { label: this.translate.instant('statistics.custom'), value: 'custom' }
+    ];
   }
 
   onPeriodChange() {

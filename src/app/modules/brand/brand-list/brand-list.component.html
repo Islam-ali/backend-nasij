@@ -3,11 +3,11 @@
     <p-confirmDialog></p-confirmDialog>
 
     <p-toolbar styleClass="mb-4 gap-2">
-        <div class="p-toolbar-group-start">
-            <button pButton pRipple type="button" icon="pi pi-plus" class="p-button-success mr-2" (click)="openNew()"
-                label="New Brand"></button>
+        <div class="p-toolbar-group-start flex justify-between items-center w-full">
+            <button pButton pRipple type="button" icon="pi pi-plus" class="p-button-success me-2" (click)="openNew()"
+                [label]="'brand.new' | translate"></button>
             <button pButton pRipple type="button" icon="pi pi-trash" class="p-button-danger"
-                [disabled]="!selectedBrands.length" (click)="deleteSelected()" label="Delete"></button>
+                [disabled]="!(selectedBrands?.length)" (click)="deleteSelected()" [label]="'common.delete' | translate"></button>
         </div>
     </p-toolbar>
 
@@ -16,12 +16,12 @@
         [tableStyle]="{ 'min-width': '50rem' }">
         <ng-template pTemplate="caption">
             <div class="flex flex-column md:flex-row md:justify-between md:align-items-center">
-                <h5 class="m-0">Manage Brands</h5>
-                <p-iconField iconPosition="left" class="ml-auto">
+                <h5 class="m-0">{{ 'brand.manage' | translate }}</h5>
+                <p-iconField iconPosition="left" class="ms-auto">
                     <p-inputIcon>
                         <i class="pi pi-search"></i>
                     </p-inputIcon>
-                    <input pInputText type="text" (input)="onGlobalFilter($event)" placeholder="Search..."
+                    <input pInputText type="text" (input)="onGlobalFilter($event)" [placeholder]="'common.search' | translate"
                         class="w-full sm:w-auto" />
                 </p-iconField>
             </div>
@@ -32,18 +32,18 @@
                     <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
                 </th>
                 <th pSortableColumn="name">
-                    Name 
+                    {{ 'brand.name' | translate }}
                 </th>
                 <th pSortableColumn="slug">
-                    Slug 
+                    {{ 'brand.slug' | translate }}
                 </th>
                 <th pSortableColumn="isActive">
-                    Status 
+                    {{ 'brand.status' | translate }}
                 </th>
                 <th pSortableColumn="productCount">
-                    Products 
+                    {{ 'brand.products' | translate }}
                 </th>
-                <th style="width: 10rem">Actions</th>
+                <th style="width: 10rem">{{ 'common.actions' | translate }}</th>
             </tr>
         </ng-template>
         <ng-template pTemplate="body" let-brand>
@@ -55,7 +55,7 @@
                 <td>{{ brand.slug }}</td>
                 <td>
                     <p-tag [severity]="brand.isActive ? 'success' : 'danger'"
-                        [value]="brand.isActive ? 'Active' : 'Inactive'"></p-tag>
+                        [value]="brand.isActive ? ('brand.active' | translate) : ('brand.inactive' | translate)"></p-tag>
                 </td>
                 <td>{{ brand.productCount || 0 }}</td>
                 <td>
@@ -73,7 +73,7 @@
                 <td colspan="6" class="text-center py-6">
                     <div class="flex flex-column gap-2 items-center justify-center">
                         <i class="pi pi-inbox text-5xl text-400"></i>
-                        <span class="text-xl text-600">No brands found.</span>
+                        <span class="text-xl text-600">{{ 'brand.noData' | translate }}</span>
                     </div>
                 </td>
             </tr>
@@ -86,7 +86,7 @@
                         [totalRecords]="pagination().total" (onPageChange)="loadBrands($event.page, $event.rows)"
                         [rowsPerPageOptions]="[5,10,20,30]" [pageLinkSize]="5" [showPageLinks]="true"
                         [showCurrentPageReport]="true"
-                        currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries">
+                        currentPageReportTemplate="{{ 'brand.paging' | translate }}">
                     </p-paginator>
                 </td>
             </tr>
@@ -95,60 +95,65 @@
 </div>
 
 <p-dialog [(visible)]="brandDialog" [style]="{ width: '70vw' }"
-    header="{{ brandForm.get('_id')?.value ? 'Edit Brand' : 'New Brand' }}" [modal]="true" [draggable]="false"
+    [header]="isEditMode() ? ('brand.dialogEdit' | translate) : ('brand.dialogNew' | translate)" [modal]="true" [draggable]="false"
     [resizable]="false" (onHide)="hideDialog()">
     <form [formGroup]="brandForm" (ngSubmit)="saveBrand()">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 
             <div class="field-checkbox w-full flex items-center col-span-2">
-                <label class="block text-sm font-medium text-gray-700 me-4" for="isActive">Active</label>
+                <label class="block text-sm font-medium text-gray-700 me-4" for="isActive">{{ 'brand.status' | translate }}</label>
                 <p-toggleswitch id="isActive" formControlName="isActive" />
             </div>
         <ng-container formGroupName="name">
             <div class="w-full">
-                <label for="nameEn" class="block text-sm font-medium text-gray-700 mb-2">Name (English) *</label>
+                <label for="nameEn" class="block text-sm font-medium text-gray-700 mb-2">{{ 'common.nameEn' | translate }} *</label>
                 <input id="nameEn" class="w-full" type="text" pInputText formControlName="en"
+                    [placeholder]="'brand.nameEnPlaceholder' | translate"
                     [ngClass]="{ 'p-invalid': submitted && brandForm.get('name')?.invalid }" />
-                <small class="p-error" *ngIf="submitted && brandForm.get('name')?.invalid">Name is required.</small>
+                <small class="p-error" *ngIf="submitted && brandForm.get('name')?.invalid">{{ 'brand.nameRequired' | translate }}</small>
             </div>
 
             <div class="w-full">
-                <label for="nameAr" class="block text-sm font-medium text-gray-700 mb-2">Name (Arabic) *</label>
+                <label for="nameAr" class="block text-sm font-medium text-gray-700 mb-2">{{ 'common.nameAr' | translate }} *</label>
                 <input id="nameAr" class="w-full" type="text" pInputText formControlName="ar"
+                    [placeholder]="'brand.nameArPlaceholder' | translate"
                     [ngClass]="{ 'p-invalid': submitted && brandForm.get('name')?.invalid }" />
-                <small class="p-error" *ngIf="submitted && brandForm.get('name')?.invalid">Name is required.</small>
+                <small class="p-error" *ngIf="submitted && brandForm.get('name')?.invalid">{{ 'brand.nameRequired' | translate }}</small>
             </div>
         </ng-container>
 
             <div class="w-full">
-                <label for="slug" class="block text-sm font-medium text-gray-700 mb-2">Slug *</label>
+                <label for="slug" class="block text-sm font-medium text-gray-700 mb-2">{{ 'brand.slug' | translate }} *</label>
                 <input id="slug" class="w-full" type="text" pInputText formControlName="slug"
+                    [placeholder]="'brand.slugPlaceholder' | translate"
                     [ngClass]="{ 'p-invalid': submitted && brandForm.get('slug')?.invalid }" />
-                <small class="p-error" *ngIf="submitted && brandForm.get('slug')?.invalid">Slug is required.</small>
+                <small class="p-error" *ngIf="submitted && brandForm.get('slug')?.invalid">{{ 'brand.slugRequired' | translate }}</small>
             </div>
 
             <ng-container formGroupName="description"> 
                 <div class="w-full">
-                    <label for="descriptionEn" class="block text-sm font-medium text-gray-700 mb-2">Description (English) *</label>
+                <label for="descriptionEn" class="block text-sm font-medium text-gray-700 mb-2">{{ 'common.descriptionEn' | translate }}</label>
                     <textarea id="descriptionEn" class="w-full" pInputTextarea formControlName="en"
+                        [placeholder]="'brand.descriptionEnPlaceholder' | translate"
                         rows="3"></textarea>
                 </div>
                 <div class="w-full">
-                    <label for="descriptionAr" class="block text-sm font-medium text-gray-700 mb-2">Description (Arabic) *</label>
+                <label for="descriptionAr" class="block text-sm font-medium text-gray-700 mb-2">{{ 'common.descriptionAr' | translate }}</label>
                     <textarea id="descriptionAr" class="w-full" pInputTextarea formControlName="ar"
+                        [placeholder]="'brand.descriptionArPlaceholder' | translate"
                         rows="3"></textarea>
                 </div>
             </ng-container>
 
             <div class="w-full">
-                <label for="website" class="block text-sm font-medium text-gray-700 mb-2">Website</label>
+                <label for="website" class="block text-sm font-medium text-gray-700 mb-2">{{ 'brand.website' | translate }}</label>
                 <input id="website" class="w-full" type="url" pInputText formControlName="website" />
             </div>
 
             <div class="w-full col-span-2">
-                <label for="logo" class="block text-sm font-medium text-gray-700 mb-2">Logo</label>
+                <label for="logo" class="block text-sm font-medium text-gray-700 mb-2">{{ 'brand.logo' | translate }}</label>
                 <app-upload-files id="logo" [control]="formControlLogo" [multiple]="false" [accept]="'image/*'"
-                    [filesServer]="brandForm.get('logo')?.value"></app-upload-files>
+                    [filesServer]="logoValue"></app-upload-files>
             </div>
 
         </div>
@@ -157,9 +162,9 @@
     <!-- footer -->
     <ng-template pTemplate="footer">
         <div class="flex justify-end gap-2">
-            <p-button label="Cancel" severity="danger" icon="pi pi-times" (click)="hideDialog()">
+            <p-button [label]="'common.cancel' | translate" severity="danger" icon="pi pi-times" (click)="hideDialog()">
             </p-button>
-            <p-button label="Save" type="submit" severity="success" icon="pi pi-check" [disabled]="brandForm.invalid"
+            <p-button [label]="'common.save' | translate" type="submit" severity="success" icon="pi pi-check" [disabled]="brandForm.invalid"
                 (click)="saveBrand()">
             </p-button>
         </div>

@@ -4,6 +4,7 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormArray, For
 
 // PrimeNG Services
 import { ConfirmationService, MessageService } from 'primeng/api';
+import { TranslateService, TranslateModule } from '@ngx-translate/core';
 
 // PrimeNG Modules
 import { Table, TableModule } from 'primeng/table';
@@ -31,6 +32,7 @@ import { ComponentBase } from '../../../core/directives/component-base.directive
 import { BaseResponse } from '../../../core/models/baseResponse';
 import { finalize, takeUntil } from 'rxjs';
 import { RouterModule } from '@angular/router';
+import { TooltipModule } from 'primeng/tooltip';
 
 interface Column {
     field: string;
@@ -65,7 +67,9 @@ interface Column {
         Skeleton,
         MultiSelectModule,
         CalendarModule,
-        RouterModule  
+        RouterModule,
+        TranslateModule,
+        TooltipModule
     ],
     providers: [MessageService, ConfirmationService, UsersService]
 })
@@ -85,7 +89,8 @@ export class UserListComponent extends ComponentBase implements OnInit {
 
     cols!: Column[];
     exportColumns!: Column[];
-    roles = Object.values(UserRole);
+    roles: any[] = [];
+    
     currentPage = 1;
     itemsPerPage = 10;
     totalItems = 0;
@@ -103,7 +108,8 @@ export class UserListComponent extends ComponentBase implements OnInit {
         private usersService: UsersService,
         private messageService: MessageService,
         private confirmationService: ConfirmationService,
-        private fb: FormBuilder
+        private fb: FormBuilder,
+        private translate: TranslateService
     ) {
         super();
     }
@@ -112,16 +118,19 @@ export class UserListComponent extends ComponentBase implements OnInit {
         this.initializeColumns();
         this.initializeForm();
         this.loadUsers();
+        this.roles = Object.values(UserRole).map(role => ({
+            label: this.translate.instant(`user.roles.${role}`) || role,
+            value: role
+        }));
     }
-
     initializeColumns() {
         this.cols = [
-            { field: 'name', header: 'Name' },
-            { field: 'email', header: 'Email' },
-            { field: 'role', header: 'Role' },
-            { field: 'isActive', header: 'Status' },
-            { field: 'lastLogin', header: 'Last Login' },
-            { field: 'createdAt', header: 'Created Date' }
+            { field: 'name', header: this.translate.instant('common.name') },
+            { field: 'email', header: this.translate.instant('common.email') },
+            { field: 'role', header: this.translate.instant('user.role') },
+            { field: 'isActive', header: this.translate.instant('common.status') },
+            { field: 'lastLogin', header: this.translate.instant('user.lastLogin') },
+            { field: 'createdAt', header: this.translate.instant('user.createdDate') }
         ];
 
         this.exportColumns = this.cols.map(col => ({ title: col.header, dataKey: col.field })) as unknown as Column[];
@@ -186,8 +195,8 @@ export class UserListComponent extends ComponentBase implements OnInit {
                 error: (error) => {
                     this.messageService.add({
                         severity: 'error',
-                        summary: 'Error',
-                        detail: 'Failed to load users'
+                        summary: this.translate.instant('common.error'),
+                        detail: this.translate.instant('user.failedToLoad')
                     });
                 }
             });
@@ -282,8 +291,8 @@ export class UserListComponent extends ComponentBase implements OnInit {
                     if (response.success) {
                         this.messageService.add({
                             severity: 'success',
-                            summary: 'Success',
-                            detail: 'User created successfully'
+                            summary: this.translate.instant('common.success'),
+                            detail: this.translate.instant('user.createdSuccessfully')
                         });
                         this.hideDialog();
                         this.loadUsers();
@@ -292,8 +301,8 @@ export class UserListComponent extends ComponentBase implements OnInit {
                 error: (error) => {
                     this.messageService.add({
                         severity: 'error',
-                        summary: 'Error',
-                        detail: 'Failed to create user'
+                        summary: this.translate.instant('common.error'),
+                        detail: this.translate.instant('user.failedToCreate')
                     });
                 }
             });
@@ -312,8 +321,8 @@ export class UserListComponent extends ComponentBase implements OnInit {
                     if (response.success) {
                         this.messageService.add({
                             severity: 'success',
-                            summary: 'Success',
-                            detail: 'User updated successfully'
+                            summary: this.translate.instant('common.success'),
+                            detail: this.translate.instant('user.updatedSuccessfully')
                         });
                         this.hideDialog();
                         this.loadUsers();
@@ -322,8 +331,8 @@ export class UserListComponent extends ComponentBase implements OnInit {
                 error: (error) => {
                     this.messageService.add({
                         severity: 'error',
-                        summary: 'Error',
-                        detail: 'Failed to update user'
+                        summary: this.translate.instant('common.error'),
+                        detail: this.translate.instant('user.failedToUpdate')
                     });
                 }
             });
@@ -346,8 +355,8 @@ export class UserListComponent extends ComponentBase implements OnInit {
                     if (response.success) {
                         this.messageService.add({
                             severity: 'success',
-                            summary: 'Success',
-                            detail: 'User deleted successfully'
+                            summary: this.translate.instant('common.success'),
+                            detail: this.translate.instant('user.deletedSuccessfully')
                         });
                         this.deleteUserDialog = false;
                         this.loadUsers();
@@ -356,8 +365,8 @@ export class UserListComponent extends ComponentBase implements OnInit {
                 error: (error) => {
                     this.messageService.add({
                         severity: 'error',
-                        summary: 'Error',
-                        detail: 'Failed to delete user'
+                        summary: this.translate.instant('common.error'),
+                        detail: this.translate.instant('user.failedToDelete')
                     });
                 }
             });
@@ -377,8 +386,8 @@ export class UserListComponent extends ComponentBase implements OnInit {
             .then(() => {
                 this.messageService.add({
                     severity: 'success',
-                    summary: 'Success',
-                    detail: 'Selected users deleted successfully'
+                    summary: this.translate.instant('common.success'),
+                    detail: this.translate.instant('user.selectedUsersDeleted')
                 });
                 this.deleteUsersDialog = false;
                 this.selectedUsers.set([]);
@@ -387,8 +396,8 @@ export class UserListComponent extends ComponentBase implements OnInit {
             .catch(() => {
                 this.messageService.add({
                     severity: 'error',
-                    summary: 'Error',
-                    detail: 'Failed to delete some users'
+                    summary: this.translate.instant('common.error'),
+                    detail: this.translate.instant('user.failedToDeleteSome')
                 });
             })
             .finally(() => {
@@ -404,8 +413,8 @@ export class UserListComponent extends ComponentBase implements OnInit {
                     if (response.success) {
                         this.messageService.add({
                             severity: 'success',
-                            summary: 'Success',
-                            detail: `User ${newStatus ? 'activated' : 'deactivated'} successfully`
+                            summary: this.translate.instant('common.success'),
+                            detail: newStatus ? this.translate.instant('user.activatedSuccessfully') : this.translate.instant('user.deactivatedSuccessfully')
                         });
                         this.loadUsers();
                     }
@@ -413,8 +422,8 @@ export class UserListComponent extends ComponentBase implements OnInit {
                 error: (error) => {
                     this.messageService.add({
                         severity: 'error',
-                        summary: 'Error',
-                        detail: 'Failed to update user status'
+                        summary: this.translate.instant('common.error'),
+                        detail: this.translate.instant('user.failedToUpdateStatus')
                     });
                 }
             });
@@ -456,7 +465,7 @@ export class UserListComponent extends ComponentBase implements OnInit {
     }
 
     getStatusLabel(status: boolean): string {
-        return status ? 'Active' : 'Inactive';
+        return status ? this.translate.instant('common.active') : this.translate.instant('common.inactive');
     }
 
     getRoleSeverity(role: string): string {
@@ -473,7 +482,7 @@ export class UserListComponent extends ComponentBase implements OnInit {
     }
 
     getRoleLabel(role: string): string {
-        return role.charAt(0).toUpperCase() + role.slice(1);
+        return this.translate.instant(`user.roles.${role}`) || role.charAt(0).toUpperCase() + role.slice(1);
     }
 
     getAddressesCount(addresses: Address[]): number {

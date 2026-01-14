@@ -31,6 +31,8 @@ import { UploadFilesComponent } from '../../../shared/components/fields/upload-f
 import { ComponentBase } from '../../../core/directives/component-base.directive';
 import { finalize, takeUntil } from 'rxjs';
 import { environment } from '../../../../environments/environment';
+import { TranslateService, TranslateModule } from '@ngx-translate/core';
+import { inject } from '@angular/core';
 
 interface Column {
     field: string;
@@ -63,7 +65,8 @@ interface Column {
         InputNumberModule,
         RatingModule,
         UploadFilesComponent,
-        TooltipModule
+        TooltipModule,
+        TranslateModule
     ],
     providers: [MessageService, ConfirmationService, ReviewService]
 })
@@ -74,6 +77,7 @@ export class ReviewListComponent extends ComponentBase implements OnInit {
     selectedReviews!: IReview[] | null;
     loading = signal<boolean>(false);
     reviews = signal<IReview[]>([]);
+    translate = inject(TranslateService);
 
     ratingOptions = [
         { label: '1 Star', value: 1 },
@@ -106,15 +110,22 @@ export class ReviewListComponent extends ComponentBase implements OnInit {
     ngOnInit() {
         this.buildForm();
         this.loadReviews();
+        this.updateColumns();
+        this.translate.onLangChange.subscribe(() => {
+            this.updateColumns();
+        });
+    }
+
+    updateColumns() {
         this.cols = [
-            { field: 'customerName', header: 'Customer Name' },
-            { field: 'rating', header: 'Rating' },
-            { field: 'comment', header: 'Comment' },
-            { field: 'images', header: 'Images' },
-            { field: 'video', header: 'Video' },
-            { field: 'isActive', header: 'Active' },
-            { field: 'isPinned', header: 'Pinned' },
-            { field: 'actions', header: 'Actions' }
+            { field: 'customerName', header: this.translate.instant('review.customerName') },
+            { field: 'rating', header: this.translate.instant('review.rating') },
+            { field: 'comment', header: this.translate.instant('review.comment') },
+            { field: 'images', header: this.translate.instant('review.images') },
+            { field: 'video', header: this.translate.instant('review.video') },
+            { field: 'isActive', header: this.translate.instant('review.active') },
+            { field: 'isPinned', header: this.translate.instant('review.pinned') },
+            { field: 'actions', header: this.translate.instant('common.actions') }
         ];
     }
 
@@ -161,7 +172,10 @@ export class ReviewListComponent extends ComponentBase implements OnInit {
                 this.reviews.set(res.data);
             },
             error: () => this.messageService.add({
-                severity: 'error', summary: 'Error', detail: 'Failed to load reviews', life: 1000
+                severity: 'error', 
+                summary: this.translate.instant('common.error'), 
+                detail: this.translate.instant('review.failedToLoad'), 
+                life: 1000
             })
         });
     }
@@ -189,16 +203,24 @@ export class ReviewListComponent extends ComponentBase implements OnInit {
 
     deleteReview(review: IReview) {
         this.confirmationService.confirm({
-            message: `Are you sure you want to delete review from "${review.customerName}"?`,
-            header: 'Confirm',
+            message: this.translate.instant('review.confirmDelete', { customerName: review.customerName }),
+            header: this.translate.instant('common.confirm'),
             icon: 'pi pi-exclamation-triangle',
             accept: () => {
                 this.reviewService.deleteReview(review._id!).pipe(takeUntil(this.destroy$)).subscribe({
                     next: () => {
                         this.loadReviews();
-                        this.messageService.add({ severity: 'success', summary: 'Deleted', detail: 'Review deleted' });
+                        this.messageService.add({ 
+                            severity: 'success', 
+                            summary: this.translate.instant('common.deleted'), 
+                            detail: this.translate.instant('review.deletedSuccessfully') 
+                        });
                     },
-                    error: () => this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Delete failed' })
+                    error: () => this.messageService.add({ 
+                        severity: 'error', 
+                        summary: this.translate.instant('common.error'), 
+                        detail: this.translate.instant('review.failedToDelete') 
+                    })
                 });
             }
         });
@@ -209,7 +231,10 @@ export class ReviewListComponent extends ComponentBase implements OnInit {
 
         if (this.reviewForm.invalid) {
             this.messageService.add({
-                severity: 'error', summary: 'Error', detail: 'Please fix form errors', life: 1000
+                severity: 'error', 
+                summary: this.translate.instant('common.error'), 
+                detail: this.translate.instant('review.fixFormErrors'), 
+                life: 1000
             });
             return;
         }
@@ -225,14 +250,21 @@ export class ReviewListComponent extends ComponentBase implements OnInit {
                 this.loadReviews();
                 this.messageService.add({
                     severity: 'success',
-                    summary: formValue._id ? 'Updated' : 'Created',
-                    detail: `Review ${formValue._id ? 'updated' : 'created'} successfully`
+                    summary: formValue._id 
+                        ? this.translate.instant('common.updated') 
+                        : this.translate.instant('common.created'),
+                    detail: formValue._id 
+                        ? this.translate.instant('review.updatedSuccessfully')
+                        : this.translate.instant('review.createdSuccessfully')
                 });
                 this.hideDialog();
             },
             error: (error) => {
                 this.messageService.add({
-                    severity: 'error', summary: 'Error', detail: 'Save failed', life: 1000
+                    severity: 'error', 
+                    summary: this.translate.instant('common.error'), 
+                    detail: this.translate.instant('review.failedToSave'), 
+                    life: 1000
                 });
             }
         });

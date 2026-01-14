@@ -28,6 +28,8 @@ import { BaseResponse } from '../../../core/models/baseResponse';
 import { ComponentBase } from '../../../core/directives/component-base.directive';
 import { TextareaModule } from 'primeng/textarea';
 import { environment } from '../../../../environments/environment';
+import { TranslateService, TranslateModule } from '@ngx-translate/core';
+import { inject } from '@angular/core';
 
 @Component({
   selector: 'app-feature-list',
@@ -46,7 +48,8 @@ import { environment } from '../../../../environments/environment';
     ConfirmDialogModule,
     ToggleButtonModule,
     InputNumberModule,
-    UploadFilesComponent
+    UploadFilesComponent,
+    TranslateModule
   ],
   providers: [MessageService, ConfirmationService],
   templateUrl: './feature-list.component.html',
@@ -60,6 +63,7 @@ export class FeatureListComponent extends ComponentBase implements OnInit {
   submitted = signal(false);
   loading = signal(false);
   featureForm!: FormGroup;
+  translate = inject(TranslateService);
 
   constructor(
     private featureService: FeatureService,
@@ -107,8 +111,8 @@ export class FeatureListComponent extends ComponentBase implements OnInit {
         console.error('Error loading features:', error);
         this.messageService.add({
           severity: 'error',
-          summary: 'Error',
-          detail: 'Failed to load features'
+          summary: this.translate.instant('common.error'),
+          detail: this.translate.instant('feature.failedToLoad')
         });
         this.loading.set(false);
       }
@@ -154,8 +158,8 @@ export class FeatureListComponent extends ComponentBase implements OnInit {
           this.feature.set(null);
           this.messageService.add({
             severity: 'success',
-            summary: 'Successful',
-            detail: 'Feature Deleted',
+            summary: this.translate.instant('common.success'),
+            detail: this.translate.instant('feature.deletedSuccessfully'),
             life: 3000
           });
           this.loadFeatures();
@@ -164,8 +168,8 @@ export class FeatureListComponent extends ComponentBase implements OnInit {
           console.error('Error deleting feature:', error);
           this.messageService.add({
             severity: 'error',
-            summary: 'Error',
-            detail: 'Failed to delete feature'
+            summary: this.translate.instant('common.error'),
+            detail: this.translate.instant('feature.failedToDelete')
           });
         }
       });
@@ -189,8 +193,8 @@ export class FeatureListComponent extends ComponentBase implements OnInit {
           next: (updatedFeature) => {
             this.messageService.add({
               severity: 'success',
-              summary: 'Successful',
-              detail: 'Feature Updated',
+              summary: this.translate.instant('common.success'),
+              detail: this.translate.instant('feature.updatedSuccessfully'),
               life: 3000
             });
             this.hideDialog();
@@ -200,8 +204,8 @@ export class FeatureListComponent extends ComponentBase implements OnInit {
             console.error('Error updating feature:', error);
             this.messageService.add({
               severity: 'error',
-              summary: 'Error',
-              detail: 'Failed to update feature'
+              summary: this.translate.instant('common.error'),
+              detail: this.translate.instant('feature.failedToUpdate')
             });
           }
         });
@@ -211,8 +215,8 @@ export class FeatureListComponent extends ComponentBase implements OnInit {
           next: (newFeature) => {
             this.messageService.add({
               severity: 'success',
-              summary: 'Successful',
-              detail: 'Feature Created',
+              summary: this.translate.instant('common.success'),
+              detail: this.translate.instant('feature.createdSuccessfully'),
               life: 3000
             });
             this.hideDialog();
@@ -222,8 +226,8 @@ export class FeatureListComponent extends ComponentBase implements OnInit {
             console.error('Error creating feature:', error);
             this.messageService.add({
               severity: 'error',
-              summary: 'Error',
-              detail: 'Failed to create feature'
+              summary: this.translate.instant('common.error'),
+              detail: this.translate.instant('feature.failedToCreate')
             });
           }
         });
@@ -236,8 +240,10 @@ export class FeatureListComponent extends ComponentBase implements OnInit {
       next: (updatedFeature) => {
         this.messageService.add({
           severity: 'success',
-          summary: 'Successful',
-          detail: `Feature ${updatedFeature.data.isActive ? 'Activated' : 'Deactivated'}`,
+          summary: this.translate.instant('common.success'),
+          detail: updatedFeature.data.isActive 
+            ? this.translate.instant('feature.activated') 
+            : this.translate.instant('feature.deactivated'),
           life: 3000
         });
         this.loadFeatures();
@@ -246,8 +252,8 @@ export class FeatureListComponent extends ComponentBase implements OnInit {
         console.error('Error toggling feature:', error);
         this.messageService.add({
           severity: 'error',
-          summary: 'Error',
-          detail: 'Failed to toggle feature status'
+          summary: this.translate.instant('common.error'),
+          detail: this.translate.instant('feature.failedToToggle')
         });
       }
     });
@@ -259,8 +265,8 @@ export class FeatureListComponent extends ComponentBase implements OnInit {
       next: (updatedFeature) => {
         this.messageService.add({
           severity: 'success',
-          summary: 'Successful',
-          detail: 'Sort order updated',
+          summary: this.translate.instant('common.success'),
+          detail: this.translate.instant('feature.sortOrderUpdated'),
           life: 3000
         });
         this.loadFeatures();
@@ -269,8 +275,8 @@ export class FeatureListComponent extends ComponentBase implements OnInit {
         console.error('Error updating sort order:', error);
         this.messageService.add({
           severity: 'error',
-          summary: 'Error',
-          detail: 'Failed to update sort order'
+          summary: this.translate.instant('common.error'),
+          detail: this.translate.instant('feature.failedToUpdateSortOrder')
         });
       }
     });
@@ -281,6 +287,8 @@ export class FeatureListComponent extends ComponentBase implements OnInit {
   }
 
   getStatusLabel(isActive: boolean): string {
-    return isActive ? 'Active' : 'Inactive';
+    return isActive 
+      ? this.translate.instant('common.active') 
+      : this.translate.instant('common.inactive');
   }
 } 

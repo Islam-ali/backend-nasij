@@ -4,7 +4,7 @@
 
     <p-toolbar styleClass="mb-4 gap-2">
         <ng-template pTemplate="left">
-            <button pButton pRipple label="New Review" icon="pi pi-plus" class="p-button-success"
+            <button pButton pRipple [label]="'review.new' | translate" icon="pi pi-plus" class="p-button-success"
                 (click)="openNew()"></button>
         </ng-template>
     </p-toolbar>
@@ -16,27 +16,27 @@
             <div class="flex items-center justify-between">
                 <div class="flex items-center gap-3">
                     <i class="pi pi-star text-2xl text-yellow-600"></i>
-                    <h5 class="m-0 text-xl font-semibold text-gray-800">Manage Reviews</h5>
+                    <h5 class="m-0 text-xl font-semibold text-gray-800">{{ 'review.manage' | translate }}</h5>
                 </div>
-                <p-iconField iconPosition="left" class="ml-auto">
+                <p-iconField iconPosition="left" class="ms-auto">
                     <p-inputIcon>
                         <i class="pi pi-search"></i>
                     </p-inputIcon>
-                    <input pInputText type="text" (input)="onGlobalFilter(dt , $event)" placeholder="Search..."
+                    <input pInputText type="text" (input)="onGlobalFilter(dt , $event)" [placeholder]="'common.search' | translate"
                         class="w-full sm:w-auto" />
                 </p-iconField>
             </div>
         </ng-template>
         <ng-template pTemplate="header">
             <tr>
-                <th pSortableColumn="customerName">Customer Name <p-sortIcon field="customerName"></p-sortIcon></th>
-                <th pSortableColumn="rating">Rating <p-sortIcon field="rating"></p-sortIcon></th>
-                <th>Comment</th>
-                <th>Images</th>
-                <th>Video</th>
-                <th pSortableColumn="isActive">Active <p-sortIcon field="isActive"></p-sortIcon></th>
-                <th pSortableColumn="isPinned">Pinned <p-sortIcon field="isPinned"></p-sortIcon></th>
-                <th>Actions</th>
+                <th pSortableColumn="customerName">{{ 'review.customerName' | translate }} <p-sortIcon field="customerName"></p-sortIcon></th>
+                <th pSortableColumn="rating">{{ 'review.rating' | translate }} <p-sortIcon field="rating"></p-sortIcon></th>
+                <th>{{ 'review.comment' | translate }}</th>
+                <th>{{ 'review.images' | translate }}</th>
+                <th>{{ 'review.video' | translate }}</th>
+                <th pSortableColumn="isActive">{{ 'review.active' | translate }} <p-sortIcon field="isActive"></p-sortIcon></th>
+                <th pSortableColumn="isPinned">{{ 'review.pinned' | translate }} <p-sortIcon field="isPinned"></p-sortIcon></th>
+                <th>{{ 'common.actions' | translate }}</th>
             </tr>
         </ng-template>
         <ng-template pTemplate="body" let-review>
@@ -58,7 +58,7 @@
                 <td>
                     <div class="flex items-center gap-2">
                         <span *ngIf="review.images && review.images.length > 0" class="text-sm text-gray-600">
-                            {{review.images.length}} image(s)
+                            {{review.images.length}} {{ 'review.imagesCount' | translate }}
                         </span>
                         <span *ngIf="!review.images || review.images.length === 0" class="text-sm text-gray-400">-</span>
                     </div>
@@ -70,19 +70,19 @@
                     </div>
                 </td>
                 <td>
-                    <p-tag [value]="review.isActive ? 'Active' : 'Inactive'"
+                    <p-tag [value]="review.isActive ? ('review.active' | translate) : ('review.inactive' | translate)"
                         [severity]="getSeverity(review.isActive)"></p-tag>
                 </td>
                 <td>
-                    <p-tag [value]="review.isPinned ? 'Pinned' : 'Not Pinned'"
+                    <p-tag [value]="review.isPinned ? ('review.pinned' | translate) : ('review.notPinned' | translate)"
                         [severity]="review.isPinned ? 'info' : 'secondary'"></p-tag>
                 </td>
                 <td>
                     <div class="flex items-center justify-center gap-2">
                         <button pButton pRipple icon="pi pi-pencil" class="p-button-rounded p-button-success"
-                            (click)="editReview(review)" pTooltip="Edit Review" tooltipPosition="top"></button>
+                            (click)="editReview(review)" [pTooltip]="'review.edit' | translate" tooltipPosition="top"></button>
                         <button pButton pRipple icon="pi pi-trash" class="p-button-rounded p-button-warn"
-                            (click)="deleteReview(review)" pTooltip="Delete Review" tooltipPosition="top"></button>
+                            (click)="deleteReview(review)" [pTooltip]="'review.delete' | translate" tooltipPosition="top"></button>
                     </div>
                 </td>
             </tr>
@@ -91,7 +91,7 @@
             <tr>
                 <td colspan="8" class="text-center py-8 text-gray-500">
                     <i class="pi pi-star text-4xl mb-4 block"></i>
-                    <p>No reviews found.</p>
+                    <p>{{ 'review.noData' | translate }}</p>
                 </td>
             </tr>
         </ng-template>
@@ -99,51 +99,51 @@
 
     <!-- Review Dialog -->
     <p-dialog [(visible)]="reviewDialog" [style]="{width: '70rem'}" [breakpoints]="{'1199px': '85vw', '575px': '95vw'}"
-        header="Review Details" [modal]="true" styleClass="p-fluid">
+        [header]="'review.dialogTitle' | translate" [modal]="true" styleClass="p-fluid">
         <ng-template pTemplate="content">
             <form [formGroup]="reviewForm" class="space-y-6">
                 <!-- Basic Information Section -->
                 <div class="bg-gray-50 p-4 rounded-lg">
                     <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
-                        <i class="pi pi-info-circle mr-2 text-blue-600"></i>
-                        Basic Information
+                        <i class="pi pi-info-circle me-2 text-blue-600"></i>
+                        {{ 'review.basicInfo' | translate }}
                     </h3>
                     
                     <!-- Customer Name -->
                     <div class="field mb-4">
-                        <label for="customerName" class="font-bold text-gray-700 mb-2 block">Customer Name *</label>
+                        <label for="customerName" class="font-bold text-gray-700 mb-2 block">{{ 'review.customerName' | translate }} *</label>
                         <input id="customerName" pInputText type="text" formControlName="customerName" required autofocus
-                            placeholder="Enter customer name" class="w-full" />
+                            [placeholder]="'review.customerNamePlaceholder' | translate" class="w-full" />
                         <small *ngIf="submitted && reviewForm.get('customerName')?.invalid" class="p-error">
-                            Customer name is required.
+                            {{ 'review.customerNameRequired' | translate }}
                         </small>
                     </div>
 
                     <!-- Rating -->
                     <div class="field mb-4">
-                        <label for="rating" class="font-bold text-gray-700 mb-2 block">Rating *</label>
+                        <label for="rating" class="font-bold text-gray-700 mb-2 block">{{ 'review.rating' | translate }} *</label>
                         <p-rating formControlName="rating" [stars]="5"></p-rating>
                         <small *ngIf="submitted && reviewForm.get('rating')?.invalid" class="p-error">
-                            Rating is required (1-5 stars).
+                            {{ 'review.ratingRequired' | translate }}
                         </small>
                     </div>
 
                     <!-- Comment -->
                     <div class="field mb-4">
-                        <label for="comment" class="font-bold text-gray-700 mb-2 block">Comment</label>
+                        <label for="comment" class="font-bold text-gray-700 mb-2 block">{{ 'review.comment' | translate }}</label>
                         <textarea id="comment" pInputTextarea formControlName="comment" rows="5"
-                            placeholder="Enter review comment (optional)" class="w-full"></textarea>
+                            [placeholder]="'review.commentPlaceholder' | translate" class="w-full"></textarea>
                     </div>
                 </div>
 
                 <!-- Media Section -->
                 <div class="bg-green-50 p-4 rounded-lg">
                     <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
-                        <i class="pi pi-image mr-2 text-green-600"></i>
-                        Review Images
+                        <i class="pi pi-image me-2 text-green-600"></i>
+                        {{ 'review.reviewImages' | translate }}
                     </h3>
                     <div class="field mb-4">
-                        <label for="images" class="font-bold text-gray-700 mb-2 block">Upload Images (Multiple)</label>
+                        <label for="images" class="font-bold text-gray-700 mb-2 block">{{ 'review.uploadImages' | translate }}</label>
                         <app-upload-files id="images" [index]="0" [control]="formControlImages" [multiple]="true" [accept]="'image/*'"
                             [filesServer]="reviewForm.get('images')?.value">
                         </app-upload-files>
@@ -152,52 +152,52 @@
 
                 <div class="bg-blue-50 p-4 rounded-lg">
                     <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
-                        <i class="pi pi-video mr-2 text-blue-600"></i>
-                        Review Video
+                        <i class="pi pi-video me-2 text-blue-600"></i>
+                        {{ 'review.reviewVideo' | translate }}
                     </h3>
                     <div class="field mb-4">
-                        <label for="video" class="font-bold text-gray-700 mb-2 block">Upload Video File</label>
+                        <label for="video" class="font-bold text-gray-700 mb-2 block">{{ 'review.uploadVideo' | translate }}</label>
                         <app-upload-files id="video" [index]="1" [control]="formControlVideo" [multiple]="false" [accept]="'video/*'"
                             [filesServer]="reviewForm.get('video')?.value">
                         </app-upload-files>
                     </div>
                     <div class="field">
-                        <label for="videoUrl" class="font-bold text-gray-700 mb-2 block">OR Video URL</label>
+                        <label for="videoUrl" class="font-bold text-gray-700 mb-2 block">{{ 'review.videoUrl' | translate }}</label>
                         <input id="videoUrl" pInputText type="url" formControlName="videoUrl"
-                            placeholder="https://www.youtube.com/watch?v=..." class="w-full" />
-                        <small class="text-gray-500">Enter a video URL (YouTube, Vimeo, etc.) as an alternative to uploading a file</small>
+                            [placeholder]="'review.videoUrlPlaceholder' | translate" class="w-full" />
+                        <small class="text-gray-500">{{ 'review.videoUrlHint' | translate }}</small>
                     </div>
                 </div>
 
                 <!-- Settings Section -->
                 <div class="bg-purple-50 p-4 rounded-lg">
                     <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
-                        <i class="pi pi-cog mr-2 text-purple-600"></i>
-                        Settings
+                        <i class="pi pi-cog me-2 text-purple-600"></i>
+                        {{ 'review.settings' | translate }}
                     </h3>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div class="field">
-                            <label for="isActive" class="font-bold text-gray-700 mb-2 block">Active</label>
-                            <div class="flex items-center space-x-3">
+                            <label for="isActive" class="font-bold text-gray-700 mb-2 block">{{ 'review.active' | translate }}</label>
+                            <div class="flex items-center gap-3">
                                 <p-toggleSwitch formControlName="isActive"></p-toggleSwitch>
-                                <span class="text-sm text-gray-600">{{ reviewForm.get('isActive')?.value ? 'Active' : 'Inactive' }}</span>
+                                <span class="text-sm text-gray-600">{{ reviewForm.get('isActive')?.value ? ('common.active' | translate) : ('common.inactive' | translate) }}</span>
                             </div>
                         </div>
 
                         <div class="field">
-                            <label for="isPinned" class="font-bold text-gray-700 mb-2 block">Pin Review</label>
-                            <div class="flex items-center space-x-3">
+                            <label for="isPinned" class="font-bold text-gray-700 mb-2 block">{{ 'review.pinReview' | translate }}</label>
+                            <div class="flex items-center gap-3">
                                 <p-toggleSwitch formControlName="isPinned"></p-toggleSwitch>
-                                <span class="text-sm text-gray-600">{{ reviewForm.get('isPinned')?.value ? 'Pinned' : 'Not Pinned' }}</span>
+                                <span class="text-sm text-gray-600">{{ reviewForm.get('isPinned')?.value ? ('review.pinned' | translate) : ('review.notPinned' | translate) }}</span>
                             </div>
                         </div>
                     </div>
 
                     <div class="field mt-4">
-                        <label for="order" class="font-bold text-gray-700 mb-2 block">Order (for pinned reviews)</label>
-                        <input id="order" pInputText type="number" formControlName="order" placeholder="Enter order number"
+                        <label for="order" class="font-bold text-gray-700 mb-2 block">{{ 'review.order' | translate }}</label>
+                        <input id="order" pInputText type="number" formControlName="order" [placeholder]="'review.orderPlaceholder' | translate"
                             class="w-full" />
-                        <small class="text-gray-500">Lower numbers appear first for pinned reviews</small>
+                        <small class="text-gray-500">{{ 'review.orderHint' | translate }}</small>
                     </div>
                 </div>
             </form>
@@ -205,9 +205,9 @@
         <!-- footer -->
         <ng-template pTemplate="footer">
             <div class="flex justify-end gap-2">
-                <p-button label="Cancel" severity="danger" icon="pi pi-times" (click)="hideDialog()">
+                <p-button [label]="'common.cancel' | translate" severity="danger" icon="pi pi-times" (click)="hideDialog()">
                 </p-button>
-                <p-button label="Save" type="submit" severity="success" icon="pi pi-check" [disabled]="reviewForm.invalid"
+                <p-button [label]="'common.save' | translate" type="submit" severity="success" icon="pi pi-check" [disabled]="reviewForm.invalid"
                     (click)="saveReview()">
                 </p-button>
             </div>

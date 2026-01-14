@@ -28,7 +28,8 @@
                         "assets": [
                             {
                                 "glob": "**/*",
-                                "input": "src/assets"
+                                "input": "src/assets",
+                                "output": "/assets"
                             }
                         ],
                         "styles": [
@@ -76,6 +77,9 @@
                 },
                 "serve": {
                     "builder": "@angular-devkit/build-angular:dev-server",
+                    "options": {
+                        "port": 4001
+                    },
                     "configurations": {
                         "production": {
                             "buildTarget": "sakai-ng:build:production"

@@ -31,6 +31,8 @@ import { UploadFilesComponent } from '../../../shared/components/fields/upload-f
 import { ComponentBase } from '../../../core/directives/component-base.directive';
 import { finalize, takeUntil } from 'rxjs';
 import { environment } from '../../../../environments/environment';
+import { TranslateService, TranslateModule } from '@ngx-translate/core';
+import { inject } from '@angular/core';
 
 interface Column {
     field: string;
@@ -63,7 +65,8 @@ interface Column {
         CalendarModule,
         ToggleSwitchModule,
         PaginatorModule,
-        TooltipModule
+        TooltipModule,
+        TranslateModule
     ],
     providers: [MessageService, ConfirmationService, HeroService]
 })
@@ -81,15 +84,10 @@ export class HeroListComponent extends ComponentBase implements OnInit {
         pages: 0
     });
 
-    statusOptions = [
-        { label: 'Active', value: true },
-        { label: 'Inactive', value: false }
-    ];
+    translate = inject(TranslateService);
 
-    alwaysOptions = [
-        { label: 'Always Active', value: true },
-        { label: 'Scheduled', value: false }
-    ];
+    statusOptions: any[] = [];
+    alwaysOptions: any[] = [];
 
     @ViewChild('dt') dt: Table | undefined;
     cols!: Column[];
@@ -114,14 +112,36 @@ export class HeroListComponent extends ComponentBase implements OnInit {
     ngOnInit() {
         this.buildForm();
         this.loadHeroes();
+        this.initializeOptions();
+        this.updateColumns();
+        
+        this.translate.onLangChange.subscribe(() => {
+            this.initializeOptions();
+            this.updateColumns();
+        });
+    }
+
+    initializeOptions() {
+        this.statusOptions = [
+            { label: this.translate.instant('common.active'), value: true },
+            { label: this.translate.instant('common.inactive'), value: false }
+        ];
+
+        this.alwaysOptions = [
+            { label: this.translate.instant('hero.alwaysActive'), value: true },
+            { label: this.translate.instant('hero.scheduled'), value: false }
+        ];
+    }
+
+    updateColumns() {
         this.cols = [
-            { field: 'title', header: 'Title' },
-            { field: 'subTitle', header: 'Subtitle' },
-            { field: 'image', header: 'Image' },
-            { field: 'video', header: 'Video' },
-            { field: 'isAlways', header: 'Type' },
-            { field: 'isActive', header: 'Status' },
-            { field: 'actions', header: 'Actions' }
+            { field: 'title', header: this.translate.instant('hero.title') },
+            { field: 'subTitle', header: this.translate.instant('hero.subtitle') },
+            { field: 'image', header: this.translate.instant('hero.image') },
+            { field: 'video', header: this.translate.instant('hero.video') },
+            { field: 'isAlways', header: this.translate.instant('hero.type') },
+            { field: 'isActive', header: this.translate.instant('common.status') },
+            { field: 'actions', header: this.translate.instant('common.actions') }
         ];
     }
 
@@ -180,6 +200,18 @@ export class HeroListComponent extends ComponentBase implements OnInit {
         return isAlways ? 'info' : 'warning';
     }
 
+    getStatusLabel(status: boolean): string {
+        return status 
+            ? this.translate.instant('common.active') 
+            : this.translate.instant('common.inactive');
+    }
+
+    getTypeLabel(isAlways: boolean): string {
+        return isAlways 
+            ? this.translate.instant('hero.alwaysActive') 
+            : this.translate.instant('hero.scheduled');
+    }
+
     onGlobalFilter(dt: Table, event: any): void {
         dt.filterGlobal((event.target as HTMLInputElement).value, 'contains');
     }
@@ -199,7 +231,7 @@ export class HeroListComponent extends ComponentBase implements OnInit {
                 this.pagination.set(res.data.pagination);
             },
             error: () => this.messageService.add({
-                severity: 'error', summary: 'Error', detail: 'Failed to load heroes', life: 1000
+                severity: 'error', summary: this.translate.instant('common.error'), detail: this.translate.instant('hero.failedToLoad'), life: 1000
             })
         });
     }
@@ -222,17 +254,26 @@ export class HeroListComponent extends ComponentBase implements OnInit {
     }
 
     deleteHero(hero: IHero) {
+        const heroTitle = hero.title?.en || hero.title?.ar || hero._id;
         this.confirmationService.confirm({
-            message: `Are you sure you want to delete "${hero.title}"?`,
-            header: 'Confirm',
+            message: this.translate.instant('hero.confirmDelete', { title: heroTitle }),
+            header: this.translate.instant('common.confirm'),
             icon: 'pi pi-exclamation-triangle',
             accept: () => {
                 this.heroService.deleteHero(hero._id!).pipe(takeUntil(this.destroy$)).subscribe({
                     next: () => {
                         this.loadHeroes();
-                        this.messageService.add({ severity: 'success', summary: 'Deleted', detail: 'Hero deleted' });
+                        this.messageService.add({ 
+                            severity: 'success', 
+                            summary: this.translate.instant('common.delete'), 
+                            detail: this.translate.instant('hero.deletedSuccessfully') 
+                        });
                     },
-                    error: () => this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Delete failed' })
+                    error: () => this.messageService.add({ 
+                        severity: 'error', 
+                        summary: this.translate.instant('common.error'), 
+                        detail: this.translate.instant('hero.failedToDelete') 
+                    })
                 });
             }
         });
@@ -243,7 +284,7 @@ export class HeroListComponent extends ComponentBase implements OnInit {
 
         if (this.heroForm.invalid) {
             this.messageService.add({
-                severity: 'error', summary: 'Error', detail: 'Please fix form errors', life: 1000
+                severity: 'error', summary: this.translate.instant('common.error'), detail: this.translate.instant('hero.fixFormErrors'), life: 1000
             });
             return;
         }
@@ -259,14 +300,14 @@ export class HeroListComponent extends ComponentBase implements OnInit {
                 this.loadHeroes();
                 this.messageService.add({
                     severity: 'success',
-                    summary: formValue._id ? 'Updated' : 'Created',
-                    detail: `Hero ${formValue._id ? 'updated' : 'created'} successfully`
+                    summary: formValue._id ? this.translate.instant('common.update') : this.translate.instant('common.create'),
+                    detail: formValue._id ? this.translate.instant('hero.updatedSuccessfully') : this.translate.instant('hero.createdSuccessfully')
                 });
                 this.hideDialog();
             },
             error: (error) => {
                 this.messageService.add({
-                    severity: 'error', summary: 'Error', detail: 'Save failed', life: 1000
+                    severity: 'error', summary: this.translate.instant('common.error'), detail: this.translate.instant('hero.failedToSave'), life: 1000
                 });
             }
         });
