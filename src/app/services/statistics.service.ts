@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { DashboardStatistics, RevenueStatistics, TopProduct, TopPackage, CustomerStatistics, TopState, OrderCountStatistics, AverageOrderValue, SalesTrend, PaymentMethodStatistics } from '../interfaces/statistics.interface';
+import { DashboardStatistics, RevenueStatistics, TopProduct, TopPackage, CustomerStatistics, TopState, OrderCountStatistics, AverageOrderValue, SalesTrend, PaymentMethodStatistics, ProfitStatisticsResponse, EcommerceStatistics } from '../interfaces/statistics.interface';
 import { CommonService } from '../core/services/common.service';
 import { GenericApiService } from '../core/services/generic-api.service';
 import { BaseResponse } from '../core/models/baseResponse';
@@ -86,6 +86,22 @@ export class StatisticsService {
     message: string;
   }>> {
     return this.genericApiService.Get(`${this.apiUrl}/recalculate`);
+  }
+
+  getProfitStatistics(period?: 'day' | 'month' | 'year', startDate?: string, endDate?: string): Observable<BaseResponse<ProfitStatisticsResponse>> {
+    const params: any = {};
+    if (period) params.period = period;
+    if (startDate) params.startDate = startDate;
+    if (endDate) params.endDate = endDate;
+    return this.genericApiService.Get(`${this.apiUrl}/profit`, params);
+  }
+
+  getEcommerceStatistics(period?: 'day' | 'month' | 'year', startDate?: string, endDate?: string): Observable<BaseResponse<EcommerceStatistics>> {
+    const params: any = {};
+    if (period) params.period = period;
+    if (startDate) params.startDate = startDate;
+    if (endDate) params.endDate = endDate;
+    return this.genericApiService.Get(`${this.apiUrl}/ecommerce`, params);
   }
 }
 

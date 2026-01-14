@@ -971,6 +971,121 @@
                                 </ng-template>
                             </p-card>
 
+                            <!-- Payment Method Settings Card -->
+                            <p-card styleClass="shadow-lg border-0 mb-4">
+                                <ng-template pTemplate="header">
+                                    <div
+                                        class="flex items-center gap-3 p-4 bg-gradient-to-r from-green-600 to-teal-600 text-white rounded-t-lg">
+                                        <i class="pi pi-money-bill text-2xl"></i>
+                                        <h2 class="text-xl font-semibold m-0">Payment Method Settings</h2>
+                                    </div>
+                                </ng-template>
+                                <ng-template pTemplate="content">
+                                    <div formGroupName="paymentMethodSettings" class="space-y-6">
+                                        <!-- Cash on Delivery Toggle -->
+                                        <div
+                                            class="flex items-center justify-between p-4 bg-gradient-to-r from-green-50 to-teal-50 rounded-xl border border-green-200">
+                                            <div class="flex items-center gap-3">
+                                                <div
+                                                    class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                                                    <i class="pi pi-money-bill text-green-600"></i>
+                                                </div>
+                                                <div>
+                                                    <h3 class="text-lg font-semibold text-gray-800">Cash on Delivery
+                                                    </h3>
+                                                    <p class="text-sm text-gray-600">Enable/disable cash payment method
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <p-toggleButton formControlName="cashEnabled" [onLabel]="'Enabled'"
+                                                [offLabel]="'Disabled'" [onIcon]="'pi pi-check'"
+                                                [offIcon]="'pi pi-times'" styleClass="p-button-sm">
+                                            </p-toggleButton>
+                                        </div>
+
+                                        <!-- Wallet Payment Toggle -->
+                                        <div
+                                            class="flex items-center justify-between p-4 bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl border border-purple-200">
+                                            <div class="flex items-center gap-3">
+                                                <div
+                                                    class="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
+                                                    <i class="pi pi-wallet text-purple-600"></i>
+                                                </div>
+                                                <div class="flex-1">
+                                                    <h3 class="text-lg font-semibold text-gray-800">Wallet Payment
+                                                        (Vodafone Cash)</h3>
+                                                    <p class="text-sm text-gray-600">Enable/disable wallet payment
+                                                        method</p>
+                                                </div>
+                                            </div>
+                                            <p-toggleButton formControlName="walletEnabled" [onLabel]="'Enabled'"
+                                                [offLabel]="'Disabled'" [onIcon]="'pi pi-check'"
+                                                [offIcon]="'pi pi-times'" styleClass="p-button-sm">
+                                            </p-toggleButton>
+                                        </div>
+
+                                        @if(businessProfileForm.get('paymentMethodSettings.walletEnabled')?.value) {
+                                        <div class="pt-4 border-t border-gray-200">
+                                            <label for="walletAccountNumber"
+                                                class="block text-sm font-semibold text-gray-700 mb-2">
+                                                Wallet Account Number
+                                            </label>
+                                            <input id="walletAccountNumber" type="text" pInputText
+                                                formControlName="walletAccountNumber" class="w-full"
+                                                placeholder="e.g., 010602123312"
+                                                [readonly]="!isEditMode()" />
+                                            <small class="text-gray-500">Wallet account number to display on checkout
+                                                page</small>
+                                        </div>
+                                        }
+
+                                        <!-- Paymob Payment Toggle -->
+                                        <div
+                                            class="flex items-center justify-between p-4 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl border border-indigo-200">
+                                            <div class="flex items-center gap-3">
+                                                <div
+                                                    class="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center">
+                                                    <i class="pi pi-credit-card text-indigo-600"></i>
+                                                </div>
+                                                <div>
+                                                    <h3 class="text-lg font-semibold text-gray-800">Paymob Payment
+                                                    </h3>
+                                                    <p class="text-sm text-gray-600">Enable/disable Paymob payment
+                                                        method</p>
+                                                </div>
+                                            </div>
+                                            <p-toggleButton formControlName="paymobEnabled" [onLabel]="'Enabled'"
+                                                [offLabel]="'Disabled'" [onIcon]="'pi pi-check'"
+                                                [offIcon]="'pi pi-times'" styleClass="p-button-sm">
+                                            </p-toggleButton>
+                                        </div>
+
+                                        <!-- Info Box -->
+                                        <div
+                                            class="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                                            <div class="flex items-start gap-3">
+                                                <i
+                                                    class="pi pi-info-circle text-blue-600 dark:text-blue-400 text-xl"></i>
+                                                <div class="flex-1">
+                                                    <h4 class="font-semibold text-blue-900 dark:text-blue-100 mb-2">
+                                                        Payment Method Configuration</h4>
+                                                    <ul
+                                                        class="text-sm text-blue-800 dark:text-blue-200 space-y-1 list-disc list-inside">
+                                                        <li>Only enabled payment methods will be displayed on the
+                                                            website checkout page</li>
+                                                        <li>Wallet payment requires account number to be displayed to
+                                                            customers</li>
+                                                        <li>Paymob payment also requires Paymob settings to be
+                                                            configured</li>
+                                                        <li>Changes are saved when you save the business profile</li>
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </ng-template>
+                            </p-card>
+
                             <!-- Social Media Card -->
                             <p-card styleClass="shadow-lg border-0 mb-4">
                                 <ng-template pTemplate="header">

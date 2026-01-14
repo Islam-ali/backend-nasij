@@ -34,6 +34,13 @@ export interface IPaymobSettings {
   enabled: boolean;
 }
 
+export interface IPaymentMethodSettings {
+  cashEnabled?: boolean;
+  walletEnabled?: boolean;
+  paymobEnabled?: boolean;
+  walletAccountNumber?: string;
+}
+
 export interface IScript {
   position: 'head' | 'body';
   script: string;
@@ -51,6 +58,7 @@ export interface IBusinessProfile {
   termsOfService: MultilingualText;
   vodafoneCashAccount: string;
   paymobSettings?: IPaymobSettings;
+  paymentMethodSettings?: IPaymentMethodSettings;
   primaryColor?: string;
   headerAlignment?: HeaderAlignment;
   faq: IFAQ[];

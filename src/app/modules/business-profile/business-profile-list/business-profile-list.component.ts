@@ -187,6 +187,12 @@ export class BusinessProfileListComponent extends ComponentBase implements OnIni
         webhookUrl: [''],
         responseCallbackUrl: ['']
       }),
+      paymentMethodSettings: this.fb.group({
+        cashEnabled: [true],
+        walletEnabled: [true],
+        paymobEnabled: [true],
+        walletAccountNumber: ['']
+      }),
       privacyPolicy: this.fb.group({
         en: [''],
         ar: ['']
@@ -354,6 +360,12 @@ export class BusinessProfileListComponent extends ComponentBase implements OnIni
         callbackUrl: '',
         webhookUrl: '',
         responseCallbackUrl: ''
+      },
+      paymentMethodSettings: profile.paymentMethodSettings || {
+        cashEnabled: true,
+        walletEnabled: true,
+        paymobEnabled: true,
+        walletAccountNumber: ''
       },
       privacyPolicy: {
         en: profile.privacyPolicy.en,

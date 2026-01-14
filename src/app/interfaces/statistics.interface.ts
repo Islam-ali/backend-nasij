@@ -89,8 +89,36 @@ export interface PaymentMethodStatistics {
   totalRevenue: number;
 }
 
+export interface ProfitStatistics {
+  revenue: number;
+  costOfGoodsSold: number;
+  expenses: number;
+  grossProfit: number;
+  netProfit: number;
+  profitMargin: number;
+  grossProfitMargin: number;
+}
+
+export interface ProfitStatisticsResponse {
+  period: {
+    type: 'day' | 'month' | 'year';
+    startDate: Date;
+    endDate: Date;
+  };
+  current: ProfitStatistics;
+  previous: ProfitStatistics;
+  comparison: {
+    revenueChange: number;
+    revenueChangePercent: number;
+    netProfitChange: number;
+    netProfitChangePercent: number;
+    profitMarginChange: number;
+  };
+}
+
 export interface DashboardStatistics {
   revenue: RevenueStatistics;
+  profit?: ProfitStatisticsResponse;
   orderCount: OrderCountStatistics;
   averageOrderValue: AverageOrderValue;
   salesTrend: SalesTrend[];
@@ -108,3 +136,11 @@ export interface DashboardStatistics {
   };
 }
 
+export interface EcommerceStatistics extends Omit<DashboardStatistics, 'profit'> {
+  profit: ProfitStatistics;
+  period: {
+    type: 'day' | 'month' | 'year';
+    startDate: Date;
+    endDate: Date;
+  };
+}
