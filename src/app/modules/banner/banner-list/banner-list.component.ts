@@ -25,6 +25,7 @@ import { Banner, SupportedLanguage } from '../../../interfaces/banner.interface'
 
 // Components
 import { UploadFilesComponent } from '../../../shared/components/fields/upload-files/upload-files.component';
+import { GradientBuilderComponent } from '../../../shared/components/gradient-builder/gradient-builder.component';
 import { BaseResponse } from '../../../core/models/baseResponse';
 import { CategoryService } from '../../../services/category.service';
 import { BrandService } from '../../../services/brand.service';
@@ -60,6 +61,7 @@ import { inject } from '@angular/core';
     CalendarModule,
     DropdownModule,
     UploadFilesComponent,
+    GradientBuilderComponent,
     TextareaModule,
     MultiLanguagePipe,
     TranslateModule
@@ -90,6 +92,10 @@ export class BannerListComponent extends ComponentBase implements OnInit {
   currentLanguage = signal<SupportedLanguage>('en');
   languages = signal<{label: string, value: SupportedLanguage}[]>([]);
 
+  // Alignment options
+  alignItemsOptions: { label: string, value: string }[] = [];
+  justifyContentOptions: { label: string, value: string }[] = [];
+
   constructor(
     private bannerService: BannerService,
     private messageService: MessageService,
@@ -111,11 +117,29 @@ export class BannerListComponent extends ComponentBase implements OnInit {
     this.loadBrands();
     this.loadProducts();
     this.loadPackages();
+    this.updateAlignmentOptions();
     
     this.translate.onLangChange.subscribe(() => {
       this.initializeLanguages();
       this.loadparams();
+      this.updateAlignmentOptions();
     });
+  }
+
+  updateAlignmentOptions() {
+    this.alignItemsOptions = [
+      { label: this.translate.instant('banner.alignItemsFlexStart'), value: 'flex-start' },
+      { label: this.translate.instant('banner.alignItemsCenter'), value: 'center' },
+      { label: this.translate.instant('banner.alignItemsFlexEnd'), value: 'flex-end' }
+    ];
+
+    this.justifyContentOptions = [
+      { label: this.translate.instant('banner.justifyContentFlexStart'), value: 'flex-start' },
+      { label: this.translate.instant('banner.justifyContentCenter'), value: 'center' },
+      { label: this.translate.instant('banner.justifyContentFlexEnd'), value: 'flex-end' },
+      { label: this.translate.instant('banner.justifyContentSpaceBetween'), value: 'space-between' },
+      { label: this.translate.instant('banner.justifyContentSpaceAround'), value: 'space-around' }
+    ];
   }
 
   initializeLanguages() {
@@ -146,6 +170,9 @@ export class BannerListComponent extends ComponentBase implements OnInit {
       isActive: [true],
       startDate: [null],
       endDate: [null],
+      background: [''],
+      alignItems: ['center'],
+      justifyContent: ['center'],
       buttons: this.fb.array([])
     });
   }
@@ -248,7 +275,10 @@ export class BannerListComponent extends ComponentBase implements OnInit {
       image: banner.image,
       isActive: banner.isActive,
       startDate: banner.startDate ? new Date(banner.startDate) : null,
-      endDate: banner.endDate ? new Date(banner.endDate) : null
+      endDate: banner.endDate ? new Date(banner.endDate) : null,
+      background: banner.background || '',
+      alignItems: banner.alignItems || 'center',
+      justifyContent: banner.justifyContent || 'center'
     });
   }
 
@@ -493,5 +523,48 @@ export class BannerListComponent extends ComponentBase implements OnInit {
   getLanguageLabel(lang: SupportedLanguage): string {
     const language = this.languages().find(l => l.value === lang);
     return language ? language.label : lang;
+  }
+
+  onGradientChange(gradient: string) {
+    this.bannerForm.get('background')?.setValue(gradient);
+  }
+
+  // Helper methods for gradient builder
+  extractGradientColors(gradientString: string): string[] {
+    if (!gradientString || !gradientString.includes('linear-gradient')) {
+      return ['#ff512f', '#dd2476'];
+    }
+
+    try {
+      // Extract colors from linear-gradient string
+      const colorsMatch = gradientString.match(/linear-gradient\([^,]+,\s*(.+)\)/);
+      if (colorsMatch) {
+        const colors = colorsMatch[1].split(',').map(color => color.trim());
+        return colors.filter(color => color && !color.includes('deg') && !color.startsWith('to '));
+      }
+    } catch (error) {
+      console.warn('Error parsing gradient colors:', error);
+    }
+
+    return ['#ff512f', '#dd2476'];
+  }
+
+  extractGradientDirection(gradientString: string): string {
+    if (!gradientString || !gradientString.includes('linear-gradient')) {
+      return 'to right';
+    }
+
+    try {
+      // Extract direction from linear-gradient string
+      const directionMatch = gradientString.match(/linear-gradient\(([^,]+),\s*.+\)/);
+      if (directionMatch) {
+        const direction = directionMatch[1].trim();
+        return direction;
+      }
+    } catch (error) {
+      console.warn('Error parsing gradient direction:', error);
+    }
+
+    return 'to right';
   }
 } 

@@ -1,0 +1,117 @@
+<div class="gradient-builder" [class.compact]="compact">
+  <!-- Live Preview -->
+  <div class="preview-section">
+    <div
+      class="gradient-preview"
+      [style.background]="currentGradient"
+      (click)="copyToClipboard()">
+      <div class="preview-overlay">
+        <div class="copy-indicator">
+          <i class="pi pi-copy"></i>
+          <span>Click to copy</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="css-output">
+      <code>{{ gradientCSS }}</code>
+      <button
+        type="button"
+        class="copy-btn"
+        (click)="copyToClipboard()"
+        title="Copy to clipboard">
+        <i class="pi pi-copy"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Controls -->
+  <div class="controls-section">
+    <!-- Direction Selector -->
+    <div class="control-group">
+      <label class="control-label">Direction</label>
+      <div class="direction-grid">
+        <button
+          type="button"
+          *ngFor="let dir of directions"
+          class="direction-btn w-12"
+          [class.active]="gradientForm.get('direction')?.value === dir.value"
+          (click)="setDirection(dir.value)"
+          [title]="dir.name">
+          {{ dir.label }}
+        </button>
+      </div>
+    </div>
+
+    <!-- Color Picker -->
+    <div class="control-group">
+      <div class="color-header">
+        <label class="control-label">Colors</label>
+        <button
+          type="button"
+          class="add-color-btn"
+          (click)="addColor()"
+          title="Add color">
+          <i class="pi pi-plus"></i>
+        </button>
+      </div>
+
+      <div class="colors-list">
+        <div
+          *ngFor="let colorControl of colorsArray.controls; let i = index"
+          class="color-item"
+          [class.first]="i === 0"
+          [class.last]="i === colorsArray.length - 1">
+
+          <input
+            type="color"
+            class="color-input"
+            [formControl]="getColorControl(i)"
+            (input)="onColorPickerInput(i, $event)"
+          />
+
+          <input
+            type="text"
+            class="color-text"
+            [class.color-valid]="isValidColor(colorValues[i] || '')"
+            [class.color-invalid]="(colorValues[i] || '') && !isValidColor(colorValues[i] || '')"
+            [(ngModel)]="colorValues[i]"
+            placeholder="#FF512F"
+            (input)="onColorTextInput(i, $event)"
+            (blur)="onColorTextBlur(i, $event)"
+            spellcheck="false"
+            autocomplete="off"
+          />
+
+          <button
+            *ngIf="colorsArray.length > 2"
+            type="button"
+            class="remove-color-btn"
+            (click)="removeColor(i)"
+            title="Remove color">
+            <i class="pi pi-times"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Presets (only if not compact) -->
+    <div *ngIf="!compact" class="control-group">
+      <label class="control-label">Presets</label>
+      <div class="presets-grid">
+        <button
+          type="button"
+          *ngFor="let preset of presets"
+          class="preset-btn"
+          (click)="loadPreset(preset)"
+          [title]="preset.name">
+          <div
+            class="preset-preview"
+            [style.background]="'linear-gradient(to right, ' + preset.colors.join(', ') + ')'">
+          </div>
+          <span class="preset-name">{{ preset.name }}</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

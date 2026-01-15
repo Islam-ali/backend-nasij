@@ -1,0 +1,19 @@
+<div class="gradient-input-container">
+  <input
+    type="text"
+    class="gradient-input"
+    [formControl]="gradientControl"
+    [placeholder]="placeholder"
+    [readonly]="readonly"
+    [attr.dir]="isRTL ? 'rtl' : 'ltr'"
+    (focus)="onInputFocus()"
+    [style.background]="gradientString"
+  />
+
+  <!-- Gradient preview overlay (optional visual enhancement) -->
+  <div
+    class="gradient-overlay"
+    [style.background]="gradientString"
+    [class.readonly]="readonly"
+  ></div>
+</div>

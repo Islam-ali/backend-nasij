@@ -17,6 +17,9 @@ export interface Banner {
   isActive?: boolean;
   startDate?: Date;
   endDate?: Date;
+  background?: string;       // Background color or gradient
+  alignItems?: string;      // Vertical alignment (flex-start, center, flex-end)
+  justifyContent?: string;   // Horizontal alignment (flex-start, center, flex-end, space-between, space-around)
   createdAt?: Date;
   updatedAt?: Date;
 }
