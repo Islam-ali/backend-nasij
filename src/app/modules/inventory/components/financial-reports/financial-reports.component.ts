@@ -127,7 +127,6 @@ export class FinancialReportsComponent implements OnInit {
           this.loadingProfit = false;
         },
         error: (error) => {
-          console.error('Error generating profit report:', error);
           this.loadingProfit = false;
         }
       });
@@ -156,7 +155,6 @@ export class FinancialReportsComponent implements OnInit {
           this.loadingCashFlow = false;
         },
         error: (error) => {
-          console.error('Error generating cash flow report:', error);
           this.loadingCashFlow = false;
         }
       });
@@ -187,7 +185,6 @@ export class FinancialReportsComponent implements OnInit {
           this.loadingTopProducts = false;
         },
         error: (error) => {
-          console.error('Error generating top products report:', error);
           this.loadingTopProducts = false;
         }
       });

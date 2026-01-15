@@ -316,7 +316,6 @@ export class FeaturedCollectionsListComponent extends ComponentBase implements O
 
   getColSpanGroup(index: number): FormGroup {
     if (index < 0 || index >= this.colSpansArray.length) {
-      console.error(`Invalid index for colSpan: ${index}. Array length: ${this.colSpansArray.length}`);
       // Return a default group to prevent errors
       return this.fb.group({
         sm: [1],
@@ -352,7 +351,6 @@ export class FeaturedCollectionsListComponent extends ComponentBase implements O
 
   getItemCustomStyleControl(index: number): FormControl {
     if (index < 0 || index >= this.itemsCustomStyleArray.length) {
-      console.error(`Invalid index for item custom style: ${index}. Array length: ${this.itemsCustomStyleArray.length}`);
       return this.fb.control('');
     }
     return this.itemsCustomStyleArray.at(index) as FormControl;
@@ -416,7 +414,6 @@ export class FeaturedCollectionsListComponent extends ComponentBase implements O
   removeCollection(index: number) {
     // Validate index
     if (index < 0 || index >= this.collectionsArray.length) {
-      console.error(`Invalid index: ${index}. Array length: ${this.collectionsArray.length}`);
       return;
     }
 
@@ -449,13 +446,11 @@ export class FeaturedCollectionsListComponent extends ComponentBase implements O
       this.expandedCollectionIndex.set(this.expandedCollectionIndex()! - 1);
     }
 
-    console.log(this.collectionsArray.value);
   }
   getControlImage(index: number): FormControl {
     const control = this.collectionsArray.at(index).get('image') as FormControl;
     // Ensure the control is properly initialized
     if (!control) {
-      console.error(`Image control not found for collection index ${index}`);
     }
     return control;
   }
@@ -503,7 +498,6 @@ export class FeaturedCollectionsListComponent extends ComponentBase implements O
           this.categories.set(response.data);
         },
         error: (error) => {
-          console.error('Error loading categories:', error);
         }
       });
   }
@@ -516,7 +510,6 @@ export class FeaturedCollectionsListComponent extends ComponentBase implements O
           this.brands.set(response.data);
         },
         error: (error) => {
-          console.error('Error loading brands:', error);
         }
       });
   }
@@ -544,7 +537,6 @@ export class FeaturedCollectionsListComponent extends ComponentBase implements O
           this.featuredCollections.set(response.data);
         },
         error: (error) => {
-          console.error('Error loading featured collections:', error);
           this.messageService.add({
             severity: 'error',
             summary: 'Error',
@@ -706,9 +698,7 @@ export class FeaturedCollectionsListComponent extends ComponentBase implements O
     this.collectionsArray.controls.forEach((control, i) => {
       (control as any).collectionIndex = i;
     });
-    console.log(this.featuredCollectionForm.value);
     this.selectedFeaturedCollections = [featuredCollection];
-    console.log(this.selectedFeaturedCollections);
     this.featuredCollectionDialog = true;
   }
 
@@ -731,7 +721,6 @@ export class FeaturedCollectionsListComponent extends ComponentBase implements O
               this.loadFeaturedCollections();
             },
             error: (error) => {
-              console.error('Error deleting featured collection:', error);
               this.messageService.add({
                 severity: 'error',
                 summary: 'Error',
@@ -764,7 +753,6 @@ export class FeaturedCollectionsListComponent extends ComponentBase implements O
           });
         },
         error: (error) => {
-          console.error('Error toggling featured collection:', error);
           this.messageService.add({
             severity: 'error',
             summary: 'Error',
@@ -781,7 +769,6 @@ export class FeaturedCollectionsListComponent extends ComponentBase implements O
 
   saveFeaturedCollection() {
     this.submitted = true;
-    console.log('Form value before processing:', this.featuredCollectionForm.value);
     if (this.featuredCollectionForm.valid && this.collectionsArray.length > 0) {
       // Build formData from FormControls directly to ensure we get the latest values
       const formData: any = {
@@ -805,8 +792,6 @@ export class FeaturedCollectionsListComponent extends ComponentBase implements O
         const originalIndex = (collectionControl as any).collectionIndex;
         
         // Log for debugging
-        console.log(`Collection ${i} image value:`, imageValue);
-        console.log(`Collection ${i} full control value:`, collectionControl.value);
 
         // Determine final image value:
         // - If imageControl has a value, use it.
@@ -828,14 +813,8 @@ export class FeaturedCollectionsListComponent extends ComponentBase implements O
           buttonLink: collectionControl.get('buttonLink')?.value || ''
         };
         
-        console.log(`Processed collection ${i}:`, collection);
         formData.collections.push(collection);
       }
-      
-      console.log('Collections array length:', this.collectionsArray.length);
-      console.log('FormData collections length:', formData.collections.length);
-      console.log('Final formData before processing gridConfig:', JSON.stringify(formData, null, 2));
-      
       // Handle parentCustomStyle - keep as string, trim and set to undefined if empty
       if (formData.gridConfig?.parentCustomStyle) {
         if (typeof formData.gridConfig.parentCustomStyle === 'string') {
@@ -882,7 +861,6 @@ export class FeaturedCollectionsListComponent extends ComponentBase implements O
       if (this.selectedFeaturedCollections.length > 0) {
         // Update existing featured collection
         const featuredCollection = this.selectedFeaturedCollections[0];
-        console.log(formData);
         this.featuredCollectionsService.updateFeaturedCollection(featuredCollection._id, formData)
           .pipe(takeUntil(this.destroy$))
           .subscribe({
@@ -897,7 +875,6 @@ export class FeaturedCollectionsListComponent extends ComponentBase implements O
               this.loadFeaturedCollections();
             },
             error: (error) => {
-              console.error('Error updating featured collection:', error);
               this.messageService.add({
                 severity: 'error',
                 summary: 'Error',
@@ -921,7 +898,6 @@ export class FeaturedCollectionsListComponent extends ComponentBase implements O
               this.loadFeaturedCollections();
             },
             error: (error) => {
-              console.error('Error creating featured collection:', error);
               this.messageService.add({
                 severity: 'error',
                 summary: 'Error',
@@ -1365,7 +1341,6 @@ export class FeaturedCollectionsListComponent extends ComponentBase implements O
     event.preventDefault();
     event.stopPropagation();
 
-    console.log('🎯 Starting resize for collection:', collectionIndex);
 
     this.isResizingCollection = true;
     this.resizingCollectionIndex = collectionIndex;
@@ -1382,7 +1357,6 @@ export class FeaturedCollectionsListComponent extends ComponentBase implements O
       
       // Calculate actual column width including gap
       this.columnWidth = (gridWidth - (gap * (gridCols - 1))) / gridCols;
-      console.log('📏 Column width:', this.columnWidth, 'Grid:', gridWidth, 'Cols:', gridCols);
     } else {
       this.columnWidth = 150; // Fallback
     }
@@ -1413,7 +1387,6 @@ export class FeaturedCollectionsListComponent extends ComponentBase implements O
     const clientX = event instanceof MouseEvent ? event.clientX : event.touches[0].clientX;
     const deltaX = clientX - this.resizeStartX;
 
-    console.log('📐 Delta X:', deltaX, 'Column width:', this.columnWidth);
 
     // Calculate new span based on actual column width
     const colSpanDelta = Math.round(deltaX / this.columnWidth);
@@ -1422,7 +1395,6 @@ export class FeaturedCollectionsListComponent extends ComponentBase implements O
 
     const newColSpan = Math.max(1, Math.min(this.resizeStartColSpan + colSpanDelta, maxColSpan));
 
-    console.log('📊 New span:', newColSpan, 'Delta:', colSpanDelta, 'Max:', maxColSpan);
 
     // Only update if span changed
     const colSpanGroup = this.getColSpanGroup(this.resizingCollectionIndex);
@@ -1443,13 +1415,6 @@ export class FeaturedCollectionsListComponent extends ComponentBase implements O
         lg: newColSpan,
         xl: Math.max(1, Math.min(Math.round(originalXl * ratio), gridCols?.xl || 12))
       }, { emitEvent: false }); // Don't emit to avoid performance issues
-
-      console.log('✅ Updated spans:', {
-        sm: colSpanGroup.get('sm')?.value,
-        md: colSpanGroup.get('md')?.value,
-        lg: colSpanGroup.get('lg')?.value,
-        xl: colSpanGroup.get('xl')?.value
-      });
     }
   };
 
@@ -1458,7 +1423,6 @@ export class FeaturedCollectionsListComponent extends ComponentBase implements O
    */
   private onCollectionResizeEnd = (): void => {
     if (this.isResizingCollection) {
-      console.log('🏁 Resize ended');
 
       this.isResizingCollection = false;
       const collectionIndex = this.resizingCollectionIndex;
@@ -1483,7 +1447,6 @@ export class FeaturedCollectionsListComponent extends ComponentBase implements O
         life: 2000
       });
 
-      console.log('✨ Final span:', newSpan);
     }
   };
 

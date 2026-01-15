@@ -178,7 +178,6 @@ export class BannerListComponent extends ComponentBase implements OnInit {
         this.products.set(response.data);
       },
       error: (error) => {
-        console.error('Error loading products:', error);
       }
     });
   }
@@ -191,7 +190,6 @@ export class BannerListComponent extends ComponentBase implements OnInit {
         this.loading.set(false);
       },
       error: (error) => {
-        console.error('Error loading banners:', error);
         this.messageService.add({
           severity: 'error',
           summary: this.translate.instant('common.error'),
@@ -274,7 +272,6 @@ export class BannerListComponent extends ComponentBase implements OnInit {
           this.loadBanners();
         },
         error: (error) => {
-          console.error('Error deleting banner:', error);
           this.messageService.add({
             severity: 'error',
             summary: this.translate.instant('common.error'),
@@ -317,7 +314,6 @@ export class BannerListComponent extends ComponentBase implements OnInit {
             this.loadBanners();
           },
           error: (error) => {
-            console.error('Error updating banner:', error);
             this.messageService.add({
               severity: 'error',
               summary: this.translate.instant('common.error'),
@@ -339,7 +335,6 @@ export class BannerListComponent extends ComponentBase implements OnInit {
             this.loadBanners();
           },
           error: (error) => {
-            console.error('Error creating banner:', error);
             this.messageService.add({
               severity: 'error',
               summary: this.translate.instant('common.error'),
@@ -365,7 +360,6 @@ export class BannerListComponent extends ComponentBase implements OnInit {
         this.loadBanners();
       },
       error: (error) => {
-        console.error('Error toggling banner:', error);
         this.messageService.add({
           severity: 'error',
           summary: this.translate.instant('common.error'),
@@ -401,7 +395,6 @@ export class BannerListComponent extends ComponentBase implements OnInit {
           this.categories.set(response.data);
         },
         error: (error) => {
-          console.error('Error loading categories:', error);
         }
       });
   }
@@ -414,7 +407,6 @@ export class BannerListComponent extends ComponentBase implements OnInit {
           this.brands.set(response.data);
         },
         error: (error) => {
-          console.error('Error loading brands:', error);
         }
       });
   }
@@ -424,7 +416,6 @@ export class BannerListComponent extends ComponentBase implements OnInit {
         this.packages.set(response.data); 
       },
       error: (error) => {
-        console.error('Error loading packages:', error);
       }
     });
   }

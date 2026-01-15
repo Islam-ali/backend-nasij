@@ -17,7 +17,6 @@ export class HttpLoaderFactory implements TranslateLoader {
     const url = `${this.prefix}${lang}${this.suffix}`;
     return this.http.get(url).pipe(
       catchError((error) => {
-        console.warn(`Could not load translation for '${lang}' from '${url}'. Using empty object.`, error);
         return of({});
       })
     );

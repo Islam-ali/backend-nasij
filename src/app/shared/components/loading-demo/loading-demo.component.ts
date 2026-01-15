@@ -93,35 +93,29 @@ export class LoadingDemoComponent {
 
   showLoading(): void {
     // This would typically call a service method
-    console.log('Showing loading...');
     // In a real app, you would inject the loading service and call:
     // this.loadingService.show();
   }
 
   showLoadingWithMessage(): void {
-    console.log('Showing loading with custom message...');
     // this.loadingService.showWithMessage('Processing your request...');
   }
 
   showLongLoading(): void {
-    console.log('Showing long loading...');
     // this.loadingService.showWithMessage('This might take a while...');
     // setTimeout(() => this.loadingService.hide(), 5000);
   }
 
   hideLoading(): void {
-    console.log('Hiding loading...');
     // this.loadingService.hide();
   }
 
   simulateApiCall(): void {
-    console.log('Simulating API call...');
     // this.loadingService.showWithMessage('Fetching data from server...');
     // setTimeout(() => this.loadingService.hide(), 3000);
   }
 
   showErrorLoading(): void {
-    console.log('Showing error loading...');
     // this.loadingService.showWithMessage('Something went wrong...');
     // setTimeout(() => this.loadingService.hide(), 2000);
   }

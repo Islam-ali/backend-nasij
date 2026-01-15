@@ -150,7 +150,6 @@ export class StatisticsDashboardComponent extends ComponentBase implements OnIni
           }
         },
         error: (error) => {
-          console.error('Error loading statistics:', error);
           this.messageService.add({
             severity: 'error',
             summary: 'Error',
@@ -385,7 +384,6 @@ export class StatisticsDashboardComponent extends ComponentBase implements OnIni
           }
         },
         error: (error) => {
-          console.error('Error recalculating statistics:', error);
           this.messageService.add({
             severity: 'error',
             summary: 'Error',

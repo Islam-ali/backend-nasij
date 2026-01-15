@@ -151,7 +151,6 @@ export class RevenueManagementComponent implements OnInit {
         this.loading = false;
       },
       error: (error) => {
-        console.error('Error loading revenues:', error);
         this.messageService.add({
           severity: 'error',
           summary: 'خطأ',
@@ -200,7 +199,6 @@ export class RevenueManagementComponent implements OnInit {
         this.loadRevenues(); // Reload the data
       },
       error: (error) => {
-        console.error('Error recalculating revenue:', error);
         this.messageService.add({
           severity: 'error',
           summary: 'خطأ',

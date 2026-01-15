@@ -212,7 +212,6 @@ export class ProductListComponent extends ComponentBase implements OnInit {
         ];
         this.exportColumns = this.cols.map(col => ({ title: col.header, dataKey: col.field }));
         this.productForm.valueChanges.subscribe((value: any) => {
-            console.log('Frontend - Images value:', value);
         });
     }
 
@@ -583,12 +582,8 @@ export class ProductListComponent extends ComponentBase implements OnInit {
 
     saveProduct(addNew: boolean = false) {
         this.submitted = true;
-        console.log('Frontend - Form value:', this.productForm.value);
-        console.log('Frontend - Form valid:', this.productForm.valid);
-        console.log('Frontend - Form errors:', this.productForm.errors);
 
         if (this.productForm.invalid) {
-            console.log('Frontend - Form is invalid');
             this.messageService.add({
                 severity: 'error', 
                 summary: this.translate.instant('common.error'), 
@@ -599,8 +594,6 @@ export class ProductListComponent extends ComponentBase implements OnInit {
         }
 
         const formValue = this.productForm.value;
-        console.log('Frontend - Sending data to backend:', JSON.stringify(formValue, null, 2));
-        
         // Process variants to handle image arrays
         if (formValue.variants) {
             formValue.variants.forEach((variant: any) => {
@@ -626,7 +619,6 @@ export class ProductListComponent extends ComponentBase implements OnInit {
 
         request$.pipe(takeUntil(this.destroy$)).subscribe({
             next: (res: BaseResponse<any>) => {
-                console.log('Frontend - Backend response:', res);
                 this.loadProducts();
                 this.messageService.add({
                     severity: 'success',
@@ -640,7 +632,6 @@ export class ProductListComponent extends ComponentBase implements OnInit {
                 this.hideDialog();
             },
             error: (error) => {
-                console.log('Frontend - Backend error:', error);
                 this.messageService.add({
                     severity: 'error', 
                     summary: this.translate.instant('common.error'), 

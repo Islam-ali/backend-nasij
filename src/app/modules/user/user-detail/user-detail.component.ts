@@ -78,7 +78,6 @@ export class UserDetailComponent extends ComponentBase implements OnInit {
                     }
                 },
                 error: (error) => {
-                    console.error('Failed to load user:', error);
                 }
             });
     }

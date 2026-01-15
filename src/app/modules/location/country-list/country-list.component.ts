@@ -92,7 +92,6 @@ export class CountryListComponent implements OnInit, OnDestroy {
         this.countries.set(countries.data || []);
       },
       error: (error) => {
-        console.error('Error loading countries:', error);
         this.messageService.add({
           severity: 'error',
           summary: 'Error',
@@ -130,7 +129,6 @@ export class CountryListComponent implements OnInit, OnDestroy {
   }
 
   viewCountry(country: ICountry): void {
-    console.log('View country:', country);
   }
 
   saveCountry(): void {
@@ -166,7 +164,6 @@ export class CountryListComponent implements OnInit, OnDestroy {
           this.loadCountries();
         }),
         catchError((error) => {
-          console.error('Error saving country:', error);
           this.messageService.add({
             severity: 'error',
             summary: 'Error',
@@ -198,7 +195,6 @@ export class CountryListComponent implements OnInit, OnDestroy {
             this.loadCountries();
           }),
           catchError((error) => {
-            console.error('Error deleting country:', error);
             this.messageService.add({
               severity: 'error',
               summary: 'Error',

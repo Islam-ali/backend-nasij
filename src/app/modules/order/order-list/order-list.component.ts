@@ -761,7 +761,6 @@ export class OrderListComponent extends ComponentBase implements OnInit {
                 this.hideDialog();
             },
             error: (error) => {
-                console.error('Error saving order:', error);
                 this.messageService.add({
                     severity: 'error',
                     summary: this.translate.instant('common.error'),

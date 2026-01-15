@@ -139,7 +139,6 @@ export class ExpenseManagementComponent implements OnInit {
         this.loading = false;
       },
       error: (error) => {
-        console.error('Error loading expenses:', error);
         this.loading = false;
       }
     });
@@ -243,7 +242,6 @@ export class ExpenseManagementComponent implements OnInit {
             this.loadExpenses();
           },
           error: (error) => {
-            console.error('Error creating expense:', error);
           }
         });
       } else if (this.showEditForm && this.selectedExpense) {
@@ -253,7 +251,6 @@ export class ExpenseManagementComponent implements OnInit {
             this.loadExpenses();
           },
           error: (error) => {
-            console.error('Error updating expense:', error);
           }
         });
       }
@@ -267,7 +264,6 @@ export class ExpenseManagementComponent implements OnInit {
           this.loadExpenses();
         },
         error: (error) => {
-          console.error('Error deleting expense:', error);
         }
       });
     }

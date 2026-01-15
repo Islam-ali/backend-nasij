@@ -100,7 +100,6 @@ export class StateListComponent implements OnInit, OnDestroy {
         this.countries.set(countries.data || []);
       },
       error: (error) => {
-        console.error('Error loading countries:', error);
       }
     });
   }
@@ -115,7 +114,6 @@ export class StateListComponent implements OnInit, OnDestroy {
         this.states.set(states.data  || []);
       },
       error: (error) => {
-        console.error('Error loading states:', error);
         this.messageService.add({
           severity: 'error',
           summary: 'Error',
@@ -154,7 +152,6 @@ export class StateListComponent implements OnInit, OnDestroy {
   }
 
   viewState(state: IState): void {
-    console.log('View state:', state);
   }
 
   saveState(): void {
@@ -191,7 +188,6 @@ export class StateListComponent implements OnInit, OnDestroy {
           this.loadStates();
         }),
         catchError((error) => {
-          console.error('Error saving state:', error);
           this.messageService.add({
             severity: 'error',
             summary: 'Error',
@@ -223,7 +219,6 @@ export class StateListComponent implements OnInit, OnDestroy {
             this.loadStates();
           }),
           catchError((error) => {
-            console.error('Error deleting state:', error);
             this.messageService.add({
               severity: 'error',
               summary: 'Error',

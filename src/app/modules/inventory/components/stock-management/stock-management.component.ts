@@ -99,7 +99,6 @@ export class StockManagementComponent implements OnInit {
         this.loading = false;
       },
       error: (error) => {
-        console.error('Error loading stock movements:', error);
         this.loading = false;
       }
     });
@@ -111,7 +110,6 @@ export class StockManagementComponent implements OnInit {
         this.stockLevels = response.data ?? [];
       },
       error: (error) => {
-        console.error('Error loading stock levels:', error);
       }
     });
   }
@@ -122,7 +120,6 @@ export class StockManagementComponent implements OnInit {
         this.lowStockAlerts = alerts.data;
       },
       error: (error) => {
-        console.error('Error loading low stock alerts:', error);
       }
     });
   }
@@ -174,7 +171,6 @@ export class StockManagementComponent implements OnInit {
           this.loadLowStockAlerts();
         },
         error: (error) => {
-          console.error('Error adding stock:', error);
         }
       });
     }
@@ -191,7 +187,6 @@ export class StockManagementComponent implements OnInit {
           this.loadLowStockAlerts();
         },
         error: (error: any) => {
-          console.error('Error adjusting stock:', error);
         }
       });
     }

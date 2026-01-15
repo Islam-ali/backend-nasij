@@ -267,10 +267,8 @@ export class UserListComponent extends ComponentBase implements OnInit {
 
     saveUser() {
         this.submitted.set(true);
-        console.log(this.userForm , this.userForm.valid);
         if (this.userForm.valid) {
             const userData = this.userForm.value;
-            console.log(this.isEdit());
             if (this.isEdit()) {
                 this.updateUser(userData);
             } else {
@@ -310,7 +308,6 @@ export class UserListComponent extends ComponentBase implements OnInit {
 
     updateUser(userData: UpdateUserDto) {
         this.loading.set(true);
-        console.log(this.user()._id);
         this.usersService.updateUser(this.user()._id!, userData)
             .pipe(
                 takeUntil(this.destroy$),

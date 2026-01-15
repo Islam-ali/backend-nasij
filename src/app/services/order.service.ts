@@ -34,15 +34,6 @@ export class OrderService {
     // Transform the order data to match backend expectations
     const transformedOrder = this.transformOrderForBackend(order);
     const cleanedOrder = this.commonService.removeNullUndefinedEmptyStringKeysAndId(transformedOrder);
-    
-    console.log('🔧 Order Update Debug:', {
-      originalOrder: order,
-      transformedOrder: transformedOrder,
-      cleanedOrder: cleanedOrder,
-      id: id,
-      url: `${this.apiUrl}/${id}`
-    });
-    
     return this.genericApiService.Put(`${this.apiUrl}/${id}`, cleanedOrder);
   }
 

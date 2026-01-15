@@ -108,7 +108,6 @@ export class FeatureListComponent extends ComponentBase implements OnInit {
         this.loading.set(false);
       },
       error: (error) => {
-        console.error('Error loading features:', error);
         this.messageService.add({
           severity: 'error',
           summary: this.translate.instant('common.error'),
@@ -165,7 +164,6 @@ export class FeatureListComponent extends ComponentBase implements OnInit {
           this.loadFeatures();
         },
         error: (error) => {
-          console.error('Error deleting feature:', error);
           this.messageService.add({
             severity: 'error',
             summary: this.translate.instant('common.error'),
@@ -201,7 +199,6 @@ export class FeatureListComponent extends ComponentBase implements OnInit {
             this.loadFeatures();
           },
           error: (error) => {
-            console.error('Error updating feature:', error);
             this.messageService.add({
               severity: 'error',
               summary: this.translate.instant('common.error'),
@@ -223,7 +220,6 @@ export class FeatureListComponent extends ComponentBase implements OnInit {
             this.loadFeatures();
           },
           error: (error) => {
-            console.error('Error creating feature:', error);
             this.messageService.add({
               severity: 'error',
               summary: this.translate.instant('common.error'),
@@ -249,7 +245,6 @@ export class FeatureListComponent extends ComponentBase implements OnInit {
         this.loadFeatures();
       },
       error: (error) => {
-        console.error('Error toggling feature:', error);
         this.messageService.add({
           severity: 'error',
           summary: this.translate.instant('common.error'),
@@ -272,7 +267,6 @@ export class FeatureListComponent extends ComponentBase implements OnInit {
         this.loadFeatures();
       },
       error: (error) => {
-        console.error('Error updating sort order:', error);
         this.messageService.add({
           severity: 'error',
           summary: this.translate.instant('common.error'),

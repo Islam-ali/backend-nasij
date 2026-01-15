@@ -183,7 +183,6 @@ export class ProductFeaturesListComponent implements OnInit, OnDestroy {
         this.categories = response.data.categories;
       },
       error: (error: any) => {
-        console.error('Failed to load categories:', error);
       },
     });
   }
@@ -194,7 +193,6 @@ export class ProductFeaturesListComponent implements OnInit, OnDestroy {
         this.brands = response.data.brands;
       },
       error: (error: any) => {
-        console.error('Failed to load brands:', error);
       },
     });
   }

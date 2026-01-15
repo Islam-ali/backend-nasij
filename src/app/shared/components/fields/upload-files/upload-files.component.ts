@@ -53,7 +53,6 @@ export class UploadFilesComponent extends ComponentBase implements OnChanges {
   @Input() control!: AbstractControl;
   
   ngOnInit() {
-    console.log('UploadFilesComponent initialized with index:', this.index, 'ID:', `dropzone-file-${this.index}`);
   }
   @Input() isApi: boolean = true;
   @Input() isDescription: boolean = false;
@@ -117,7 +116,6 @@ export class UploadFilesComponent extends ComponentBase implements OnChanges {
   }
 
   onFilesSelected(event: Event): void {
-    console.log('onFilesSelected - index:', this.index, 'ID:', `dropzone-file-${this.index}`);
     const input = event.target as HTMLInputElement;
 
     if (input.files) {
@@ -165,7 +163,6 @@ export class UploadFilesComponent extends ComponentBase implements OnChanges {
   }
 
   uploadFile(fileObj: FileWithProgress): void {
-    console.log('uploadFile - index:', this.index, 'file:', fileObj.name);
     this.updateFileState(fileObj.id, { uploading: true, progress: 0, error: undefined });
 
     this._uploadFilesService.PostImageFile({ file: fileObj.file, folderName: 'Uploads' }).subscribe({
@@ -291,7 +288,6 @@ export class UploadFilesComponent extends ComponentBase implements OnChanges {
       };
       reader.onerror = () => {
         // If reading fails (e.g., for very large files), just continue without content
-        console.warn(`Failed to read file: ${fileObj.name}`);
       };
       reader.readAsDataURL(fileObj.file);
     });
@@ -301,7 +297,6 @@ export class UploadFilesComponent extends ComponentBase implements OnChanges {
   
 
   updateFormControl(): void {
-    console.log('updateFormControl called - index:', this.index);
     // Extract filePath from files
     const files = this.files
       .filter(f => f.Result && f.Result)
@@ -310,7 +305,6 @@ export class UploadFilesComponent extends ComponentBase implements OnChanges {
     // Return single object if multiple = false, array if multiple = true
     const value = this.multiple ? files : (files.length > 0 ? files[0] : null);
     this.control.setValue(value);
-    console.log('updateFormControl completed - index:', this.index, 'value:', value);
   }
 
   get showError() {

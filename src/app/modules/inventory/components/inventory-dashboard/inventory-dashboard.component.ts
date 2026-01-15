@@ -52,7 +52,6 @@ export class InventoryDashboardComponent implements OnInit {
       error: (error) => {
         this.error = 'فشل في تحميل بيانات اللوحة';
         this.loading = false;
-        console.error('Dashboard loading error:', error);
       }
     });
   }

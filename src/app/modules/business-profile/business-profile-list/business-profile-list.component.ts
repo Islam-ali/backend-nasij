@@ -346,7 +346,6 @@ export class BusinessProfileListComponent extends ComponentBase implements OnIni
           }
         },
         error: (error) => {
-          console.error('Error loading business profile:', error);
           this.messageService.add({
             severity: 'error',
             summary: 'Error',
@@ -557,7 +556,6 @@ export class BusinessProfileListComponent extends ComponentBase implements OnIni
             window.scrollTo({ top: 0, behavior: 'smooth' });
           },
           error: (error) => {
-            console.error('Error updating business profile:', error);
             this.messageService.add({
               severity: 'error',
               summary: 'Error',
@@ -590,7 +588,6 @@ export class BusinessProfileListComponent extends ComponentBase implements OnIni
             window.scrollTo({ top: 0, behavior: 'smooth' });
           },
           error: (error) => {
-            console.error('Error creating business profile:', error);
             this.messageService.add({
               severity: 'error',
               summary: 'Error',

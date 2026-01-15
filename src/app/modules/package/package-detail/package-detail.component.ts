@@ -76,7 +76,6 @@ export class PackageDetailComponent extends ComponentBase implements OnInit {
                     }
                 },
                 error: (error) => {
-                    console.error('Failed to load package:', error);
                 }
             });
     }
@@ -95,7 +94,6 @@ export class PackageDetailComponent extends ComponentBase implements OnInit {
                     }
                 },
                 error: (error) => {
-                    console.error('Failed to load inventory summary:', error);
                 }
             });
     }

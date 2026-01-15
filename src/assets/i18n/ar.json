@@ -137,8 +137,8 @@
       "total": "إجمالي الباقات"
     },
     "states": {
-      "topBySales": "أفضل hg حسب المبيعات",
-      "state": "الولاية",
+      "topBySales": "أفضل المحافظات حسب المبيعات",
+      "state": "المحافظة",
       "orders": "الطلبات"
     },
     "paymentMethods": "طرق الدفع",
@@ -757,7 +757,7 @@
     "notifications": "الإشعارات",
     "addAddress": "إضافة عنوان",
     "address": "العنوان",
-    "stateProvince": "المحافظة/الولاية",
+    "stateProvince": "المحافظة",
     "zipCode": "الرمز البريدي",
     "defaultAddress": "العنوان الافتراضي",
     "removeAddress": "إزالة العنوان",
@@ -769,7 +769,7 @@
     "atLeastOneAddress": "عنوان واحد على الأقل مطلوب.",
     "addressRequired": "العنوان مطلوب",
     "cityRequired": "المدينة مطلوبة",
-    "stateRequired": "المحافظة/الولاية مطلوبة",
+    "stateRequired": "المحافظة مطلوبة",
     "zipCodeRequired": "الرمز البريدي مطلوب",
     "countryRequired": "الدولة مطلوبة",
     "failedToLoad": "فشل تحميل المستخدمين",

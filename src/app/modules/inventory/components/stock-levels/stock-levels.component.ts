@@ -27,7 +27,6 @@ export class StockLevelsComponent implements OnInit {
         this.loading = false;
       },
       error: (error) => {
-        console.error('Error loading stock levels:', error);
         this.loading = false;
       }
     });

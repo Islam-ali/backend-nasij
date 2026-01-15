@@ -244,7 +244,6 @@ export class CrudComponent implements OnInit {
           });
         },
         error => {
-          console.error('Error:', error);
           this.messageService.add({
             severity: 'error',
             summary: 'Error',
@@ -271,7 +270,6 @@ export class CrudComponent implements OnInit {
             });
           },
           error => {
-            console.error('Error:', error);
             this.messageService.add({
               severity: 'error',
               summary: 'Error',
@@ -289,7 +287,6 @@ export class CrudComponent implements OnInit {
         this.items = data;
       },
       (error) => {
-        console.error('Error fetching items:', error);
         this.messageService.add({
           severity: 'error',
           summary: 'Error',
