@@ -24,6 +24,7 @@ import { HeroGridBuilderComponent } from '../../featured-collections/hero-grid-b
 import { IProfessionalGridConfig } from '../../../interfaces/professional-grid.interface';
 import { UploadFilesComponent } from '../../../shared/components/fields/upload-files/upload-files.component';
 import { TextareaModule } from 'primeng/textarea';
+import { DropdownModule } from 'primeng/dropdown';
 
 @Component({
   selector: 'app-hero-layout-form',
@@ -42,7 +43,9 @@ import { TextareaModule } from 'primeng/textarea';
     TextareaModule,
     HeroGridBuilderComponent,
     UploadFilesComponent,
-    TranslateModule
+    TranslateModule,
+    DropdownModule
+    
   ],
   templateUrl: './hero-layout-form.component.html',
   styleUrls: ['./hero-layout-form.component.scss'],
@@ -56,6 +59,11 @@ export class HeroLayoutFormComponent implements OnInit {
   isEditMode = false;
   translate = inject(TranslateService);
 
+  // Layout options
+  maxWidthOptions: { label: string, value: string }[] = [];
+  justifyOptions: { label: string, value: string }[] = [];
+  alignOptions: { label: string, value: string }[] = [];
+
   constructor(
     private fb: FormBuilder,
     private heroLayoutsService: HeroLayoutsService,
@@ -65,8 +73,9 @@ export class HeroLayoutFormComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.initializeOptions();
     this.initForm();
-    
+
     // Check if we're in edit mode
     this.route.paramMap.subscribe(params => {
       const id = params.get('id');
@@ -76,6 +85,32 @@ export class HeroLayoutFormComponent implements OnInit {
         this.loadHeroLayout(id);
       }
     });
+  }
+
+  initializeOptions(): void {
+    this.maxWidthOptions = [
+      { label: this.translate.instant('heroLayout.none'), value: 'none' },
+      { label: '1200px', value: '1200px' },
+      { label: '1440px', value: '1440px' },
+      { label: '1600px', value: '1600px' },
+      { label: '1920px', value: '1920px' }
+    ];
+
+    this.justifyOptions = [
+      { label: this.translate.instant('heroLayout.justifyStart'), value: 'start' },
+      { label: this.translate.instant('heroLayout.justifyCenter'), value: 'center' },
+      { label: this.translate.instant('heroLayout.justifyEnd'), value: 'end' },
+      { label: this.translate.instant('heroLayout.justifyBetween'), value: 'between' },
+      { label: this.translate.instant('heroLayout.justifyAround'), value: 'around' },
+      { label: this.translate.instant('heroLayout.justifyEvenly'), value: 'evenly' }
+    ];
+
+    this.alignOptions = [
+      { label: this.translate.instant('heroLayout.alignStart'), value: 'start' },
+      { label: this.translate.instant('heroLayout.alignCenter'), value: 'center' },
+      { label: this.translate.instant('heroLayout.alignEnd'), value: 'end' },
+      { label: this.translate.instant('heroLayout.alignStretch'), value: 'stretch' }
+    ];
   }
 
   initForm(): void {
@@ -95,6 +130,11 @@ export class HeroLayoutFormComponent implements OnInit {
       }),
       items: this.fb.array([]),
       gridConfig: [null],
+      layout: this.fb.group({
+        maxWidth: ['1440px'],
+        justifyContent: ['center'],
+        alignItems: ['center']
+      }),
       isActive: [true],
       displayOrder: [0],
       tags: [[]]
@@ -119,6 +159,16 @@ export class HeroLayoutFormComponent implements OnInit {
             tags: heroLayout.tags || [],
             gridConfig: heroLayout.gridConfig || null
           }, { emitEvent: false });
+
+          // Patch layout settings from gridConfig if available
+          const layoutGroup = this.heroLayoutForm.get('layout') as FormGroup;
+          if (layoutGroup && heroLayout.gridConfig) {
+            layoutGroup.patchValue({
+              maxWidth: heroLayout.gridConfig.maxWidth || '1440px',
+              justifyContent: heroLayout.gridConfig.justifyContent || 'center',
+              alignItems: heroLayout.gridConfig.alignItems || 'center'
+            }, { emitEvent: false });
+          }
 
           // Patch nested FormGroups separately - always patch even if empty
           const sectionTitleGroup = this.heroLayoutForm.get('sectionTitle') as FormGroup;
@@ -271,7 +321,21 @@ export class HeroLayoutFormComponent implements OnInit {
   cleanFormData(data: any): any {
     // Deep clean: remove null, undefined, and empty string values
     const cleaned = { ...data };
-    
+
+    // Merge layout settings into gridConfig
+    if (cleaned.layout) {
+      if (!cleaned.gridConfig) {
+        cleaned.gridConfig = {};
+      }
+      cleaned.gridConfig = {
+        ...cleaned.gridConfig,
+        maxWidth: cleaned.layout.maxWidth,
+        justifyContent: cleaned.layout.justifyContent,
+        alignItems: cleaned.layout.alignItems
+      };
+      delete cleaned.layout; // Remove layout from root level
+    }
+
     // Clean gridConfig rows if exists
     if (cleaned.gridConfig?.rows) {
       const cleanedRows: any = {};

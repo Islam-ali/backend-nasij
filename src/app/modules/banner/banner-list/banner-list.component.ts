@@ -79,13 +79,14 @@ export class BannerListComponent extends ComponentBase implements OnInit {
   banner = signal<Banner | null>(null);
   submitted = signal(false);
   loading = signal(false);
-  params = signal<any[]>([]);
-  selectedparams = signal<any>(null);
   categories = signal<ICategory[]>([]);
   brands = signal<IBrand[]>([]);
-  selectedQueryParamValues = signal<{ [key: number]: any[] }>({});
   bannerForm!: FormGroup;
-  
+
+  // Cache extracted gradient values to avoid performance issues
+  extractedColors: string[] = ['#ff512f', '#dd2476'];
+  extractedDirection: string = 'to right';
+
   translate = inject(TranslateService);
 
   // Language support
@@ -95,6 +96,7 @@ export class BannerListComponent extends ComponentBase implements OnInit {
   // Alignment options
   alignItemsOptions: { label: string, value: string }[] = [];
   justifyContentOptions: { label: string, value: string }[] = [];
+  flexDirectionOptions: { label: string, value: string }[] = [];
 
   constructor(
     private bannerService: BannerService,
@@ -112,16 +114,11 @@ export class BannerListComponent extends ComponentBase implements OnInit {
     this.initializeLanguages();
     this.loadBanners();
     this.initForm();
-    this.loadparams();
-    this.loadCategories();
-    this.loadBrands();
-    this.loadProducts();
     this.loadPackages();
     this.updateAlignmentOptions();
     
     this.translate.onLangChange.subscribe(() => {
       this.initializeLanguages();
-      this.loadparams();
       this.updateAlignmentOptions();
     });
   }
@@ -139,6 +136,11 @@ export class BannerListComponent extends ComponentBase implements OnInit {
       { label: this.translate.instant('banner.justifyContentFlexEnd'), value: 'flex-end' },
       { label: this.translate.instant('banner.justifyContentSpaceBetween'), value: 'space-between' },
       { label: this.translate.instant('banner.justifyContentSpaceAround'), value: 'space-around' }
+    ];
+
+    this.flexDirectionOptions = [
+      { label: this.translate.instant('banner.flexDirectionRow'), value: 'row' },
+      { label: this.translate.instant('banner.flexDirectionRowReverse'), value: 'row-reverse' }
     ];
   }
 
@@ -173,6 +175,9 @@ export class BannerListComponent extends ComponentBase implements OnInit {
       background: [''],
       alignItems: ['center'],
       justifyContent: ['center'],
+      flexDirection: ['row'],
+      noBackground: [false],
+      textColor: ['#ffffff'],
       buttons: this.fb.array([])
     });
   }
@@ -187,10 +192,7 @@ export class BannerListComponent extends ComponentBase implements OnInit {
         en: ['', [Validators.required]],
         ar: ['', [Validators.required]]
       }),
-      url: ['', [Validators.required]],
-      params: [{}],
-      queryParamName: [null],
-      queryParamValue: [null]
+      url: ['', [Validators.required]]
     });
     this.buttonsArray.push(buttonGroup);
   }
@@ -234,6 +236,13 @@ export class BannerListComponent extends ComponentBase implements OnInit {
     this.bannerForm.reset();
     this.buttonsArray.clear();
     this.addButton(); // Add at least one button
+
+    // Reset cached gradient values
+    this.extractedColors = ['#ff512f', '#dd2476'];
+    this.extractedDirection = 'to right';
+
+    // Explicitly reset noBackground
+    this.bannerForm.get('noBackground')?.setValue(false);
   }
 
   editBanner(banner: Banner) {
@@ -251,10 +260,7 @@ export class BannerListComponent extends ComponentBase implements OnInit {
           en: [button.label.en, [Validators.required]],
           ar: [button.label.ar, [Validators.required]]
         }),
-        url: [button.url, [Validators.required]],
-        params: [button.params || {}],
-        queryParamName: [null],
-        queryParamValue: [null]
+        url: [button.url, [Validators.required]]
       });
       this.buttonsArray.push(buttonGroup);
     });
@@ -278,8 +284,22 @@ export class BannerListComponent extends ComponentBase implements OnInit {
       endDate: banner.endDate ? new Date(banner.endDate) : null,
       background: banner.background || '',
       alignItems: banner.alignItems || 'center',
-      justifyContent: banner.justifyContent || 'center'
+      justifyContent: banner.justifyContent || 'center',
+      flexDirection: banner.flexDirection || 'row',
+      noBackground: banner.noBackground || false,
+      textColor: banner.textColor || '#ffffff'
     });
+
+    // Cache extracted gradient values to avoid performance issues
+    this.extractedColors = this.extractGradientColors(banner.background || '');
+    this.extractedDirection = this.extractGradientDirection(banner.background || '');
+
+    // If background is empty but we have extracted colors, generate the gradient
+    if (!banner.background && this.extractedColors.length > 0) {
+      const colorString = this.extractedColors.join(', ');
+      const generatedGradient = `linear-gradient(${this.extractedDirection}, ${colorString})`;
+      this.bannerForm.get('background')?.setValue(generatedGradient);
+    }
   }
 
   deleteBanner(banner: Banner) {
@@ -319,15 +339,10 @@ export class BannerListComponent extends ComponentBase implements OnInit {
 
   saveBanner() {
     this.submitted.set(true);
-
     if (this.bannerForm.valid) {
       const bannerData = {
         ...this.bannerForm.value,
-        buttons: this.buttonsArray.value.map((button: any) => {
-            delete button.queryParamName;
-            delete button.queryParamValue;
-            return button;
-        })
+        buttons: this.buttonsArray.value
       };
 
       if (this.banner()?._id) {
@@ -408,14 +423,6 @@ export class BannerListComponent extends ComponentBase implements OnInit {
       ? this.translate.instant('common.active') 
       : this.translate.instant('common.inactive');
   }
-  loadparams() {
-    this.params.set([
-      { name: this.translate.instant('banner.paramCategory'), value: 'category' },
-      { name: this.translate.instant('banner.paramBrand'), value: 'brand' },
-      { name: this.translate.instant('banner.paramProduct'), value: 'product' },
-      { name: this.translate.instant('banner.paramPackage'), value: 'package' }
-    ]);
-  }
 
   loadCategories() {
     this.categoryService.listCategories()
@@ -450,69 +457,6 @@ export class BannerListComponent extends ComponentBase implements OnInit {
     });
   }
 
-  onparamsChange(event: any, buttonIndex: number) {
-    const selectedParam = event.value;
-    if (selectedParam) {
-      this.updateQueryParamValues(selectedParam, buttonIndex);
-    } else {
-      const currentValues = this.selectedQueryParamValues();
-      delete currentValues[buttonIndex];
-      this.selectedQueryParamValues.set({ ...currentValues });
-    }
-  }
-
-  updateQueryParamValues(selectedParam: string, buttonIndex: number) {
-    let values: any[] = [];
-    
-    switch (selectedParam) {
-      case 'category':
-        values = this.categories().map(cat => ({ name: cat.name, value: cat._id }));
-        break;
-      case 'brand':
-        values = this.brands().map(brand => ({ name: brand.name, value: brand._id }));
-        break;
-      case 'product':
-        values = this.products().map(product => ({ name: product.name, value: product._id }));
-        break;
-       case 'package':
-        values = this.packages().map(pkg => ({ name: pkg.name, value: pkg._id }));
-        break;
-      default:
-        values = [];
-    }
-    
-    const currentValues = this.selectedQueryParamValues();
-    currentValues[buttonIndex] = values;
-    this.selectedQueryParamValues.set({ ...currentValues });
-  }
-
-  onQueryParamValueChange(event: any, buttonIndex: number) {
-    const selectedValue = event.value;
-    const buttonGroup = this.buttonsArray.at(buttonIndex);
-    const selectedParam = buttonGroup.get('queryParamName')?.value;
-    
-    if (selectedParam && selectedValue) {
-      const currentparams = buttonGroup.get('params')?.value || {};
-      currentparams[selectedParam] = selectedValue;
-      buttonGroup.get('params')?.setValue(currentparams);
-      buttonGroup.get('queryParamName')?.setValue(null);
-      buttonGroup.get('queryParamValue')?.setValue(null);
-    }
-  }
-
-  removeQueryParam(buttonIndex: number, paramKey: string) {
-    const buttonGroup = this.buttonsArray.at(buttonIndex);
-    const currentparams = buttonGroup.get('params')?.value || {};
-    delete currentparams[paramKey];
-    buttonGroup.get('params')?.setValue(currentparams);
-  }
-
-  getparamsKeys(params: any): string[] {
-    if (!params || typeof params !== 'object') {
-      return [];
-    }
-    return Object.keys(params);
-  }
 
   // Language helper methods
   onLanguageChange(event: any) {
@@ -527,6 +471,14 @@ export class BannerListComponent extends ComponentBase implements OnInit {
 
   onGradientChange(gradient: string) {
     this.bannerForm.get('background')?.setValue(gradient);
+
+    // Update cached values to avoid re-extraction on every change detection
+    this.extractedColors = this.extractGradientColors(gradient);
+    this.extractedDirection = this.extractGradientDirection(gradient);
+  }
+
+  onNoBackgroundChange(noBackground: boolean) {
+    this.bannerForm.get('noBackground')?.setValue(noBackground);
   }
 
   // Helper methods for gradient builder

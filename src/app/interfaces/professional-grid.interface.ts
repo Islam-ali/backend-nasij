@@ -34,6 +34,7 @@ export interface IProfessionalGridConfig {
   wrapperClass?: string;
   justifyContent?: 'center' | 'start' | 'end' | 'between' | 'around' | 'evenly';
   alignItems?: 'center' | 'start' | 'end' | 'stretch';
+  maxWidth?: string; // مثل '1440px', '1200px', 'none'
 }
 
 /**

@@ -23,6 +23,7 @@ import { ToggleSwitchModule } from 'primeng/toggleswitch';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { RatingModule } from 'primeng/rating';
 import { TooltipModule } from 'primeng/tooltip';
+import { CalendarModule } from 'primeng/calendar';
 
 import { IReview } from '../../../interfaces/review.interface';
 import { ReviewService } from '../../../services/review.service';
@@ -66,6 +67,7 @@ interface Column {
         RatingModule,
         UploadFilesComponent,
         TooltipModule,
+        CalendarModule,
         TranslateModule
     ],
     providers: [MessageService, ConfirmationService, ReviewService]
@@ -121,6 +123,7 @@ export class ReviewListComponent extends ComponentBase implements OnInit {
             { field: 'customerName', header: this.translate.instant('review.customerName') },
             { field: 'rating', header: this.translate.instant('review.rating') },
             { field: 'comment', header: this.translate.instant('review.comment') },
+            { field: 'reviewDate', header: this.translate.instant('review.reviewDate') },
             { field: 'images', header: this.translate.instant('review.images') },
             { field: 'video', header: this.translate.instant('review.video') },
             { field: 'isActive', header: this.translate.instant('review.active') },
@@ -140,7 +143,8 @@ export class ReviewListComponent extends ComponentBase implements OnInit {
             videoUrl: [''],
             isActive: [true],
             isPinned: [false],
-            order: [0]
+            order: [0],
+            reviewDate: [null]
         });
     }
 
@@ -169,7 +173,14 @@ export class ReviewListComponent extends ComponentBase implements OnInit {
             finalize(() => this.loading.set(false))
         ).subscribe({
             next: (res: BaseResponse<IReview[]>) => {
-                this.reviews.set(res.data);
+                // Convert reviewDate strings to Date objects
+                const reviewsWithDates = res.data.map(review => ({
+                    ...review,
+                    reviewDate: review.reviewDate ? new Date(review.reviewDate) : undefined,
+                    createdAt: review.createdAt ? new Date(review.createdAt) : undefined,
+                    updatedAt: review.updatedAt ? new Date(review.updatedAt) : undefined
+                }));
+                this.reviews.set(reviewsWithDates);
             },
             error: () => this.messageService.add({
                 severity: 'error', 
@@ -189,7 +200,8 @@ export class ReviewListComponent extends ComponentBase implements OnInit {
             images: [],
             video: null,
             videoUrl: '',
-            order: 0
+            order: 0,
+            reviewDate: undefined
         });
         this.reviewDialog = true;
     }
@@ -197,6 +209,7 @@ export class ReviewListComponent extends ComponentBase implements OnInit {
     editReview(review: IReview) {
         this.reviewForm.patchValue({
             ...review,
+            reviewDate: review.reviewDate ? new Date(review.reviewDate) : undefined
         });
         this.reviewDialog = true;
     }
@@ -239,7 +252,10 @@ export class ReviewListComponent extends ComponentBase implements OnInit {
             return;
         }
 
-        const formValue = this.reviewForm.value;
+        const formValue = {
+            ...this.reviewForm.value,
+            reviewDate: this.reviewForm.value.reviewDate ? this.reviewForm.value.reviewDate.toISOString() : undefined
+        };
 
         const request$ = formValue._id
             ? this.reviewService.updateReview(formValue._id, formValue)

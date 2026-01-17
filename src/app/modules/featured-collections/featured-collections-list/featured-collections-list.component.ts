@@ -1231,7 +1231,7 @@ export class FeaturedCollectionsListComponent extends ComponentBase implements O
     const classes: string[] = [];
     
     if (!width || !width.trim()) {
-      classes.push('max-w-[1922px]');
+      classes.push('max-w-[1440px]');
     }
     
     classes.push('mx-auto');

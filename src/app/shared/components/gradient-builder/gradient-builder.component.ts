@@ -1,26 +1,61 @@
-import { Component, EventEmitter, Output, Input, OnInit, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, EventEmitter, Output, Input, OnInit, OnChanges, SimpleChanges, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, FormArray, FormControl, FormsModule } from '@angular/forms';
+import { InputSwitchModule } from 'primeng/inputswitch';
 
 @Component({
   selector: 'app-gradient-builder',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, InputSwitchModule],
   templateUrl: './gradient-builder.component.html',
-  styleUrls: ['./gradient-builder.component.scss']
+  styleUrls: ['./gradient-builder.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class GradientBuilderComponent implements OnInit, OnChanges {
+  // Computed property for current direction to avoid function calls in template
+  get currentDirection(): string {
+    return this.gradientForm?.get('direction')?.value || this.initialDirection;
+  }
+
+  get colorsArray(): FormArray {
+    return this.gradientForm?.get('colors') as FormArray;
+  }
+
+  get hasBackground(): boolean {
+    return !this.noBackground;
+  }
+
+  // TrackBy functions for better performance
+  trackByDirection(index: number, item: any): string {
+    return item.value;
+  }
+
+  trackByColor(index: number): number {
+    return index;
+  }
+
+  trackByPreset(index: number, item: any): string {
+    return item.name;
+  }
   @Input() initialColors: string[] = ['#ff512f', '#dd2476'];
   @Input() initialDirection: string = 'to right';
   @Input() compact: boolean = false;
+  @Input() noBackground: boolean = false;
 
   @Output() gradientChange = new EventEmitter<string>();
   @Output() colorsChange = new EventEmitter<string[]>();
   @Output() directionChange = new EventEmitter<string>();
+  @Output() noBackgroundChange = new EventEmitter<boolean>();
 
   gradientForm!: FormGroup;
   // Separate array for text input binding to avoid FormControl interference
   colorValues: string[] = [];
+
+  // Memoized values to avoid recalculation on every change detection
+  private _memoizedGradient = '';
+  private _memoizedGradientCSS = '';
+  private _lastColors: string[] = [];
+  private _lastDirection = '';
 
   directions = [
     { label: '→', value: 'to right', name: 'Right' },
@@ -42,20 +77,50 @@ export class GradientBuilderComponent implements OnInit, OnChanges {
     { name: 'Warm', colors: ['#ffecd2', '#fcb69f'] }
   ];
 
-  constructor(private fb: FormBuilder) {}
+  constructor(private fb: FormBuilder, private cdr: ChangeDetectorRef) {}
 
   ngOnInit() {
     this.initializeForm();
     this.updateColorValues();
+
+    // Always emit the current gradient value on init
+    this.cdr.detectChanges();
+    setTimeout(() => {
+      const gradient = this.currentGradient;
+      this.gradientChange.emit(gradient);
+    });
+
     this.emitChanges();
   }
 
   ngOnChanges(changes: SimpleChanges) {
-    if (changes['initialColors'] || changes['initialDirection']) {
-      if (this.gradientForm) {
-        this.updateFormFromInputs();
-        this.updateColorValues();
-      }
+    let needsUpdate = false;
+
+    if (changes['initialColors'] && this.hasColorsChanged(changes['initialColors'])) {
+      needsUpdate = true;
+    }
+
+    if (changes['initialDirection'] && this.hasDirectionChanged(changes['initialDirection'])) {
+      needsUpdate = true;
+    }
+
+    if (changes['noBackground']) {
+      // Update the internal noBackground property when input changes
+      this.noBackground = changes['noBackground'].currentValue;
+      this.cdr.markForCheck();
+    }
+
+    // Emit gradient change when initial values are set
+    if ((changes['initialColors'] || changes['initialDirection']) && this.gradientForm) {
+      setTimeout(() => {
+        this.gradientChange.emit(this.currentGradient);
+      });
+    }
+
+    if (needsUpdate && this.gradientForm) {
+      this.updateFormFromInputs();
+      this.updateColorValues();
+      this.cdr.markForCheck();
     }
   }
 
@@ -65,8 +130,10 @@ export class GradientBuilderComponent implements OnInit, OnChanges {
       colors: this.fb.array(this.initialColors.map(color => this.fb.control(color)))
     });
 
+    // Use debounce to avoid too frequent emissions
     this.gradientForm.valueChanges.subscribe(() => {
       this.emitChanges();
+      this.cdr.markForCheck();
     });
   }
 
@@ -85,11 +152,21 @@ export class GradientBuilderComponent implements OnInit, OnChanges {
   }
 
   private updateColorValues() {
-    this.colorValues = [...this.colorsArray.value];
+    this.colorValues = this.colorsArray ? [...this.colorsArray.value] : [];
   }
 
-  get colorsArray(): FormArray {
-    return this.gradientForm.get('colors') as FormArray;
+  private hasColorsChanged(change: SimpleChanges['initialColors']): boolean {
+    if (!change) return false;
+    const current = this.colorsArray?.value || [];
+    const previous = change.previousValue || [];
+    return JSON.stringify(current) !== JSON.stringify(previous);
+  }
+
+  private hasDirectionChanged(change: SimpleChanges['initialDirection']): boolean {
+    if (!change) return false;
+    const current = this.gradientForm?.get('direction')?.value;
+    const previous = change.previousValue;
+    return current !== previous;
   }
 
   getColorControl(index: number): FormControl {
@@ -97,17 +174,36 @@ export class GradientBuilderComponent implements OnInit, OnChanges {
   }
 
   get currentGradient(): string {
-    const colors = this.colorsArray.value;
+    const colors = this.colorsArray?.value || [];
     const direction = this.gradientForm.get('direction')?.value;
 
-    if (!colors || colors.length === 0) return 'transparent';
+    // Check if values have changed since last calculation
+    if (JSON.stringify(colors) === JSON.stringify(this._lastColors) &&
+        direction === this._lastDirection &&
+        this._memoizedGradient) {
+      return this._memoizedGradient;
+    }
 
-    const colorString = colors.join(', ');
-    return `linear-gradient(${direction}, ${colorString})`;
+    // Update memoized values
+    this._lastColors = [...colors];
+    this._lastDirection = direction;
+
+    if (!colors || colors.length === 0) {
+      this._memoizedGradient = '';
+    } else {
+      const colorString = colors.join(', ');
+      this._memoizedGradient = `linear-gradient(${direction}, ${colorString})`;
+    }
+
+    return this._memoizedGradient;
   }
 
   get gradientCSS(): string {
-    return this.currentGradient;
+    // gradientCSS is the same as currentGradient, so use memoization too
+    if (this._memoizedGradientCSS !== this.currentGradient) {
+      this._memoizedGradientCSS = this.currentGradient;
+    }
+    return this._memoizedGradientCSS;
   }
 
   addColor(color: string = '#ff512f') {
@@ -124,8 +220,9 @@ export class GradientBuilderComponent implements OnInit, OnChanges {
 
   updateColor(index: number, color: string) {
     if (color) {
-      this.colorsArray.at(index).setValue(color);
+      this.colorsArray.at(index).setValue(color, { emitEvent: false });
       this.colorValues[index] = color;
+      this.cdr.markForCheck();
     }
   }
 
@@ -190,6 +287,12 @@ export class GradientBuilderComponent implements OnInit, OnChanges {
     this.gradientForm.get('direction')?.setValue(direction);
   }
 
+  onNoBackgroundChange(value: boolean) {
+    this.noBackground = value;
+    this.noBackgroundChange.emit(this.noBackground);
+    this.cdr.markForCheck();
+  }
+
   loadPreset(preset: { name: string; colors: string[] }) {
     const colorsArray = this.gradientForm.get('colors') as FormArray;
     colorsArray.clear();
@@ -207,12 +310,22 @@ export class GradientBuilderComponent implements OnInit, OnChanges {
   }
 
   private emitChanges() {
-    const colors = this.colorsArray.value;
+    const colors = this.colorsArray?.value || [];
     const direction = this.gradientForm.get('direction')?.value;
 
-    this.gradientChange.emit(this.currentGradient);
-    this.colorsChange.emit(colors);
-    this.directionChange.emit(direction);
+    // Only emit if values have actually changed
+    const currentGradient = this.currentGradient;
+    if (currentGradient !== this._memoizedGradient) {
+      this.gradientChange.emit(currentGradient);
+    }
+
+    if (JSON.stringify(colors) !== JSON.stringify(this._lastColors)) {
+      this.colorsChange.emit(colors);
+    }
+
+    if (direction !== this._lastDirection) {
+      this.directionChange.emit(direction);
+    }
   }
 
   // Color picker helpers

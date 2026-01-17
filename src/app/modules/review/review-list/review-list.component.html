@@ -32,6 +32,7 @@
                 <th pSortableColumn="customerName">{{ 'review.customerName' | translate }} <p-sortIcon field="customerName"></p-sortIcon></th>
                 <th pSortableColumn="rating">{{ 'review.rating' | translate }} <p-sortIcon field="rating"></p-sortIcon></th>
                 <th>{{ 'review.comment' | translate }}</th>
+                <th pSortableColumn="reviewDate">{{ 'review.reviewDate' | translate }} <p-sortIcon field="reviewDate"></p-sortIcon></th>
                 <th>{{ 'review.images' | translate }}</th>
                 <th>{{ 'review.video' | translate }}</th>
                 <th pSortableColumn="isActive">{{ 'review.active' | translate }} <p-sortIcon field="isActive"></p-sortIcon></th>
@@ -53,6 +54,11 @@
                 <td>
                     <div class="max-w-xs truncate" [title]="review.comment">
                         {{review.comment || '-'}}
+                    </div>
+                </td>
+                <td>
+                    <div class="text-gray-700">
+                        {{review.reviewDate ? (review.reviewDate | date:'mediumDate') : (review.createdAt | date:'mediumDate')}}
                     </div>
                 </td>
                 <td>
@@ -133,6 +139,14 @@
                         <label for="comment" class="font-bold text-gray-700 mb-2 block">{{ 'review.comment' | translate }}</label>
                         <textarea id="comment" pInputTextarea formControlName="comment" rows="5"
                             [placeholder]="'review.commentPlaceholder' | translate" class="w-full"></textarea>
+                    </div>
+
+                    <!-- Review Date -->
+                    <div class="field mb-4">
+                        <label for="reviewDate" class="font-bold text-gray-700 mb-2 block">{{ 'review.reviewDate' | translate }}</label>
+                        <p-calendar formControlName="reviewDate" [showIcon]="true" [showTime]="false" [dateFormat]="'dd/mm/yy'"
+                            [placeholder]="'review.selectReviewDate' | translate" class="w-full" appendTo="body"></p-calendar>
+                        <small class="text-gray-500">{{ 'review.reviewDateHelp' | translate }}</small>
                     </div>
                 </div>
 

@@ -3,7 +3,8 @@
   <div class="preview-section">
     <div
       class="gradient-preview"
-      [style.background]="currentGradient"
+      [class.no-background]="noBackground"
+      [style.background]="hasBackground ? currentGradient : 'transparent'"
       (click)="copyToClipboard()">
       <div class="preview-overlay">
         <div class="copy-indicator">
@@ -33,13 +34,31 @@
       <div class="direction-grid">
         <button
           type="button"
-          *ngFor="let dir of directions"
+          *ngFor="let dir of directions; trackBy: trackByDirection"
           class="direction-btn w-12"
-          [class.active]="gradientForm.get('direction')?.value === dir.value"
+          [class.active]="currentDirection === dir.value"
           (click)="setDirection(dir.value)"
           [title]="dir.name">
           {{ dir.label }}
         </button>
+      </div>
+    </div>
+
+    <!-- Background Toggle -->
+    <div class="control-group">
+      <div class="background-toggle">
+        <label class="control-label">Background</label>
+        <div class="toggle-container">
+          <p-inputSwitch
+            [ngModel]="noBackground"
+            (ngModelChange)="onNoBackgroundChange($event)"
+            inputId="noBackgroundToggle"
+            ariaLabel="Toggle background visibility">
+          </p-inputSwitch>
+          <label for="noBackgroundToggle" class="toggle-label">
+            {{ noBackground ? 'Hidden' : 'Visible' }}
+          </label>
+        </div>
       </div>
     </div>
 
@@ -58,7 +77,7 @@
 
       <div class="colors-list">
         <div
-          *ngFor="let colorControl of colorsArray.controls; let i = index"
+          *ngFor="let colorControl of colorsArray.controls; let i = index; trackBy: trackByColor"
           class="color-item"
           [class.first]="i === 0"
           [class.last]="i === colorsArray.length - 1">
@@ -101,7 +120,7 @@
       <div class="presets-grid">
         <button
           type="button"
-          *ngFor="let preset of presets"
+          *ngFor="let preset of presets; trackBy: trackByPreset"
           class="preset-btn"
           (click)="loadPreset(preset)"
           [title]="preset.name">

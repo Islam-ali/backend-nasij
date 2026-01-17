@@ -45,8 +45,20 @@ export class AppMenu implements OnInit {
                     { label: this.translate.instant('navigation.menuLinks'), icon: 'pi pi-fw pi-link', routerLink: ['/menu-links'] },
                     { label: this.translate.instant('navigation.heroSections'), icon: 'pi pi-fw pi-image', routerLink: ['/hero'] },
                     { label: this.translate.instant('navigation.featuredCollections'), icon: 'pi pi-fw pi-star', routerLink: ['/featured-collections'] },
-                    { label: this.translate.instant('navigation.heroLayouts'), icon: 'pi pi-fw pi-th-large', routerLink: ['/hero-layouts'] },
-                    { label: this.translate.instant('navigation.productFeatures'), icon: 'pi pi-fw pi-sliders-h', routerLink: ['/product-features'] },
+                    {
+                        label: this.translate.instant('navigation.heroLayouts'),
+                        icon: 'pi pi-fw pi-th-large',
+                        routerLink: ['/hero-layouts'],
+                        badge: this.translate.instant('common.beta'),
+                        badgeClass: 'bg-orange-500 text-white'
+                    },
+                    { 
+                        label: this.translate.instant('navigation.productFeatures'), 
+                        icon: 'pi pi-fw pi-sliders-h', 
+                        routerLink: ['/product-features'],
+                        badge: this.translate.instant('common.new'),
+                        badgeClass: 'bg-blue-500 text-white'
+                    },
                     { label: this.translate.instant('navigation.banners'), icon: 'pi pi-fw pi-megaphone', routerLink: ['/banners'] },
                     { label: this.translate.instant('navigation.features'), icon: 'pi pi-fw pi-sliders-h', routerLink: ['/features'] },
                     { label: this.translate.instant('navigation.reviews'), icon: 'pi pi-fw pi-star', routerLink: ['/reviews'] }

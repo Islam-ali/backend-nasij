@@ -11,6 +11,7 @@ export interface IReview {
   isActive: boolean;
   isPinned: boolean;
   order?: number;
+  reviewDate?: Date;
   createdAt?: Date;
   updatedAt?: Date;
 }

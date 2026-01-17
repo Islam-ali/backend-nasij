@@ -18,12 +18,10 @@
                 </div>
             </div>
             <div class="flex items-center gap-2">
-                @if(itemsArray.length > 0) {
-                <div class="px-4 py-2 bg-green-50 border border-green-200 rounded-lg flex items-center gap-2">
+                <div *ngIf="itemsArray.length > 0" class="px-4 py-2 bg-green-50 border border-green-200 rounded-lg flex items-center gap-2">
                     <i class="pi pi-check-circle text-green-600"></i>
                     <span class="text-green-800 font-medium">{{ itemsArray.length }} {{ itemsArray.length === 1 ? ('heroLayout.item' | translate) : ('heroLayout.items' | translate) }}</span>
                 </div>
-                }
                 <p-button [label]="'common.cancel' | translate" icon="pi pi-times" [text]="true" (onClick)="cancel()"></p-button>
             </div>
         </div>
@@ -117,6 +115,80 @@
                 </div>
             </p-tabPanel>
 
+            <!-- Layout Settings Tab -->
+            <p-tabPanel [header]="'heroLayout.layoutSettings' | translate" leftIcon="pi pi-palette">
+                <div class="grid grid-cols-1 gap-6 p-6">
+                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                        <div class="flex items-center gap-2 mb-3">
+                            <i class="pi pi-info-circle text-blue-600"></i>
+                            <h3 class="text-sm font-medium text-blue-800">{{ 'heroLayout.layoutSettingsInfo' | translate }}</h3>
+                        </div>
+                        <p class="text-sm text-blue-700">{{ 'heroLayout.layoutSettingsDescription' | translate }}</p>
+                    </div>
+
+                    <!-- Layout Settings -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" formGroupName="layout">
+
+                        <!-- Max Width -->
+                        <div class="field">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                {{ 'heroLayout.maxWidth' | translate }}
+                            </label>
+                            <p-dropdown formControlName="maxWidth"
+                                       [options]="maxWidthOptions"
+                                       optionLabel="label"
+                                       optionValue="value"
+                                       [placeholder]="'heroLayout.selectMaxWidth' | translate"
+                                       class="w-full">
+                            </p-dropdown>
+                            <small class="text-gray-500 text-xs mt-1 block">{{ 'heroLayout.maxWidthHint' | translate }}</small>
+                        </div>
+
+                        <!-- Justify Content -->
+                        <div class="field">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                {{ 'heroLayout.justifyContent' | translate }}
+                            </label>
+                            <p-dropdown formControlName="justifyContent"
+                                       [options]="justifyOptions"
+                                       optionLabel="label"
+                                       optionValue="value"
+                                       [placeholder]="'heroLayout.selectJustifyContent' | translate"
+                                       class="w-full">
+                            </p-dropdown>
+                            <small class="text-gray-500 text-xs mt-1 block">{{ 'heroLayout.justifyContentHint' | translate }}</small>
+                        </div>
+
+                        <!-- Align Items -->
+                        <div class="field">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                {{ 'heroLayout.alignItems' | translate }}
+                            </label>
+                            <p-dropdown formControlName="alignItems"
+                                       [options]="alignOptions"
+                                       optionLabel="label"
+                                       optionValue="value"
+                                       [placeholder]="'heroLayout.selectAlignItems' | translate"
+                                       class="w-full">
+                            </p-dropdown>
+                            <small class="text-gray-500 text-xs mt-1 block">{{ 'heroLayout.alignItemsHint' | translate }}</small>
+                        </div>
+
+                    </div>
+
+                    <!-- Preview -->
+                    <div class="mt-6 p-4 bg-gray-50 rounded-lg border">
+                        <h4 class="text-sm font-medium text-gray-700 mb-3">{{ 'heroLayout.preview' | translate }}</h4>
+                        <div class="bg-white border rounded-lg p-4 min-h-[200px] flex items-center justify-center">
+                            <div class="text-center">
+                                <i class="pi pi-th-large text-4xl text-gray-400 mb-2"></i>
+                                <p class="text-sm text-gray-500">{{ 'heroLayout.layoutPreviewPlaceholder' | translate }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </p-tabPanel>
+
             <!-- Items Tab -->
             <p-tabPanel [header]="'heroLayout.items' | translate" leftIcon="pi pi-images">
                 <div class="p-6">
@@ -126,8 +198,7 @@
                     </div>
 
                     <div formArrayName="items" class="space-y-6">
-                        @for (item of itemsArray.controls; track $index; let i = $index) {
-                        <p-card [formGroupName]="i" class="relative">
+                        <p-card *ngFor="let item of itemsArray.controls; let i = index" [formGroupName]="i" class="relative">
                             <ng-template pTemplate="header">
                                 <div class="flex justify-between items-center p-4 bg-gray-50">
                                     <h4 class="text-base font-medium">{{ 'heroLayout.item' | translate }} {{ i + 1 }}</h4>
@@ -185,8 +256,7 @@
                                     </app-upload-files>
                                     
                                     <!-- Video Autoplay Option -->
-                                    @if (item.get('video')?.value) {
-                                    <div class="mt-4 pt-4 border-t border-purple-300">
+                                    <div *ngIf="item.get('video')?.value" class="mt-4 pt-4 border-t border-purple-300">
                                         <div class="flex items-center justify-between">
                                             <div>
                                                 <label class="block text-sm font-medium text-gray-700 mb-1">
@@ -199,7 +269,6 @@
                                             <p-inputSwitch formControlName="videoAutoplay"></p-inputSwitch>
                                         </div>
                                     </div>
-                                    }
                                 </div>
 
                                 <!-- Title -->
@@ -244,15 +313,12 @@
 
                             </div>
                         </p-card>
-                        }
                     </div>
 
-                    @if(itemsArray.length === 0) {
-                    <div class="text-center py-8 text-gray-500">
+                    <div *ngIf="itemsArray.length === 0" class="text-center py-8 text-gray-500">
                         <i class="pi pi-images text-4xl mb-4"></i>
                         <p>{{ 'heroLayout.noItemsAdded' | translate }}</p>
                     </div>
-                    }
                 </div>
             </p-tabPanel>
 

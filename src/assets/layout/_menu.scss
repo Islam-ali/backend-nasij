@@ -150,6 +150,17 @@
                 transition: transform var(--element-transition-duration);
             }
 
+            .layout-menuitem-badge {
+                margin-left: auto;
+                margin-right: 0.5rem;
+                font-size: 0.75rem;
+                font-weight: 600;
+                padding: 0.125rem 0.375rem;
+                border-radius: 0.25rem;
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+            }
+
             &.active-route {
                 font-weight: 700;
                 color: var(--primary-color);
