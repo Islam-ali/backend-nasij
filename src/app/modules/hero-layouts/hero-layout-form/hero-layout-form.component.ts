@@ -45,7 +45,7 @@ import { DropdownModule } from 'primeng/dropdown';
     UploadFilesComponent,
     TranslateModule,
     DropdownModule
-    
+
   ],
   templateUrl: './hero-layout-form.component.html',
   styleUrls: ['./hero-layout-form.component.scss'],
@@ -62,6 +62,16 @@ export class HeroLayoutFormComponent implements OnInit {
   // Layout options
   maxWidthOptions: { label: string, value: string }[] = [];
   justifyOptions: { label: string, value: string }[] = [];
+  layoutSettingsInfoOptions: { label: string, value: string }[] = [
+    { label: 'heroLayout.layoutSettingsInfo.center', value: 'center' },
+    { label: 'heroLayout.layoutSettingsInfo.start', value: 'start' },
+    { label: 'heroLayout.layoutSettingsInfo.end', value: 'end' }
+  ];
+
+  objectFitOptions: { label: string, value: string }[] = [
+    { label: 'heroLayout.objectFit.cover', value: 'cover' },
+    { label: 'heroLayout.objectFit.contain', value: 'contain' }
+  ];
   alignOptions: { label: string, value: string }[] = [];
 
   constructor(
@@ -89,7 +99,7 @@ export class HeroLayoutFormComponent implements OnInit {
 
   initializeOptions(): void {
     this.maxWidthOptions = [
-      { label: this.translate.instant('heroLayout.none'), value: 'none' },
+      { label: 'heroLayout.none', value: 'none' },
       { label: '1200px', value: '1200px' },
       { label: '1440px', value: '1440px' },
       { label: '1600px', value: '1600px' },
@@ -97,19 +107,19 @@ export class HeroLayoutFormComponent implements OnInit {
     ];
 
     this.justifyOptions = [
-      { label: this.translate.instant('heroLayout.justifyStart'), value: 'start' },
-      { label: this.translate.instant('heroLayout.justifyCenter'), value: 'center' },
-      { label: this.translate.instant('heroLayout.justifyEnd'), value: 'end' },
-      { label: this.translate.instant('heroLayout.justifyBetween'), value: 'between' },
-      { label: this.translate.instant('heroLayout.justifyAround'), value: 'around' },
-      { label: this.translate.instant('heroLayout.justifyEvenly'), value: 'evenly' }
+      { label: 'heroLayout.justifyStart', value: 'start' },
+      { label: 'heroLayout.justifyCenter', value: 'center' },
+      { label: 'heroLayout.justifyEnd', value: 'end' },
+      { label: 'heroLayout.justifyBetween', value: 'between' },
+      { label: 'heroLayout.justifyAround', value: 'around' },
+      { label: 'heroLayout.justifyEvenly', value: 'evenly' }
     ];
 
     this.alignOptions = [
-      { label: this.translate.instant('heroLayout.alignStart'), value: 'start' },
-      { label: this.translate.instant('heroLayout.alignCenter'), value: 'center' },
-      { label: this.translate.instant('heroLayout.alignEnd'), value: 'end' },
-      { label: this.translate.instant('heroLayout.alignStretch'), value: 'stretch' }
+      { label: 'heroLayout.alignStart', value: 'start' },
+      { label: 'heroLayout.alignCenter', value: 'center' },
+      { label: 'heroLayout.alignEnd', value: 'end' },
+      { label: 'heroLayout.alignStretch', value: 'stretch' }
     ];
   }
 
@@ -248,7 +258,9 @@ export class HeroLayoutFormComponent implements OnInit {
       buttonLink: [item?.buttonLink || ''],
       queryParams: [item?.queryParams || null],
       isActive: [item?.isActive !== undefined ? item.isActive : true],
-      videoAutoplay: [item?.videoAutoplay !== undefined ? item.videoAutoplay : true]
+      videoAutoplay: [item?.videoAutoplay !== undefined ? item.videoAutoplay : true],
+      layoutSettingsInfo: [item?.layoutSettingsInfo || 'center'],
+      objectFit: [item?.objectFit || 'cover']
     });
   }
 
@@ -261,6 +273,43 @@ export class HeroLayoutFormComponent implements OnInit {
     const currentConfig = this.heroLayoutForm.get('gridConfig')?.value;
     if (JSON.stringify(currentConfig) !== JSON.stringify(config)) {
       this.heroLayoutForm.patchValue({ gridConfig: config }, { emitEvent: false });
+    }
+  }
+
+  onFileChange(event: any, itemIndex: number, fieldType: 'image' | 'video'): void {
+    // Auto-save when files are changed (added or removed)
+    if (this.isEditMode && this.heroLayoutId) {
+      // Small delay to ensure form is updated
+      setTimeout(() => {
+        this.autoSaveHeroLayout();
+      }, 500);
+    }
+  }
+
+  autoSaveHeroLayout(): void {
+    const heroLayoutData = this.cleanFormData(this.heroLayoutForm.value);
+
+    if (this.isEditMode && this.heroLayoutId) {
+      this.heroLayoutsService.updateHeroLayout(this.heroLayoutId, heroLayoutData).subscribe({
+        next: (response) => {
+          console.log('Hero layout auto-saved after file change');
+          // Show a brief success message for auto-save
+          this.messageService.add({
+            severity: 'success',
+            summary: this.translate.instant('common.success'),
+            detail: this.translate.instant('heroLayout.autoSaved'),
+            life: 2000 // Show for 2 seconds
+          });
+        },
+        error: (error) => {
+          console.error('Auto-save failed:', error);
+          this.messageService.add({
+            severity: 'error',
+            summary: this.translate.instant('common.error'),
+            detail: this.translate.instant('heroLayout.saveFailed')
+          });
+        }
+      });
     }
   }
 

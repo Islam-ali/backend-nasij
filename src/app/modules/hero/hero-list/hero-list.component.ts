@@ -319,6 +319,61 @@ export class HeroListComponent extends ComponentBase implements OnInit {
         this.heroForm.reset();
     }
 
+    onImageChange(files: any): void {
+        // Update form control with new file value (null if no files)
+        const imageValue = files?.Result || null;
+        this.heroForm.patchValue({ image: imageValue });
+        
+        // Auto-save if in edit mode
+        if (this.heroForm.get('_id')?.value) {
+            this.autoSaveHero('image', imageValue);
+        }
+    }
+
+    onVideoChange(files: any): void {
+        // Update form control with new file value (null if no files)
+        const videoValue = files?.Result || null;
+        this.heroForm.patchValue({ video: videoValue });
+        
+        // Auto-save if in edit mode
+        if (this.heroForm.get('_id')?.value) {
+            this.autoSaveHero('video', videoValue);
+        }
+    }
+
+    private autoSaveHero(field: 'image' | 'video', value: any): void {
+        const heroId = this.heroForm.get('_id')?.value;
+        if (!heroId) return;
+
+        const formValue = this.heroForm.value;
+        // Create update data with the specific field (image or video) set to value (can be null)
+        const updateData: any = {};
+        
+        // Only include the field being updated to avoid sending unnecessary data
+        // If value is null, explicitly set it to null (to delete the field)
+        updateData[field] = value;
+
+        // Use updateHeroWithNulls to allow null values (for deletion)
+        this.heroService.updateHeroWithNulls(heroId, updateData).pipe(
+            takeUntil(this.destroy$)
+        ).subscribe({
+            next: () => {
+                // Silently update - no toast message to avoid annoying user
+                this.loadHeroes();
+            },
+            error: (error) => {
+                console.error(`Failed to auto-save hero ${field}:`, error);
+                // Optionally show a subtle error message
+                this.messageService.add({
+                    severity: 'warn',
+                    summary: this.translate.instant('common.warning'),
+                    detail: this.translate.instant('hero.failedToSave'),
+                    life: 2000
+                });
+            }
+        });
+    }
+
     onPageChange(event: any) {
         this.loadHeroes(event.page, event.rows);
     }

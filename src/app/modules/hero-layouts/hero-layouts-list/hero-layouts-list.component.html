@@ -29,11 +29,12 @@
                 <th pSortableColumn="name">{{ 'heroLayout.name' | translate }} <p-sortIcon field="name"></p-sortIcon></th>
                 <th pSortableColumn="sectionTitle">{{ 'heroLayout.sectionTitle' | translate }} <p-sortIcon field="sectionTitle"></p-sortIcon></th>
                 <th>{{ 'heroLayout.itemsCount' | translate }}</th>
+                <th>{{ 'heroLayout.images' | translate }}</th>
                 <th>{{ 'heroLayout.tags' | translate }}</th>
                 <th pSortableColumn="displayOrder">{{ 'heroLayout.order' | translate }} <p-sortIcon field="displayOrder"></p-sortIcon></th>
                 <th pSortableColumn="isActive">{{ 'common.status' | translate }} <p-sortIcon field="isActive"></p-sortIcon></th>
                 <th pSortableColumn="createdAt">{{ 'heroLayout.createdAt' | translate }} <p-sortIcon field="createdAt"></p-sortIcon></th>
-                <th style="width: 10rem">{{ 'common.actions' | translate }}</th>
+                <th style="width: 12rem">{{ 'common.actions' | translate }}</th>
             </tr>
         </ng-template>
 
@@ -48,26 +49,52 @@
                     <p-tag [value]="heroLayout.items?.length + ' ' + ('heroLayout.items' | translate)" severity="info"></p-tag>
                 </td>
                 <td>
+                    <div class="flex flex-wrap gap-1">
+                        <div *ngFor="let item of heroLayout.items; let i = index" class="relative">
+                            <img *ngIf="item.image?.filePath"
+                                 [src]="getImageUrl(item.image.filePath)"
+                                 [alt]="item.title?.en || 'Image ' + (i + 1)"
+                                 class="w-12 h-12 object-cover rounded border cursor-pointer"
+                                 (click)="viewImage(item.image)"
+                                 [pTooltip]="'Click to view full image'">
+                            <div *ngIf="!item.image?.filePath" class="w-12 h-12 bg-gray-200 rounded border flex items-center justify-center text-xs text-gray-500">
+                                No Image
+                            </div>
+                            <button *ngIf="item.image?.filePath"
+                                    type="button"
+                                    class="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center text-xs hover:bg-red-600 transition-colors"
+                                    (click)="removeImageFromItem(heroLayout, i)"
+                                    [pTooltip]="'Remove image' | translate"
+                                    [disabled]="removingImage">
+                                <i class="pi pi-times"></i>
+                            </button>
+                        </div>
+                        <div *ngIf="!heroLayout.items || heroLayout.items.length === 0" class="text-gray-500 text-sm">
+                            No items
+                        </div>
+                    </div>
+                </td>
+                <td>
                     <p-tag *ngFor="let tag of heroLayout.tags" [value]="tag" class="mr-1"></p-tag>
                     <span *ngIf="!heroLayout.tags || heroLayout.tags.length === 0">-</span>
                 </td>
                 <td>{{ heroLayout.displayOrder }}</td>
                 <td>
-                    <p-tag [value]="getStatusLabel(heroLayout.isActive)" 
+                    <p-tag [value]="getStatusLabel(heroLayout.isActive)"
                            [severity]="heroLayout.isActive ? 'success' : 'danger'">
                     </p-tag>
                 </td>
                 <td>{{ heroLayout.createdAt | date: 'short' }}</td>
                 <td>
                     <div class="flex gap-2">
-                        <p-button icon="pi pi-pencil" severity="info" [rounded]="true" [text]="true" 
+                        <p-button icon="pi pi-pencil" severity="info" [rounded]="true" [text]="true"
                                   (onClick)="editHeroLayout(heroLayout)" [pTooltip]="'common.edit' | translate"></p-button>
-                        <p-button icon="pi pi-trash" severity="danger" [rounded]="true" [text]="true" 
+                        <p-button icon="pi pi-trash" severity="danger" [rounded]="true" [text]="true"
                                   (onClick)="deleteHeroLayout(heroLayout)" [pTooltip]="'common.delete' | translate"></p-button>
-                        <p-button [icon]="heroLayout.isActive ? 'pi pi-eye-slash' : 'pi pi-eye'" 
-                                  [severity]="heroLayout.isActive ? 'warn' : 'success'" 
-                                  [rounded]="true" [text]="true" 
-                                  (onClick)="toggleActive(heroLayout)" 
+                        <p-button [icon]="heroLayout.isActive ? 'pi pi-eye-slash' : 'pi pi-eye'"
+                                  [severity]="heroLayout.isActive ? 'warn' : 'success'"
+                                  [rounded]="true" [text]="true"
+                                  (onClick)="toggleActive(heroLayout)"
                                   [pTooltip]="'heroLayout.toggleActiveStatus' | translate"></p-button>
                     </div>
                 </td>
@@ -80,6 +107,18 @@
             </tr>
         </ng-template>
     </p-table>
+
+    <!-- Image Viewer Dialog -->
+    <p-dialog [(visible)]="imageDialogVisible" [modal]="true" [header]="'Image Preview' | translate" [style]="{width: '50rem'}">
+        <div class="flex justify-center" *ngIf="selectedImage">
+            <img [src]="getImageUrl(selectedImage.filePath)" [alt]="selectedImage.originalFileName"
+                 class="max-w-full max-h-96 object-contain">
+        </div>
+        <div class="mt-4 text-sm text-gray-600" *ngIf="selectedImage">
+            <p><strong>{{ 'common.name' | translate }}:</strong> {{ selectedImage.originalFileName }}</p>
+            <p><strong>{{ 'common.size' | translate }}:</strong> {{ formatFileSize(selectedImage.fileSize) }}</p>
+        </div>
+    </p-dialog>
 
 </div>
 

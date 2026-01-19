@@ -314,9 +314,54 @@ export class UploadFilesComponent extends ComponentBase implements OnChanges {
   removeFile(fileId: string): void {
     const fileIndex = this.selectedFiles.findIndex(f => f.id === fileId);
     if (fileIndex !== -1) {
-      this.selectedFiles.splice(fileIndex, 1);
-      this.files.splice(fileIndex, 1);
-      this.updateFormControl();
+      const fileToRemove = this.selectedFiles[fileIndex];
+
+      // Find the corresponding file in the files array to get the Archived object
+      const archivedFile = this.files[fileIndex]?.Result;
+
+      // If file has an ID and is uploaded, try to delete from server first
+      if (fileToRemove.uploaded && fileToRemove.id && archivedFile) {
+        // Extract file path and storage location from the Archived object
+        const filePath = archivedFile.filePath;
+        const storageLocation = archivedFile.storageLocation || 'local';
+
+        this._uploadFilesService.DeleteFile(fileToRemove.id, filePath, storageLocation).subscribe({
+          next: (response) => {
+            // Successfully deleted from server, now remove from UI
+            this.selectedFiles.splice(fileIndex, 1);
+            this.files.splice(fileIndex, 1);
+            this.updateFormControl();
+            this.messageService.add({
+              severity: 'success',
+              summary: 'Success',
+              detail: 'File removed from form successfully'
+            });
+            // Emit event to notify parent component about file changes
+            this.exportFiles();
+          },
+          error: (error) => {
+            // Failed to delete from server, but still remove from UI
+            console.error('Failed to delete file from server:', error);
+            this.selectedFiles.splice(fileIndex, 1);
+            this.files.splice(fileIndex, 1);
+            this.updateFormControl();
+            this.messageService.add({
+              severity: 'warn',
+              summary: 'Warning',
+              detail: 'File removed from form but may still exist on server'
+            });
+            // Emit event to notify parent component about file changes
+            this.exportFiles();
+          }
+        });
+      } else {
+        // File not uploaded yet or no ID, just remove from UI
+        this.selectedFiles.splice(fileIndex, 1);
+        this.files.splice(fileIndex, 1);
+        this.updateFormControl();
+        // Emit event to notify parent component about file changes
+        this.exportFiles();
+      }
     }
   }
 

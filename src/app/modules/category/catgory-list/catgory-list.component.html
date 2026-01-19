@@ -48,7 +48,10 @@
                 <ng-template pTemplate="body" let-category>
                     <tr>
                         <td>
-                            <img [src]="getImageUrl(category?.image?.filePath)" [fallback]="'/images/picture.png'" [alt]="category.name | multiLanguage:currentLanguage()" class="w-10 h-10 object-cover">
+                            <img *ngIf="category?.image?.filePath" [src]="getImageUrl(category?.image?.filePath)" [fallback]="'/images/picture.png'" [alt]="category.name | multiLanguage:currentLanguage()" class="w-10 h-10 object-cover rounded">
+                            <div *ngIf="!category?.image?.filePath" class="w-10 h-10 bg-primary-100 dark:bg-primary-900 rounded flex items-center justify-center">
+                                <span class="text-primary-600 dark:text-primary-300 font-semibold text-sm">{{getAvatarInitial(category.name | multiLanguage:currentLanguage())}}</span>
+                            </div>
                         </td>
                         <td>
                             <span class="font-medium">{{category.name | multiLanguage:currentLanguage()}}</span>

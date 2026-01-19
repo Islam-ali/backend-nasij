@@ -47,6 +47,18 @@ export class ReviewService {
     return this.genericApiService.Patch(`${this.apiUrl}/${id}`, this.commonService.removeNullUndefinedEmptyStringKeysAndId(review));
   }
 
+  // Update review with null values allowed (for deleting images/video)
+  updateReviewWithNulls(id: string, review: Partial<IReview>): Observable<BaseResponse<IReview>> {
+    // Remove _id and undefined/empty string, but keep null values
+    const cleanedData = { ...review };
+    delete cleanedData._id;
+    // Remove undefined and empty string, but keep null
+    const filteredData = Object.fromEntries(
+      Object.entries(cleanedData).filter(([_, v]) => v !== undefined && v !== '')
+    );
+    return this.genericApiService.Patch(`${this.apiUrl}/${id}`, filteredData);
+  }
+
   // Delete a review
   deleteReview(id: string): Observable<BaseResponse<any>> {
     return this.genericApiService.Delete(this.apiUrl, id);

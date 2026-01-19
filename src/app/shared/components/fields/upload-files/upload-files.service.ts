@@ -5,6 +5,7 @@ import { HttpClient } from '@angular/common/http';
 import { BaseResponse } from '../../../../core/models/baseResponse';
 import { Archived } from '../models/Archived';
 import { environment } from '../../../../../environments/environment';
+import { map } from 'rxjs/operators';
 @Injectable({
   providedIn: 'root'
 })
@@ -24,5 +25,13 @@ export class UploadFilesService {
     });
     
     return this.http.request(req);
+  }
+
+  DeleteFile(fileId: string, filePath?: string, storageLocation?: string): Observable<BaseResponse<any>> {
+    const params: any = {};
+    if (filePath) params.filePath = filePath;
+    if (storageLocation) params.storageLocation = storageLocation;
+
+    return this.http.delete<BaseResponse<any>>(`${environment.apiUrl}/file-upload/${fileId}`, { params });
   }
 }

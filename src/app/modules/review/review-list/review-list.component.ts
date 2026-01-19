@@ -23,6 +23,7 @@ import { ToggleSwitchModule } from 'primeng/toggleswitch';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { RatingModule } from 'primeng/rating';
 import { TooltipModule } from 'primeng/tooltip';
+
 import { CalendarModule } from 'primeng/calendar';
 
 import { IReview } from '../../../interfaces/review.interface';
@@ -290,6 +291,62 @@ export class ReviewListComponent extends ComponentBase implements OnInit {
         this.reviewDialog = false;
         this.submitted = false;
         this.reviewForm.reset();
+    }
+
+    onImagesChange(files: any): void {
+        // files is an array when multiple=true
+        // Each item has { file: FileWithProgress, Result: Archived }
+        let imagesValue: any[] = [];
+        if (Array.isArray(files)) {
+            imagesValue = files.map((f: any) => f?.Result).filter(Boolean);
+        }
+        this.reviewForm.patchValue({ images: imagesValue });
+        
+        // Auto-save if in edit mode
+        if (this.reviewForm.get('_id')?.value) {
+            this.autoSaveReview('images', imagesValue);
+        }
+    }
+
+    onVideoChange(files: any): void {
+        // files is a single object or null when multiple=false
+        // { file: FileWithProgress, Result: Archived } or null
+        const videoValue = files?.Result || null;
+        this.reviewForm.patchValue({ video: videoValue });
+        
+        // Auto-save if in edit mode
+        if (this.reviewForm.get('_id')?.value) {
+            this.autoSaveReview('video', videoValue);
+        }
+    }
+
+    private autoSaveReview(field: 'images' | 'video', value: any): void {
+        const reviewId = this.reviewForm.get('_id')?.value;
+        if (!reviewId) return;
+
+        // Create update data with only the field being updated
+        const updateData: any = {};
+        updateData[field] = value; // value can be null or empty array
+
+        // Use updateReviewWithNulls to allow null values (for deletion)
+        this.reviewService.updateReviewWithNulls(reviewId, updateData).pipe(
+            takeUntil(this.destroy$)
+        ).subscribe({
+            next: () => {
+                // Silently update - no toast message to avoid annoying user
+                this.loadReviews();
+            },
+            error: (error) => {
+                console.error(`Failed to auto-save review ${field}:`, error);
+                // Optionally show a subtle error message
+                this.messageService.add({
+                    severity: 'warn',
+                    summary: this.translate.instant('common.warning'),
+                    detail: this.translate.instant('review.failedToSave'),
+                    life: 2000
+                });
+            }
+        });
     }
 }
 

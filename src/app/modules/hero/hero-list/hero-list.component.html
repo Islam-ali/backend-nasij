@@ -201,7 +201,8 @@
                     <div class="field">
                         <label for="image" class="font-bold text-gray-700 mb-2 block">{{ 'hero.uploadHeroImage' | translate }}</label>
                         <app-upload-files id="image" [index]="0" [control]="formControlImage" [multiple]="false" [accept]="'*/*'"
-                            [filesServer]="heroForm.get('image')?.value">
+                            [filesServer]="heroForm.get('image')?.value"
+                            (onExportFiles)="onImageChange($event)">
                         </app-upload-files>
                     </div>
                 </div>
@@ -213,7 +214,8 @@
                     <div class="field">
                         <label for="video" class="font-bold text-gray-700 mb-2 block">{{ 'hero.uploadHeroVideo' | translate }}</label>
                         <app-upload-files id="video" [index]="1" [control]="formControlVideo" [multiple]="false" [accept]="'*/*'"
-                            [filesServer]="heroForm.get('video')?.value">
+                            [filesServer]="heroForm.get('video')?.value"
+                            (onExportFiles)="onVideoChange($event)">
                         </app-upload-files>
                     </div>
                 </div>

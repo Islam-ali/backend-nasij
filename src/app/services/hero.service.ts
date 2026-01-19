@@ -52,6 +52,18 @@ export class HeroService {
     return this.genericApiService.Patch(`${this.apiUrl +`/${id}`}`, this.commonService.removeNullUndefinedEmptyStringKeysAndId(hero));
   }
 
+  // Update hero with null values allowed (for deleting image/video)
+  updateHeroWithNulls(id: string, hero: Partial<IHero>): Observable<BaseResponse<IHero>> {
+    // Remove _id and undefined/empty string, but keep null values
+    const cleanedData = { ...hero };
+    delete cleanedData._id;
+    // Remove undefined and empty string, but keep null
+    const filteredData = Object.fromEntries(
+      Object.entries(cleanedData).filter(([_, v]) => v !== undefined && v !== '')
+    );
+    return this.genericApiService.Patch(`${this.apiUrl}/${id}`, filteredData);
+  }
+
   // Delete hero
   deleteHero(id: string): Observable<BaseResponse<IHero>> {
     return this.genericApiService.Delete(`${this.apiUrl}`, id);

@@ -79,16 +79,30 @@
                 }
               </div>
               
-              <!-- Replace Button -->
-              <button 
-                type="button"
-                class="p-2 rounded-full hover:bg-gray-200 text-gray-600 transition-colors"
-                (click)="replaceFile()"
-                [disabled]="selectedFiles[0].uploading"
-                title="Replace File"
-              >
-                <i class="pi pi-refresh text-lg"></i>
-              </button>
+              <!-- Actions -->
+              <div class="flex items-center gap-2">
+                <!-- Replace Button -->
+                <button
+                  type="button"
+                  class="p-2 rounded-full hover:bg-blue-100 text-blue-600 transition-colors"
+                  (click)="replaceFile()"
+                  [disabled]="selectedFiles[0].uploading"
+                  title="Replace File"
+                >
+                  <i class="pi pi-refresh text-lg"></i>
+                </button>
+
+                <!-- Delete Button -->
+                <button
+                  type="button"
+                  class="p-2 rounded-full hover:bg-red-100 text-red-600 transition-colors"
+                  (click)="removeFile(selectedFiles[0].id)"
+                  [disabled]="selectedFiles[0].uploading"
+                  title="Remove File"
+                >
+                  <i class="pi pi-trash text-lg"></i>
+                </button>
+              </div>
             </div>
             
             <!-- Progress Bar for Single File -->

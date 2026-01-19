@@ -21,6 +21,8 @@ export interface IHeroLayoutItem {
   queryParams?: any;
   isActive?: boolean;
   videoAutoplay?: boolean;
+  layoutSettingsInfo?: 'start' | 'center' | 'end';
+  objectFit?: 'contain' | 'cover';
 }
 
 export interface IHeroLayout {

@@ -322,4 +322,13 @@ export class CatgoryListComponent extends ComponentBase implements OnInit {
   getParentCategoryLabel(category: ICategory): string {
     return category.name[this.currentLanguage()] || category.name.en || '';
   }
+
+  // Get avatar initial from category name
+  getAvatarInitial(name: string): string {
+    if (!name || name.trim().length === 0) {
+      return '?';
+    }
+    // Get first letter and capitalize it
+    return name.trim().charAt(0).toUpperCase();
+  }
 }
